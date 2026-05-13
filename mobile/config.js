@@ -1,8 +1,45 @@
-// API configuration
-// ⚠️ IMPORTANT: Update this IP to your PC's WiFi IP if it changes
-// Find your IP by running: ipconfig | Select-String "IPv4"
-const API_BASE = 'http://192.168.100.24:3001'; // Your PC's WiFi IP
+import { NativeModules, Platform } from 'react-native';
 
+// API configuration
+// Resolution order:
+// 1. EXPO_PUBLIC_API_BASE_URL (best for production/EAS builds)
+// 2. Expo dev-server LAN host (keeps physical devices off localhost)
+// 3. Platform fallback (Android emulator: 10.0.2.2, otherwise localhost)
+const API_PORT = 3000;
+
+const trimTrailingSlash = (value) => value?.replace(/\/+$/, '');
+
+const getConfiguredApiBase = () => {
+  const envApiBase = process.env.EXPO_PUBLIC_API_BASE_URL;
+  return trimTrailingSlash(envApiBase);
+};
+
+const getExpoHost = () => {
+  const scriptURL = NativeModules.SourceCode?.scriptURL;
+  const urlMatch = scriptURL?.match(/^https?:\/\/([^:/]+)/);
+
+  if (urlMatch?.[1]) return urlMatch[1];
+
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return window.location.hostname;
+  }
+
+  return null;
+};
+
+const getApiBase = () => {
+  const configuredApiBase = getConfiguredApiBase();
+  if (configuredApiBase) return configuredApiBase;
+
+  const expoHost = getExpoHost();
+  if (expoHost) return `http://${expoHost}:${API_PORT}`;
+
+  if (Platform.OS === 'android') return `http://10.0.2.2:${API_PORT}`;
+
+  return `http://localhost:${API_PORT}`;
+};
+
+export const API_BASE = getApiBase();
 export const API_URL = `${API_BASE}/api`;
 
 export const COLORS = {
@@ -75,4 +112,3 @@ export const SERVICES = [
   { id: 'painter', label: 'Painter', icon: 'color-palette-outline', urdu: 'پینٹر' },
   { id: 'handyman', label: 'Handyman', icon: 'construct-outline', urdu: 'مرمت' },
 ];
-

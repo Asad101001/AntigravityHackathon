@@ -86,6 +86,12 @@ npx expo start
 # Scan QR code with Expo Go app
 ```
 
+The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3000`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
+
+```bash
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3000 npx expo start
+```
+
 ### Test the API
 ```bash
 # PowerShell

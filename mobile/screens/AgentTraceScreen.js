@@ -25,15 +25,25 @@ export default function AgentTraceScreen({ route }) {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get(`\${API_URL}/logs`);
-      // Maps backend traces to a format readable here
-      const mappedLogs = response.data.map((l, i) => ({
+      const response = await axios.get(`${API_URL}/logs`);
+      const traces = Array.isArray(response.data) ? response.data : [];
+      const latestWorkflow = traces.find(t => Array.isArray(t.execution_logs));
+
+      if (latestWorkflow?.execution_logs) {
+        setLogs(latestWorkflow.execution_logs);
+        return;
+      }
+
+      // Maps per-agent trace files to a format readable here.
+      const mappedLogs = traces.map((l, i) => ({
         id: i + 1,
-        name: l.agent,
-        status: 'success',
-        duration_ms: l.durationMs || 0,
+        name: l.agent || l.action || `agent_${i + 1}`,
+        status: l.error ? 'error' : 'success',
+        duration_ms: l.durationMs || l.duration_ms || 0,
         input: l.input,
         output: l.output,
+        reasoning: l.reasoning,
+        error: l.error,
         timestamp: l.timestamp
       }));
       setLogs(mappedLogs);
@@ -49,7 +59,7 @@ export default function AgentTraceScreen({ route }) {
       const traceJson = JSON.stringify({
         workflow_id: `WF_${Date.now()}`,
         status: 'completed',
-        tasks: executionLogs
+        tasks: logs
       }, null, 2);
 
       await Share.share({

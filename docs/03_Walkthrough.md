@@ -4,9 +4,11 @@
 
 In this refinement phase, we transitioned the app from a "technical hackathon demo" into a premium, consumer-facing utility. We also resolved the critical network connectivity issues that prevented the compiled APK from communicating with your local backend.
 
-### 1. Network Connectivity Fix (Cleartext Traffic)
-Modern Android devices block standard HTTP requests by default. Since you are connecting to your PC's IP (`http://192.168.100.24:3000`), the connection was rejected.
-- **Fixed:** Installed the `expo-build-properties` plugin and configured `usesCleartextTraffic: true` in `app.json`. The APK will now successfully communicate with your local PC.
+### 1. Network Connectivity Fixes (Cleartext + Dynamic API Host)
+Modern Android devices block standard HTTP requests by default, and hardcoded LAN IPs break whenever your PC changes WiFi/network. The app was also pointing at port `3001` while the Express backend starts on port `3000`.
+- **Fixed:** Installed the `expo-build-properties` plugin and configured `usesCleartextTraffic: true` in `app.json`.
+- **Fixed:** Replaced the hardcoded mobile API URL with automatic Expo LAN host detection on port `3000`, plus an `EXPO_PUBLIC_API_BASE_URL` override for standalone/EAS builds.
+- **Fixed:** Backend startup logs now print detected LAN URLs instead of a stale hardcoded IP.
 
 ### 2. UI Overhaul & Buzzword Removal
 We completely revamped the UI text to remove technical jargon ("AI-Powered", "Antigravity Pipeline", "Confidence Scores") in favor of professional, functional terminology.
@@ -31,5 +33,5 @@ We thoroughly analyzed `AntigravityOrchestrator.js` and confirmed:
 > ```
 
 > [!NOTE]
-> If you still encounter connection issues after rebuilding, you may need to explicitly allow Port 3000 through your Windows Firewall by running the following command in an **Elevated (Administrator) PowerShell**:
+> If you still encounter connection issues after rebuilding, confirm the backend prints a `Phone/LAN access` URL on startup, use that URL in `EXPO_PUBLIC_API_BASE_URL` for standalone builds, and allow Port 3000 through your Windows Firewall with this **Elevated (Administrator) PowerShell** command:
 > `netsh advfirewall firewall add rule name="Asaaniyat Backend" dir=in action=allow protocol=TCP localport=3000`
