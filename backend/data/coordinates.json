@@ -1,0 +1,36 @@
+{
+  "islamabad": {
+    "G-6":  { "lat": 33.7294, "lng": 73.0931, "area_name": "G-6 Islamabad" },
+    "G-7":  { "lat": 33.7215, "lng": 73.0800, "area_name": "G-7 Islamabad" },
+    "G-8":  { "lat": 33.7100, "lng": 73.0550, "area_name": "G-8 Islamabad" },
+    "G-9":  { "lat": 33.7080, "lng": 73.0390, "area_name": "G-9 Islamabad" },
+    "G-10": { "lat": 33.7005, "lng": 73.0180, "area_name": "G-10 Islamabad" },
+    "G-11": { "lat": 33.6920, "lng": 73.0010, "area_name": "G-11 Islamabad" },
+    "G-12": { "lat": 33.6850, "lng": 72.9870, "area_name": "G-12 Islamabad" },
+    "G-13": { "lat": 33.6700, "lng": 72.9650, "area_name": "G-13 Islamabad" },
+    "G-14": { "lat": 33.6600, "lng": 72.9500, "area_name": "G-14 Islamabad" },
+    "G-15": { "lat": 33.6500, "lng": 72.9350, "area_name": "G-15 Islamabad" },
+    "F-6":  { "lat": 33.7310, "lng": 73.0850, "area_name": "F-6 Islamabad" },
+    "F-7":  { "lat": 33.7250, "lng": 73.0650, "area_name": "F-7 Islamabad" },
+    "F-8":  { "lat": 33.7130, "lng": 73.0410, "area_name": "F-8 Islamabad" },
+    "F-9":  { "lat": 33.7020, "lng": 73.0230, "area_name": "F-9 Islamabad" },
+    "F-10": { "lat": 33.6950, "lng": 73.0100, "area_name": "F-10 Islamabad" },
+    "F-11": { "lat": 33.6870, "lng": 72.9940, "area_name": "F-11 Islamabad" },
+    "I-8":  { "lat": 33.6850, "lng": 73.0790, "area_name": "I-8 Islamabad" },
+    "I-9":  { "lat": 33.6750, "lng": 73.0550, "area_name": "I-9 Islamabad" }
+  },
+  "lahore": {
+    "DHA":        { "lat": 31.4700, "lng": 74.4070, "area_name": "DHA Lahore" },
+    "Defence":    { "lat": 31.4680, "lng": 74.4050, "area_name": "Defence Lahore" },
+    "Gulberg":    { "lat": 31.5204, "lng": 74.3587, "area_name": "Gulberg Lahore" },
+    "Johar Town": { "lat": 31.4607, "lng": 74.2720, "area_name": "Johar Town Lahore" },
+    "Model Town": { "lat": 31.4818, "lng": 74.3226, "area_name": "Model Town Lahore" }
+  },
+  "karachi": {
+    "Clifton":  { "lat": 24.8138, "lng": 67.0300, "area_name": "Clifton Karachi" },
+    "Defence":  { "lat": 24.8050, "lng": 67.0700, "area_name": "Defence Karachi" },
+    "Saddar":   { "lat": 24.8607, "lng": 67.0104, "area_name": "Saddar Karachi" },
+    "PECHS":    { "lat": 24.8750, "lng": 67.0600, "area_name": "PECHS Karachi" },
+    "Gulshan":  { "lat": 24.9260, "lng": 67.0920, "area_name": "Gulshan-e-Iqbal Karachi" }
+  }
+}

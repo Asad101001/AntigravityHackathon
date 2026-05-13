@@ -1,0 +1,59 @@
+{
+  "services": {
+    "electrician": {
+      "canonical": "Electrician",
+      "keywords": ["electrician", "bijli", "bijli wala", "electric", "wiring", "wiring wala", "bijli ka kaam", "electrical"]
+    },
+    "plumber": {
+      "canonical": "Plumber",
+      "keywords": ["plumber", "nalkay wala", "pani ka kaam", "plumbing", "pipe", "pipeline", "nalkay", "paani", "tap", "flush"]
+    },
+    "ac_technician": {
+      "canonical": "AC Technician",
+      "keywords": ["ac", "ac technician", "ac repair", "ac wala", "air conditioner", "air conditioning", "cooling", "ac service", "ac ka kaam", "split ac", "window ac"]
+    },
+    "carpenter": {
+      "canonical": "Carpenter",
+      "keywords": ["carpenter", "mistri", "lakri ka kaam", "furniture", "woodwork", "wood", "lakri", "almari", "door", "darwaza"]
+    },
+    "painter": {
+      "canonical": "Painter",
+      "keywords": ["painter", "paint", "rang", "rang wala", "wall paint", "painting", "colour", "color", "rang ka kaam", "distemper"]
+    },
+    "handyman": {
+      "canonical": "Handyman",
+      "keywords": ["handyman", "handy man", "kaam wala", "general repair", "repair", "fix", "theek karo", "theek", "marammat"]
+    }
+  },
+  "time_expressions": {
+    "today_now": {
+      "keywords": ["abhi", "now", "right now", "foran", "jaldi", "abhi chahiye", "immediately", "urgent", "urgently", "is waqt"]
+    },
+    "today_morning": {
+      "keywords": ["aaj subah", "today morning", "this morning", "subah"]
+    },
+    "today_afternoon": {
+      "keywords": ["aaj dopahar", "today afternoon", "dopahar", "dopehr"]
+    },
+    "today_evening": {
+      "keywords": ["aaj shaam", "today evening", "this evening", "shaam", "shaam ko"]
+    },
+    "tomorrow_morning": {
+      "keywords": ["kal subah", "tomorrow morning", "kal savere", "kal subha"]
+    },
+    "tomorrow_afternoon": {
+      "keywords": ["kal dopahar", "tomorrow afternoon", "kal dopehr"]
+    },
+    "tomorrow_evening": {
+      "keywords": ["kal shaam", "tomorrow evening", "kal shaam ko"]
+    },
+    "tomorrow": {
+      "keywords": ["kal", "tomorrow", "aglay din", "next day"]
+    },
+    "weekend": {
+      "keywords": ["weekend", "hafta", "saturday", "sunday", "chutti ke din"]
+    }
+  },
+  "need_indicators": ["chahiye", "chahye", "chaiye", "need", "want", "zaroorat", "zarurat", "mangta", "mangti", "bhejo", "send", "book", "bulao", "bulaye", "call karo", "kaam karwana"],
+  "urgency_indicators": ["abhi", "foran", "jaldi", "urgent", "emergency", "asap", "turant", "immediately"]
+}
