@@ -4,16 +4,45 @@
  * Export as JSON
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
-  ScrollView, Share
+  ScrollView, Share, ActivityIndicator
 } from 'react-native';
-import { COLORS } from '../config';
+import axios from 'axios';
+import { COLORS, API_URL } from '../config';
 
 export default function AgentTraceScreen({ route }) {
-  const { executionLogs = [] } = route.params;
+  const [logs, setLogs] = useState(route?.params?.executionLogs || []);
+  const [loading, setLoading] = useState(!route?.params?.executionLogs);
   const [expandedId, setExpandedId] = useState(null);
+
+  useEffect(() => {
+    if (!route?.params?.executionLogs) {
+      fetchLogs();
+    }
+  }, []);
+
+  const fetchLogs = async () => {
+    try {
+      const response = await axios.get(`\${API_URL}/logs`);
+      // Maps backend traces to a format readable here
+      const mappedLogs = response.data.map((l, i) => ({
+        id: i + 1,
+        name: l.agent,
+        status: 'success',
+        duration_ms: l.durationMs || 0,
+        input: l.input,
+        output: l.output,
+        timestamp: l.timestamp
+      }));
+      setLogs(mappedLogs);
+    } catch (e) {
+      console.warn('Failed to fetch logs', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -58,7 +87,15 @@ export default function AgentTraceScreen({ route }) {
     schedule_followup: { label: 'Follow-Up Manager', icon: '🔔' },
   };
 
-  const totalDuration = executionLogs.reduce((sum, l) => sum + (l.duration_ms || 0), 0);
+  const totalDuration = logs.reduce((sum, l) => sum + (l.duration_ms || 0), 0);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,7 +105,7 @@ export default function AgentTraceScreen({ route }) {
           <Text style={styles.summaryTitle}>Antigravity Execution Trace</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{executionLogs.length}</Text>
+              <Text style={styles.summaryValue}>{logs.length}</Text>
               <Text style={styles.summaryLabel}>Agents</Text>
             </View>
             <View style={styles.summaryDivider} />
@@ -79,7 +116,7 @@ export default function AgentTraceScreen({ route }) {
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
               <Text style={[styles.summaryValue, { color: COLORS.success }]}>
-                {executionLogs.filter(l => l.status === 'success').length}/{executionLogs.length}
+                {logs.filter(l => l.status === 'success').length}/{logs.length}
               </Text>
               <Text style={styles.summaryLabel}>Success</Text>
             </View>
@@ -87,7 +124,7 @@ export default function AgentTraceScreen({ route }) {
         </View>
 
         {/* Agent Logs */}
-        {executionLogs.map((log, index) => {
+        {logs.map((log, index) => {
           const agentInfo = AGENT_NAMES[log.name] || { label: log.name, icon: '⚙️' };
           const isExpanded = expandedId === log.id;
 
@@ -168,7 +205,7 @@ export default function AgentTraceScreen({ route }) {
         {/* Timeline Bar */}
         <View style={styles.timelineCard}>
           <Text style={styles.timelineTitle}>Execution Timeline</Text>
-          {executionLogs.map((log) => {
+          {logs.map((log) => {
             const agentInfo = AGENT_NAMES[log.name] || { label: log.name };
             const widthPercent = totalDuration > 0 ? Math.max((log.duration_ms / totalDuration) * 100, 5) : 14;
             return (
@@ -285,3 +322,4 @@ const styles = StyleSheet.create({
   },
   exportButtonText: { fontSize: 15, fontWeight: '700', color: '#0A0E17' },
 });
+

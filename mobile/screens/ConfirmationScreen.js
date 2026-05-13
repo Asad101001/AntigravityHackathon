@@ -178,3 +178,4 @@ const styles = StyleSheet.create({
   },
   homeButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
 });
+

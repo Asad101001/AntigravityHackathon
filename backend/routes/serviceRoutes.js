@@ -199,4 +199,32 @@ router.post('/booking/:booking_id/feedback', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// GET /api/logs
+// Get agent traces
+// ═══════════════════════════════════════════════════════════════
+router.get('/logs', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const logsDir = path.join(__dirname, '..', '..', 'logs');
+  
+  try {
+    if (!fs.existsSync(logsDir)) {
+      return res.json([]);
+    }
+    const files = fs.readdirSync(logsDir).filter(f => f.endsWith('.json'));
+    const logs = files.map(f => {
+      const data = JSON.parse(fs.readFileSync(path.join(logsDir, f), 'utf8'));
+      return { file: f, ...data };
+    });
+    // Sort newest first
+    logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
+
+

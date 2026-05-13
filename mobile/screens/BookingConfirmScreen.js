@@ -198,3 +198,4 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: { fontSize: 15, fontWeight: '600', color: COLORS.textSecondary },
 });
+

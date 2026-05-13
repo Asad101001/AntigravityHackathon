@@ -10,6 +10,7 @@ import {
   SafeAreaView, ScrollView, KeyboardAvoidingView, Platform,
   Animated, Dimensions
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SERVICES } from '../config';
 
 const { width } = Dimensions.get('window');
@@ -57,6 +58,7 @@ export default function HomeScreen({ navigation }) {
         >
           {/* Header */}
           <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Ionicons name="flash" size={48} color={COLORS.primary} style={{marginBottom: 8}} />
             <Text style={styles.logo}>آسانیات</Text>
             <Text style={styles.logoSub}>Asaaniyat</Text>
             <Text style={styles.tagline}>Find verified professionals instantly</Text>
@@ -105,7 +107,9 @@ export default function HomeScreen({ navigation }) {
                   onPress={() => handleQuickSelect(service)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.quickIcon}>{service.icon}</Text>
+                  <View style={styles.iconWrapper}>
+                    <Ionicons name={service.icon} size={28} color={COLORS.primary} />
+                  </View>
                   <Text style={styles.quickText}>{service.label}</Text>
                   <Text style={styles.quickUrdu}>{service.urdu}</Text>
                 </TouchableOpacity>
@@ -193,6 +197,15 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   quickIcon: { fontSize: 26, marginBottom: 6 },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.primaryGlow,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   quickText: { fontSize: 12, fontWeight: '600', color: COLORS.textPrimary },
   quickUrdu: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
 
@@ -210,3 +223,4 @@ const styles = StyleSheet.create({
   },
   exampleText: { fontSize: 13, color: COLORS.accent, fontStyle: 'italic' },
 });
+

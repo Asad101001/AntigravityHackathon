@@ -105,9 +105,10 @@ class IntentParserAgent extends BaseAgent {
   }
 
   _parseLocation(text) {
-    // Build a list of all known area names
+    // Build a list of all known area names and cities
     const allAreas = [];
     for (const [city, areas] of Object.entries(coordinates)) {
+      allAreas.push(city); // Add city name
       for (const area of Object.keys(areas)) {
         allAreas.push(area);
       }
@@ -181,3 +182,5 @@ class IntentParserAgent extends BaseAgent {
 }
 
 module.exports = IntentParserAgent;
+
+

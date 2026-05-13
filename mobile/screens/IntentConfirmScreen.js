@@ -160,3 +160,4 @@ const styles = StyleSheet.create({
   },
   editButtonText: { fontSize: 15, fontWeight: '600', color: COLORS.textSecondary },
 });
+

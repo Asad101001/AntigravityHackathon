@@ -45,6 +45,9 @@ class BaseAgent {
 
     log.duration_ms = Date.now() - startTime;
     
+    const { logAgentTrace } = require('../traceLogger');
+    logAgentTrace(this.name, this.name, log.input, log.output, log.duration_ms);
+
     // Add log entry to execution_logs
     if (!context.execution_logs) context.execution_logs = [];
     context.execution_logs.push(log);
@@ -63,3 +66,5 @@ class BaseAgent {
 }
 
 module.exports = BaseAgent;
+
+

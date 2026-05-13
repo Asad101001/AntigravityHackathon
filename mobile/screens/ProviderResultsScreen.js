@@ -4,11 +4,14 @@
  * #1 has 'Recommended' badge. Tap to select.
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Dimensions
 } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { COLORS } from '../config';
+
+const { height } = Dimensions.get('window');
 
 export default function ProviderResultsScreen({ route, navigation }) {
   const { fullResult } = route.params;
@@ -31,14 +34,41 @@ export default function ProviderResultsScreen({ route, navigation }) {
     return COLORS.scoreLow;
   };
 
+  const mapRef = useRef(null);
+
+  const initialRegion = {
+    latitude: allProviders[0]?.lat || 33.6844,
+    longitude: allProviders[0]?.lng || 73.0479,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.mapContainer}>
+        <MapView 
+          ref={mapRef}
+          style={styles.map} 
+          initialRegion={initialRegion}
+          userInterfaceStyle="dark"
+        >
+          {allProviders.map(p => {
+            if (p.lat && p.lng) {
+              return (
+                <Marker
+                  key={p.id || p.rank}
+                  coordinate={{ latitude: p.lat, longitude: p.lng }}
+                  title={p.name}
+                  description={`\${p.distance_km}km away`}
+                  pinColor={p.isRecommended ? COLORS.primary : COLORS.warning}
+                />
+              );
+            }
+            return null;
+          })}
+        </MapView>
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Reasoning */}
-        <View style={styles.reasoningCard}>
-          <Text style={styles.reasoningIcon}>🎯</Text>
-          <Text style={styles.reasoningText}>We found verified professionals in your area matching your criteria.</Text>
-        </View>
 
         {/* Provider Cards */}
         {allProviders.map((p) => (
@@ -135,21 +165,9 @@ function ScoreBar({ label, value }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
+  mapContainer: { height: height * 0.3, width: '100%', backgroundColor: COLORS.border },
+  map: { flex: 1 },
   content: { padding: 20 },
-
-  // Reasoning
-  reasoningCard: {
-    backgroundColor: COLORS.primaryGlow,
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '33',
-  },
-  reasoningIcon: { fontSize: 20, marginRight: 10 },
-  reasoningText: { fontSize: 13, color: COLORS.textPrimary, flex: 1, lineHeight: 20 },
 
   // Provider Card
   providerCard: {
@@ -221,3 +239,4 @@ const styles = StyleSheet.create({
   },
   traceButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.accent },
 });
+

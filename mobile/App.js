@@ -10,6 +10,10 @@ import ProviderResultsScreen from './screens/ProviderResultsScreen';
 import BookingConfirmScreen from './screens/BookingConfirmScreen';
 import ConfirmationScreen from './screens/ConfirmationScreen';
 import AgentTraceScreen from './screens/AgentTraceScreen';
+import SplashScreen from './screens/SplashScreen';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from './config';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,19 +22,32 @@ export default function App() {
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator
-        initialRouteName="Home"
+        initialRouteName="Splash"
         screenOptions={{
-          headerStyle: { backgroundColor: '#0A0E17' },
-          headerTintColor: '#E0E6ED',
+          headerStyle: { backgroundColor: COLORS.bgCard },
+          headerTintColor: COLORS.textPrimary,
           headerTitleStyle: { fontWeight: '700', fontSize: 17 },
-          contentStyle: { backgroundColor: '#0A0E17' },
+          contentStyle: { backgroundColor: COLORS.bg },
           animation: 'slide_from_right',
         }}
       >
         <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{ headerShown: false, animation: 'fade' }}
+        />
+        <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ headerShown: false }}
+          options={({ navigation }) => ({ 
+            headerShown: true,
+            title: 'Asaaniyat',
+            headerRight: () => (
+              <TouchableOpacity onPress={() => navigation.navigate('AgentTrace')}>
+                <Ionicons name="terminal-outline" size={24} color={COLORS.primary} />
+              </TouchableOpacity>
+            )
+          })}
         />
         <Stack.Screen
           name="IntentConfirm"
@@ -66,3 +83,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+

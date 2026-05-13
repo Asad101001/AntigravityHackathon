@@ -10,6 +10,8 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { sanitizeInput } = require('./middleware/sanitize');
 const serviceRoutes = require('./routes/serviceRoutes');
+const db = require('./db');
+const { generateApiDocs } = require('./traceLogger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,7 +57,9 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
+  await db.setupDatabase();
+  generateApiDocs();
   console.log(`\n🚀 Asaaniyat Backend running on http://0.0.0.0:${PORT}`);
   console.log(`📱 Phone access: http://192.168.100.24:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
@@ -63,3 +67,5 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 module.exports = app;
+
+

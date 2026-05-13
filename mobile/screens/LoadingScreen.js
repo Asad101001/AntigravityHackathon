@@ -9,6 +9,7 @@ import {
   View, Text, StyleSheet, SafeAreaView, Animated
 } from 'react-native';
 import axios from 'axios';
+import * as Location from 'expo-location';
 import { COLORS, API_URL } from '../config';
 
 const STEPS = [
@@ -39,6 +40,29 @@ export default function LoadingScreen({ route, navigation }) {
 
   const callAPI = async () => {
     try {
+      let finalUserText = userText;
+      
+      // Try to get location
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const loc = await Location.getCurrentPositionAsync({});
+          const geocode = await Location.reverseGeocodeAsync({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude
+          });
+          if (geocode && geocode.length > 0) {
+            const city = geocode[0].city || geocode[0].region || 'Islamabad';
+            // Only append if the user didn't mention 'mein' or 'in' or typical location
+            if (!finalUserText.toLowerCase().includes(' in ') && !finalUserText.toLowerCase().includes(' mein ')) {
+              finalUserText += ` in \${city}`;
+            }
+          }
+        }
+      } catch (locErr) {
+        console.warn('Location error:', locErr);
+      }
+
       // Simulate step progression while API runs
       const stepInterval = setInterval(() => {
         setCurrentStep(prev => {
@@ -47,9 +71,9 @@ export default function LoadingScreen({ route, navigation }) {
         });
       }, 300);
 
-      const response = await axios.post(`${API_URL}/service-request`, {
-        user_text: userText,
-        user_id: `user_${Date.now()}`
+      const response = await axios.post(`\${API_URL}/service-request`, {
+        user_text: finalUserText,
+        user_id: `user_\${Date.now()}`
       }, { timeout: 15000 });
 
       clearInterval(stepInterval);
@@ -85,7 +109,7 @@ export default function LoadingScreen({ route, navigation }) {
         err.response?.data?.message || 
         err.message === 'Network Error' 
           ? 'Cannot connect to server. Make sure the backend is running on the correct IP.'
-          : `Error: ${err.message}`
+          : `Error: \${err.message}`
       );
     }
   };
@@ -234,3 +258,4 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
   retryButton: { fontSize: 16, fontWeight: '600', color: COLORS.primary, padding: 12 },
 });
+
