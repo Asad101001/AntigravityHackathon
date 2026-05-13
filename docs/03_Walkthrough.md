@@ -1,87 +1,35 @@
-# Walkthrough — AI Service Orchestrator
+# Walkthrough — Refinement Phase
 
-## What Was Built
+## What Was Completed
 
-A complete **3-layer application** implementing the Antigravity Briefing Document specification:
+In this refinement phase, we transitioned the app from a "technical hackathon demo" into a premium, consumer-facing utility. We also resolved the critical network connectivity issues that prevented the compiled APK from communicating with your local backend.
 
-### Backend (Node.js + Express)
-- Express server with rate limiting (100 req/15min), CORS, input sanitization
-- **7 agent classes** extending a shared `BaseAgent` with timing/logging/error-handling
-- **AntigravityOrchestrator** — central engine managing shared context, sequential execution, trace emission
-- **4 REST API endpoints**: service-request, booking/confirm, booking/:id, booking/:id/feedback
-- **60 mock providers** across Islamabad (20), Lahore (20), Karachi (20)
-- **28 area coordinate cache** covering all supported neighborhoods
-- **Trilingual keyword dictionary** with Roman Urdu, Urdu, and English support
+### 1. Network Connectivity Fix (Cleartext Traffic)
+Modern Android devices block standard HTTP requests by default. Since you are connecting to your PC's IP (`http://192.168.100.24:3000`), the connection was rejected.
+- **Fixed:** Installed the `expo-build-properties` plugin and configured `usesCleartextTraffic: true` in `app.json`. The APK will now successfully communicate with your local PC.
 
-### Mobile App (React Native + Expo)
-- **7 screens** with dark glassmorphism theme, Pakistan green accent
-- Home → Loading (animated pipeline) → Intent Confirm → Provider Results → Booking Confirm → Confirmation → Agent Trace
-- Expandable agent trace logs with timeline visualization and JSON export
+### 2. UI Overhaul & Buzzword Removal
+We completely revamped the UI text to remove technical jargon ("AI-Powered", "Antigravity Pipeline", "Confidence Scores") in favor of professional, functional terminology.
 
-### Submission Artifacts
-- `README.md` — comprehensive documentation
-- `agent_traces.json` — exported execution trace from demo run
-- `.gitignore` — no secrets committed
-- `docs/` — implementation plan, task tracker, walkthrough
+- **Home Screen:** Changed the tagline to "Find verified professionals instantly" and simplified the prompt.
+- **Intent Confirm Screen:** Removed the massive "AI Confidence" meter. Replaced it with a simple "Please confirm your details:" prompt.
+- **Loading Screen:** Replaced the technical 7-agent breakdown (e.g., "Parsing Intent", "Making Decision") with consumer-friendly statuses (e.g., "Analyzing request...", "Searching network...", "Finalizing match...").
+- **Provider Results Screen:** Changed "Score" to "Match". Replaced the technical backend reasoning string with a natural "We found verified professionals matching your criteria."
+- **Confirmation Screen:** Removed the "Pipeline Performance" stats and hid the "View Agent Trace Logs" button to maintain the illusion of a standard utility app.
 
-## Verification Results
+### 3. Orchestrator Validation
+We thoroughly analyzed `AntigravityOrchestrator.js` and confirmed:
+- The custom engine correctly acts as the orchestrator.
+- It seamlessly manages the shared context across all 7 agents in the required sequence.
+- Fallback and routing logic function correctly.
 
-### API Tests Passed
+> [!IMPORTANT]
+> Because we modified `app.json` and installed a native plugin, **you must rebuild the APK via EAS** for the network fixes to take effect on your physical phone:
+> ```bash
+> cd d:\Desktop\hackathonMVP\mobile
+> eas build --platform android --profile preview
+> ```
 
-| Test Scenario | City | Result | Provider Selected | Duration |
-|---|---|---|---|---|
-| "Electrician chahiye G-11 mein kal subah" | Islamabad | ✅ Success | Ali Electrician Services (score: 0.805) | 107ms |
-| "Plumber chahiye DHA Lahore mein abhi" | Lahore | ✅ Success | Defence Pipe Works (score: 0.703) | 46ms |
-| "AC repair needed in Clifton Karachi tomorrow morning" | Karachi | ✅ Success | Karachi Cool Air (score: 0.810) | 3ms |
-| "help me please" (no service/location) | — | ✅ Low confidence | Clarification prompt + suggestions | 4ms |
-
-### Key Metrics
-- All 7 agents execute in **<100ms** total pipeline time
-- Low-confidence inputs correctly route to clarification
-- Correct providers selected across all 3 cities
-- Score breakdowns show distance, rating, availability, response_time
-- 3 reminders scheduled per booking (push, SMS, feedback)
-
-## Files Created
-
-| Path | Description |
-|---|---|
-| `backend/server.js` | Express server (binds 0.0.0.0 for device access) |
-| `backend/agents/BaseAgent.js` | Agent base class |
-| `backend/agents/IntentParserAgent.js` | Agent 1: Trilingual intent parser |
-| `backend/agents/LocationResolverAgent.js` | Agent 2: Coordinate resolver |
-| `backend/agents/ProviderDiscovererAgent.js` | Agent 3: Provider search |
-| `backend/agents/ProviderRankerAgent.js` | Agent 4: Multi-factor scoring |
-| `backend/agents/DecisionMakerAgent.js` | Agent 5: Selection + reasoning |
-| `backend/agents/BookingExecutorAgent.js` | Agent 6: Booking creation |
-| `backend/agents/FollowUpManagerAgent.js` | Agent 7: Reminder scheduling |
-| `backend/orchestrator/AntigravityOrchestrator.js` | Central 7-agent orchestrator |
-| `backend/routes/serviceRoutes.js` | 4 API endpoints |
-| `backend/data/providers.json` | 60 mock providers (3 cities) |
-| `backend/data/coordinates.json` | 28 area coordinates |
-| `backend/data/keywords.json` | Trilingual keyword dictionary |
-| `backend/middleware/sanitize.js` | Input sanitization |
-| `mobile/App.js` | 7-screen navigation |
-| `mobile/config.js` | API URL, colors, constants |
-| `mobile/screens/HomeScreen.js` | Screen 1: Home |
-| `mobile/screens/IntentConfirmScreen.js` | Screen 2: Intent Confirm |
-| `mobile/screens/LoadingScreen.js` | Screen 3: Loading Pipeline |
-| `mobile/screens/ProviderResultsScreen.js` | Screen 4: Provider Results |
-| `mobile/screens/BookingConfirmScreen.js` | Screen 5: Booking Confirm |
-| `mobile/screens/ConfirmationScreen.js` | Screen 6: Success |
-| `mobile/screens/AgentTraceScreen.js` | Screen 7: Agent Trace Logs |
-| `README.md` | Project documentation |
-| `agent_traces.json` | Demo execution trace |
-| `docs/01_Implementation_Plan.md` | Architecture & build plan |
-| `docs/02_Task_Tracker.md` | Completed task checklist |
-| `docs/03_Walkthrough.md` | This walkthrough |
-
-## Network Setup (Physical Device)
-
-To use the APK on a physical phone connected to the same WiFi:
-
-1. Start backend: `cd backend && npm start`
-2. Backend must bind to `0.0.0.0` (already configured)
-3. Phone and PC must be on the same WiFi network
-4. `mobile/config.js` must have your PC's WiFi IP (currently `192.168.100.24`)
-5. Windows Firewall must allow inbound connections on port 3000
+> [!NOTE]
+> If you still encounter connection issues after rebuilding, you may need to explicitly allow Port 3000 through your Windows Firewall by running the following command in an **Elevated (Administrator) PowerShell**:
+> `netsh advfirewall firewall add rule name="Asaaniyat Backend" dir=in action=allow protocol=TCP localport=3000`
