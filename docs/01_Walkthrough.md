@@ -83,5 +83,5 @@ To use the APK on a physical phone connected to the same WiFi:
 1. Start backend: `cd backend && npm start`
 2. Backend must bind to `0.0.0.0` (already configured)
 3. Phone and PC must be on the same WiFi network
-4. `mobile/config.js` must have your PC's WiFi IP (currently `192.168.100.24`)
+4. Expo development builds auto-detect the Metro LAN host; standalone/EAS builds should set `EXPO_PUBLIC_API_BASE_URL` to the backend `Phone/LAN access` URL printed by `npm start`
 5. Windows Firewall must allow inbound connections on port 3000

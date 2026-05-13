@@ -59,7 +59,7 @@ export default function ProviderResultsScreen({ route, navigation }) {
                   key={p.id || p.rank}
                   coordinate={{ latitude: p.lat, longitude: p.lng }}
                   title={p.name}
-                  description={`\${p.distance_km}km away`}
+                  description={`${p.distance_km}km away`}
                   pinColor={p.isRecommended ? COLORS.primary : COLORS.warning}
                 />
               );

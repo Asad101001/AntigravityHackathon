@@ -39,6 +39,8 @@ export default function LoadingScreen({ route, navigation }) {
   }, []);
 
   const callAPI = async () => {
+    let stepInterval;
+
     try {
       let finalUserText = userText;
       
@@ -55,7 +57,7 @@ export default function LoadingScreen({ route, navigation }) {
             const city = geocode[0].city || geocode[0].region || 'Islamabad';
             // Only append if the user didn't mention 'mein' or 'in' or typical location
             if (!finalUserText.toLowerCase().includes(' in ') && !finalUserText.toLowerCase().includes(' mein ')) {
-              finalUserText += ` in \${city}`;
+              finalUserText += ` in ${city}`;
             }
           }
         }
@@ -64,16 +66,16 @@ export default function LoadingScreen({ route, navigation }) {
       }
 
       // Simulate step progression while API runs
-      const stepInterval = setInterval(() => {
+      stepInterval = setInterval(() => {
         setCurrentStep(prev => {
           if (prev < STEPS.length - 1) return prev + 1;
           return prev;
         });
       }, 300);
 
-      const response = await axios.post(`\${API_URL}/service-request`, {
+      const response = await axios.post(`${API_URL}/service-request`, {
         user_text: finalUserText,
-        user_id: `user_\${Date.now()}`
+        user_id: `user_${Date.now()}`
       }, { timeout: 15000 });
 
       clearInterval(stepInterval);
@@ -104,13 +106,16 @@ export default function LoadingScreen({ route, navigation }) {
       }, 800);
 
     } catch (err) {
+      if (stepInterval) clearInterval(stepInterval);
+
       console.error('API Error:', err);
-      setError(
-        err.response?.data?.message || 
-        err.message === 'Network Error' 
-          ? 'Cannot connect to server. Make sure the backend is running on the correct IP.'
-          : `Error: \${err.message}`
+      const backendMessage = err.response?.data?.message || err.response?.data?.error;
+      const errorMessage = backendMessage || (
+        err.message === 'Network Error'
+          ? `Cannot connect to server at ${API_URL}. Make sure the backend is running, the phone is on the same WiFi, and EXPO_PUBLIC_API_BASE_URL points to the backend LAN URL if this is a standalone build.`
+          : `Error: ${err.message}`
       );
+      setError(errorMessage);
     }
   };
 
