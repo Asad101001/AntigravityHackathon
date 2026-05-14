@@ -16,6 +16,9 @@ const ProviderRankerAgent = require('../agents/ProviderRankerAgent');
 const DecisionMakerAgent = require('../agents/DecisionMakerAgent');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
+const RagRetrievalAgent = require('../agents/RagRetrievalAgent');
+const SummarizationAgent = require('../agents/SummarizationAgent');
+const ConversationAgent = require('../agents/ConversationAgent');
 
 class AntigravityOrchestrator {
   constructor(options = {}) {
@@ -63,6 +66,8 @@ class AntigravityOrchestrator {
     const context = {
       user_text: input.user_text,
       user_id: input.user_id,
+      user_location: input.user_location || null,
+      location_source: input.location_source || null,
       execution_logs: [],
       workflow_id: workflowId
     };
@@ -170,30 +175,20 @@ class AntigravityOrchestrator {
       duration_ms: totalDuration,
       output: {
         booking_id: context.booking_id || null,
-        provider: context.selected_provider ? {
-          name: context.selected_provider.name,
-          phone: context.selected_provider.phone,
-          distance_km: context.selected_provider.distance_km,
-          rating: context.selected_provider.rating,
-          reviews_count: context.selected_provider.reviews_count,
-          confirmed_slot: context.booking?.time_slot || null,
-          scores: context.selected_provider.scores || null
-        } : null,
+        provider: context.selected_provider ? this._serializeProvider(context.selected_provider, context.booking?.time_slot || null) : null,
         reasoning: context.decision_reasoning || null,
         confirmation_message: context.confirmation_message || null,
-        alternatives: (context.alternatives || []).map(a => ({
-          name: a.name,
-          score: a.scores?.total,
-          distance_km: a.distance_km,
-          rating: a.rating,
-          phone: a.phone
-        })),
+        alternatives: (context.alternatives || []).map(a => this._serializeProvider(a, null)),
         reminders_scheduled: context.reminders_count || 0,
         parsed_intent: {
           service_type: context.service_type || null,
           location: context.location || null,
           time_preference: context.time_preference || null,
           confidence: context.confidence || 0,
+          location_confidence: context.location_confidence || null,
+          location_source: context.location_source || null,
+          coordinates: context.coordinates || null,
+          tokens: context.tokens || [],
           language: context.language || null,
           urgency: context.urgency || 'normal'
         }
@@ -215,6 +210,60 @@ class AntigravityOrchestrator {
 
     return result;
   }
+
+  _serializeProvider(provider, confirmedSlot = null) {
+    return {
+      id: provider.id,
+      name: provider.name,
+      service: provider.service,
+      service_type: provider.service,
+      phone: provider.phone,
+      city: provider.city,
+      area: provider.area,
+      lat: provider.lat,
+      lng: provider.lng,
+      distance_km: provider.distance_km,
+      rating: provider.rating,
+      reviews_count: provider.reviews_count,
+      verified: provider.verified,
+      response_time_min: provider.response_time_min,
+      available_slots: provider.available_slots || [],
+      confirmed_slot: confirmedSlot,
+      scores: provider.scores || null,
+      score: provider.scores?.total || provider.score || null
+    };
+  }
+
+  async runConversation({ input, options = {} }) {
+    const workflowId = `CHAT_${Date.now()}`;
+    const context = {
+      booking_id: input.booking_id || 'general',
+      chat_message: input.message,
+      user_id: input.user_id || 'anonymous',
+      provider: input.provider || {},
+      execution_logs: [],
+      workflow_id: workflowId
+    };
+
+    const chatPlan = [
+      new RagRetrievalAgent(),
+      new SummarizationAgent(),
+      new ConversationAgent()
+    ];
+
+    for (const agent of chatPlan) {
+      await agent.run(context);
+    }
+
+    return {
+      workflow_id: workflowId,
+      reply: context.chat_reply,
+      provider: context.llm_provider,
+      token_usage: context.token_usage,
+      execution_logs: options.emit_trace === false ? [] : context.execution_logs
+    };
+  }
+
 }
 
 module.exports = AntigravityOrchestrator;

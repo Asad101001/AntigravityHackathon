@@ -12,6 +12,8 @@ const router = express.Router();
 const AntigravityOrchestrator = require('../orchestrator/AntigravityOrchestrator');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
+const db = require('../db');
+const { ingestText, retrieve } = require('../rag/retriever');
 
 // Instantiate orchestrator
 const orchestrator = new AntigravityOrchestrator({
@@ -24,7 +26,7 @@ const orchestrator = new AntigravityOrchestrator({
 // ═══════════════════════════════════════════════════════════════
 router.post('/service-request', async (req, res) => {
   try {
-    const { user_text, user_id } = req.body;
+    const { user_text, user_id, user_location, location_source } = req.body;
 
     if (!user_text || typeof user_text !== 'string') {
       return res.status(400).json({
@@ -37,7 +39,9 @@ router.post('/service-request', async (req, res) => {
     const result = await orchestrator.run({
       input: {
         user_text,
-        user_id: user_id || `user_${Date.now()}`
+        user_id: user_id || `user_${Date.now()}`,
+        user_location: user_location || null,
+        location_source: location_source || null
       },
       options: {
         emit_trace: true,
@@ -92,6 +96,74 @@ router.post('/service-request', async (req, res) => {
       error: 'Internal pipeline error',
       message: error.message
     });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// POST /api/chat/message
+// Agentic RAG-backed provider conversation endpoint
+// ═══════════════════════════════════════════════════════════════
+router.post('/chat/message', async (req, res) => {
+  try {
+    const { booking_id, message, user_id, provider } = req.body;
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ success: false, error: 'message is required and must be a string' });
+    }
+    const result = await orchestrator.runConversation({
+      input: { booking_id, message, user_id, provider },
+      options: { emit_trace: true }
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// GET /api/chat/:booking_id
+// Returns persisted chat history for a booking
+// ═══════════════════════════════════════════════════════════════
+router.get('/chat/:booking_id', async (req, res) => {
+  try {
+    const messages = await db.getChatMessages(req.params.booking_id, 80);
+    return res.json({ success: true, messages });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /api/rag/ingest
+// Adds local tokenized chunks to the SQLite RAG store
+// ═══════════════════════════════════════════════════════════════
+router.post('/rag/ingest', async (req, res) => {
+  try {
+    const { source, content, metadata } = req.body;
+    if (!content || typeof content !== 'string') {
+      return res.status(400).json({ success: false, error: 'content is required and must be a string' });
+    }
+    const chunks = await ingestText({ source, content, metadata });
+    return res.json({ success: true, chunks_ingested: chunks.length, chunks });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /api/rag/query
+// Retrieves token-budgeted local RAG chunks
+// ═══════════════════════════════════════════════════════════════
+router.post('/rag/query', async (req, res) => {
+  try {
+    const { query, top_k, token_budget } = req.body;
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ success: false, error: 'query is required and must be a string' });
+    }
+    const chunks = await retrieve(query, { topK: top_k || 4, tokenBudget: token_budget || 450 });
+    return res.json({ success: true, chunks });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

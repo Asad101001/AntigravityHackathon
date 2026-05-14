@@ -2,10 +2,10 @@ import { NativeModules, Platform } from 'react-native';
 
 // API configuration
 // Resolution order:
-// 1. EXPO_PUBLIC_API_BASE_URL (best for production/EAS builds)
-// 2. Expo dev-server LAN host (keeps physical devices off localhost)
+// 1. EXPO_PUBLIC_API_BASE_URL (best for production/EAS builds or custom ports)
+// 2. Expo dev-server LAN host + EXPO_PUBLIC_API_PORT/default 3001
 // 3. Platform fallback (Android emulator: 10.0.2.2, otherwise localhost)
-const API_PORT = 3000;
+const API_PORT = Number(process.env.EXPO_PUBLIC_API_PORT || 3001);
 
 const trimTrailingSlash = (value) => value?.replace(/\/+$/, '');
 
@@ -43,39 +43,27 @@ export const API_BASE = getApiBase();
 export const API_URL = `${API_BASE}/api`;
 
 export const COLORS = {
-  // Primary palette (Black/White overall)
-  bg: '#050505',
-  bgCard: '#111111',
-  bgCardHover: '#1A1A1A',
-  bgGlass: 'rgba(17, 17, 17, 0.85)',
-  
-  // Accents (Neon/Lime/Dark Green)
-  primary: '#39FF14',
-  primaryDim: '#006400',
-  primaryGlow: 'rgba(57, 255, 20, 0.15)',
-  
-  // Secondary
-  accent: '#39FF14',
-  accentDim: '#006400',
-  
-  // Status
-  success: '#39FF14',
-  warning: '#FFEA00',
-  danger: '#FF3333',
-  
-  // Text
-  textPrimary: '#FFFFFF',
-  textSecondary: '#A0A0A0',
-  textMuted: '#555555',
-  
-  // Borders
-  border: '#222222',
-  borderLight: '#333333',
-  
-  // Scoring colors
-  scoreHigh: '#39FF14',
-  scoreMid: '#FFEA00',
-  scoreLow: '#FF3333',
+  bg: '#F5FBF7',
+  bgCard: '#FFFFFF',
+  bgCardHover: '#ECF8F1',
+  bgGlass: 'rgba(255, 255, 255, 0.88)',
+  primary: '#0E8F46',
+  primaryDim: '#075E2C',
+  primaryGlow: 'rgba(14, 143, 70, 0.12)',
+  accent: '#22C55E',
+  accentDim: '#0B6B35',
+  success: '#16A34A',
+  warning: '#D97706',
+  danger: '#DC2626',
+  textPrimary: '#10251A',
+  textSecondary: '#51645A',
+  textMuted: '#8EA095',
+  border: '#DDEBE3',
+  borderLight: '#EEF6F1',
+  chip: '#E9F8EF',
+  scoreHigh: '#0E8F46',
+  scoreMid: '#D97706',
+  scoreLow: '#DC2626',
 };
 
 export const FONTS = {
@@ -89,10 +77,10 @@ export const FONTS = {
 
 export const SHADOWS = {
   card: {
-    shadowColor: '#000',
+    shadowColor: '#0E8F46',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
     elevation: 5,
   },
   glow: {

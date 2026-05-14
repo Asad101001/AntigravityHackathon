@@ -6,6 +6,7 @@
 
 const BaseAgent = require('./BaseAgent');
 const coordinates = require('../data/coordinates.json');
+const { findLocationCandidate } = require('../utils/locationNormalizer');
 
 class LocationResolverAgent extends BaseAgent {
   constructor() {
@@ -13,9 +14,34 @@ class LocationResolverAgent extends BaseAgent {
   }
 
   async execute(context) {
+    const explicit = context.user_location;
+    if (explicit && typeof explicit.lat === 'number' && typeof explicit.lng === 'number') {
+      if (!this._isInPakistan(explicit.lat, explicit.lng)) {
+        return {
+          input: explicit,
+          output: { error: 'Coordinates outside Pakistan bounds' },
+          reasoning: `User-picked coordinates (${explicit.lat}, ${explicit.lng}) are outside Pakistan bounds.`,
+          contextUpdates: { coordinates: null, city: null, resolved_area: null }
+        };
+      }
+      return {
+        input: explicit,
+        output: { lat: explicit.lat, lng: explicit.lng, area_name: explicit.label || 'Pinned location', city: explicit.city || null, source: context.location_source || 'map' },
+        reasoning: `Resolved location from ${context.location_source || 'explicit'} coordinates, so provider distance can be calculated dynamically.`,
+        contextUpdates: {
+          coordinates: { lat: explicit.lat, lng: explicit.lng },
+          city: explicit.city || null,
+          resolved_area: explicit.label || 'Pinned location',
+          location_confidence: 1,
+          location_source: context.location_source || 'map'
+        }
+      };
+    }
+
     const location = context.location;
+    const candidate = context.location_candidate || findLocationCandidate(location || context.user_text || '', { minConfidence: 0.55 });
     
-    if (!location) {
+    if (!location && !candidate) {
       return {
         input: 'No location provided',
         output: { lat: null, lng: null, area_name: null, city: null },
@@ -24,46 +50,51 @@ class LocationResolverAgent extends BaseAgent {
       };
     }
 
-    // Search through all cities for the area
+    if (candidate?.coords) {
+      const coords = candidate.coords;
+      if (!this._isInPakistan(coords.lat, coords.lng)) {
+        return {
+          input: location,
+          output: { error: 'Coordinates outside Pakistan bounds' },
+          reasoning: `Resolved "${location}" but coordinates (${coords.lat}, ${coords.lng}) fall outside Pakistan bounding box. Rejecting.`,
+          contextUpdates: { coordinates: null, city: null, resolved_area: null }
+        };
+      }
+      return {
+        input: location || candidate.matched_query,
+        output: { lat: coords.lat, lng: coords.lng, area_name: coords.area_name, city: candidate.city, confidence: candidate.confidence },
+        reasoning: `Resolved "${location || candidate.matched_query}" using normalized fuzzy cache match "${candidate.searchText}" → ${coords.area_name} (${coords.lat}, ${coords.lng}).`,
+        contextUpdates: {
+          coordinates: { lat: coords.lat, lng: coords.lng },
+          city: candidate.city,
+          resolved_area: coords.area_name,
+          location: candidate.canonical,
+          location_confidence: candidate.confidence,
+          location_source: 'typed'
+        }
+      };
+    }
+
+    // Exact legacy fallback through all cities for compatibility
     for (const [city, areas] of Object.entries(coordinates)) {
       for (const [areaName, coords] of Object.entries(areas)) {
-        if (areaName.toLowerCase() === location.toLowerCase()) {
-          // Validate Pakistan bounding box: lat 23.0–37.5, lng 60.0–77.5
-          if (!this._isInPakistan(coords.lat, coords.lng)) {
-            return {
-              input: location,
-              output: { error: 'Coordinates outside Pakistan bounds' },
-              reasoning: `Resolved "${location}" but coordinates (${coords.lat}, ${coords.lng}) fall outside Pakistan bounding box. Rejecting.`,
-              contextUpdates: { coordinates: null, city: null, resolved_area: null }
-            };
-          }
-
+        if (areaName.toLowerCase() === String(location).toLowerCase()) {
           const capitalizedCity = city.charAt(0).toUpperCase() + city.slice(1);
           return {
             input: location,
             output: { lat: coords.lat, lng: coords.lng, area_name: coords.area_name, city: capitalizedCity },
-            reasoning: `Resolved "${location}" from local coordinate cache → ${coords.area_name} (${coords.lat}, ${coords.lng}). No API call needed.`,
-            contextUpdates: {
-              coordinates: { lat: coords.lat, lng: coords.lng },
-              city: capitalizedCity,
-              resolved_area: coords.area_name
-            }
+            reasoning: `Resolved "${location}" from exact local coordinate cache → ${coords.area_name}.`,
+            contextUpdates: { coordinates: { lat: coords.lat, lng: coords.lng }, city: capitalizedCity, resolved_area: coords.area_name }
           };
         }
       }
     }
 
-    // Location not found in cache — suggest fallback
     return {
       input: location,
       output: { lat: null, lng: null, area_name: null, city: null, fallback: true },
-      reasoning: `Location "${location}" not found in local coordinate cache. Would normally call Google Maps Geocoding API as fallback. Suggesting user clarify area.`,
-      contextUpdates: {
-        coordinates: null,
-        city: null,
-        resolved_area: null,
-        location_fallback: true
-      }
+      reasoning: `Location "${location}" not found after normalized/fuzzy matching. Suggesting user clarify area or pick on map.`,
+      contextUpdates: { coordinates: null, city: null, resolved_area: null, location_fallback: true }
     };
   }
 

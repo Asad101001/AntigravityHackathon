@@ -10,6 +10,9 @@ import ProviderResultsScreen from './screens/ProviderResultsScreen';
 import BookingConfirmScreen from './screens/BookingConfirmScreen';
 import ConfirmationScreen from './screens/ConfirmationScreen';
 import AgentTraceScreen from './screens/AgentTraceScreen';
+import ReviewBookingScreen from './screens/ReviewBookingScreen';
+import ProviderChatScreen from './screens/ProviderChatScreen';
+import LocationPickerScreen from './screens/LocationPickerScreen';
 import SplashScreen from './screens/SplashScreen';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +23,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack.Navigator
         initialRouteName="Splash"
         screenOptions={{
@@ -68,6 +71,21 @@ export default function App() {
           name="BookingConfirm"
           component={BookingConfirmScreen}
           options={{ title: 'Confirm Booking' }}
+        />
+        <Stack.Screen
+          name="ReviewBooking"
+          component={ReviewBookingScreen}
+          options={{ title: 'Review Booking' }}
+        />
+        <Stack.Screen
+          name="ProviderChat"
+          component={ProviderChatScreen}
+          options={{ title: 'Provider Chat' }}
+        />
+        <Stack.Screen
+          name="LocationPicker"
+          component={LocationPickerScreen}
+          options={{ title: 'Pick Location' }}
         />
         <Stack.Screen
           name="Confirmation"

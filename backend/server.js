@@ -15,7 +15,7 @@ const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const getLanUrls = (port) => {
   const interfaces = os.networkInterfaces();
@@ -45,6 +45,40 @@ app.use(sanitizeInput);
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/api', serviceRoutes);
 
+
+// Friendly root page/status for people opening http://localhost:3001 in a browser.
+app.get('/', (req, res) => {
+  const host = req.get('host') || `localhost:${PORT}`;
+  res.type('html').send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asaaniyat Backend</title>
+    <style>
+      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5fbf7; color: #10251a; margin: 0; padding: 32px; }
+      main { max-width: 760px; margin: 0 auto; background: white; border: 1px solid #ddebe3; border-radius: 24px; padding: 28px; box-shadow: 0 18px 50px rgba(14, 143, 70, 0.12); }
+      h1 { margin-top: 0; color: #0e8f46; }
+      code, pre { background: #e9f8ef; border-radius: 10px; padding: 2px 6px; }
+      a { color: #0e8f46; font-weight: 700; }
+      li { margin: 8px 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Asaaniyat Backend is running ✅</h1>
+      <p>This is the API server, not the mobile frontend. Open the Expo frontend from the <code>mobile</code> terminal.</p>
+      <ul>
+        <li>Health check: <a href="http://${host}/health">http://${host}/health</a></li>
+        <li>API base: <code>http://${host}/api</code></li>
+        <li>Frontend dev server: run <code>cd mobile</code> then <code>npx expo start</code></li>
+      </ul>
+      <p><strong>Do not browse to <code>0.0.0.0:${PORT}</code>.</strong> Browsers need <code>localhost:${PORT}</code> or your LAN IP.</p>
+    </main>
+  </body>
+</html>`);
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -68,7 +102,7 @@ app.use((err, req, res, next) => {
 // ─── Start ───────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', async () => {
   await db.setupDatabase();
-  generateApiDocs();
+  if (process.env.GENERATE_API_DOCS_ON_START === 'true') generateApiDocs();
   const lanUrls = getLanUrls(PORT);
 
   console.log(`\n🚀 Asaaniyat Backend running on http://0.0.0.0:${PORT}`);

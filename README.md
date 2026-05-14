@@ -68,6 +68,25 @@ All agents share a single context object managed by the Antigravity orchestrator
 - **60 pre-seeded mock providers** across all cities
 - **6 service types**: Electrician, Plumber, AC Technician, Carpenter, Painter, Handyman
 
+## 2026 Agentic Refinement Update
+
+- Light mint React Native Expo UI inspired by the supplied Stitch-style booking screens.
+- Tokenized intent parsing with fuzzy location resolution for variants such as `Gulshan-e-Iqbal`, `gulshan e iqbal`, and `gulshan`.
+- Optional map-picked coordinates are sent to the backend and used for haversine distance provider discovery.
+- Agentic provider chat is available through a local RAG pipeline with Groq primary, Gemini fallback, and no-key demo mode.
+- Runtime API-doc generation is disabled by default; set `GENERATE_API_DOCS_ON_START=true` only when you intentionally want timestamped API docs.
+
+### Optional AI keys
+
+Copy `backend/.env.example` to `backend/.env` and add keys only if you want live model responses:
+
+```bash
+GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
+```
+
+If no keys are provided, the RAG/chat endpoints still work with deterministic local demo replies, so a fresh clone remains runnable.
+
 ## 🚀 Quick Start
 
 ### Backend
@@ -75,7 +94,7 @@ All agents share a single context object managed by the Antigravity orchestrator
 cd backend
 npm install
 npm start
-# Server runs on http://localhost:3000
+# Server runs on http://localhost:3001
 ```
 
 ### Mobile App
@@ -86,16 +105,68 @@ npx expo start
 # Scan QR code with Expo Go app
 ```
 
-The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3000`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
+The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3001`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
 
 ```bash
-EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3000 npx expo start
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3001 npx expo start
 ```
+
+
+### Windows local testing checklist
+
+Your backend log should show the same LAN IP as Expo, but on API port `3001`. For example, if Expo prints `exp://192.168.100.24:8081`, the backend should print `http://192.168.100.24:3001`, and the app will call `http://192.168.100.24:3001/api`.
+
+Use two terminals:
+
+```powershell
+# Terminal 1
+cd D:\Desktop\hackathonMVP\backend
+npm install
+npm start
+```
+
+```powershell
+# Terminal 2
+cd D:\Desktop\hackathonMVP\mobile
+npm install
+npx expo start
+```
+
+If you want to test in the browser, install the web packages once, then run web:
+
+```powershell
+cd D:\Desktop\hackathonMVP\mobile
+npx expo install react-dom react-native-web
+npx expo start --web
+```
+
+If your phone cannot connect to the backend, force the API URL before starting Expo:
+
+```powershell
+cd D:\Desktop\hackathonMVP\mobile
+$env:EXPO_PUBLIC_API_BASE_URL="http://192.168.100.24:3001"
+npx expo start
+```
+
+You can also override only the API port if needed:
+
+```powershell
+$env:EXPO_PUBLIC_API_PORT="3001"
+npx expo start
+```
+
+
+### Browser URLs that matter
+
+- Do **not** open `http://0.0.0.0:3001` in Chrome. `0.0.0.0` is a bind address for the server, not a browser destination.
+- Open the backend status page at `http://localhost:3001/` or health JSON at `http://localhost:3001/health`.
+- Open the frontend through Expo at the URL Expo prints, for example `http://localhost:8082` if Metro switches from `8081` to `8082`.
+- If web bundling fails, stop Expo with `Ctrl+C`, run `npm install`, then restart with `npx expo start --web`.
 
 ### Test the API
 ```bash
 # PowerShell
-Invoke-RestMethod -Uri "http://localhost:3000/api/service-request" -Method POST -ContentType "application/json" -Body '{"user_text": "Electrician chahiye G-11 mein kal subah", "user_id": "test_user"}'
+Invoke-RestMethod -Uri "http://localhost:3001/api/service-request" -Method POST -ContentType "application/json" -Body '{"user_text": "Electrician chahiye G-11 mein kal subah", "user_id": "test_user"}'
 ```
 
 ## 📡 API Endpoints

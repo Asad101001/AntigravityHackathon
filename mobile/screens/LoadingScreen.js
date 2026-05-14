@@ -22,7 +22,7 @@ const STEPS = [
 ];
 
 export default function LoadingScreen({ route, navigation }) {
-  const { userText } = route.params;
+  const { userText, userLocation, locationSource } = route.params;
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -75,7 +75,9 @@ export default function LoadingScreen({ route, navigation }) {
 
       const response = await axios.post(`${API_URL}/service-request`, {
         user_text: finalUserText,
-        user_id: `user_${Date.now()}`
+        user_id: `user_${Date.now()}`,
+        user_location: userLocation || null,
+        location_source: userLocation ? (locationSource || 'map') : 'typed'
       }, { timeout: 15000 });
 
       clearInterval(stepInterval);
