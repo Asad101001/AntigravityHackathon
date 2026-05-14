@@ -32,25 +32,41 @@ function generateApiDocs() {
   const docFilename = `${timestamp}-api-documentation.md`;
   const filepath = path.join(docsDir, docFilename);
   
-  const content = "# Asaaniyat API Documentation\\n" +
-"Generated at: " + new Date().toISOString() + "\\n\\n" +
-"## Endpoints\\n\\n" +
-"### 1. POST /api/service-request\\n" +
-"- **Description**: Orchestrates the AI flow for booking a service.\\n" +
-"- **Request Body**:\\n" +
-"  - `query` (string) - Natural language query from the user.\\n" +
-"  - `location` (object) - Optional. Contains `latitude` and `longitude`.\\n" +
-"  - `userPhone` (string) - Optional.\\n\\n" +
-"### 2. POST /api/confirm-booking\\n" +
-"- **Description**: Confirms the booking with a specific provider.\\n" +
-"- **Request Body**:\\n" +
-"  - `providerId` (string)\\n" +
-"  - `bookingTime` (string)\\n\\n" +
-"### 3. GET /api/logs\\n" +
-"- **Description**: Retrieves recent agent traces.\\n";
+  const content = `# Asaaniyat API Documentation
+Generated at: ${new Date().toISOString()}
+
+## Endpoints
+
+### POST /api/service-request
+Runs the Antigravity booking pipeline. Body: \`user_text\`, optional \`user_id\`, optional \`user_location\`, optional \`location_source\`.
+
+### POST /api/chat/message
+Runs the RAG retrieval, summarization, and provider conversation agents. Body: \`booking_id\`, \`message\`, optional \`provider\`.
+
+### GET /api/chat/:booking_id
+Returns persisted chat history for a booking.
+
+### POST /api/rag/ingest
+Adds local chunks to the SQLite RAG store. Body: \`source\`, \`content\`, optional \`metadata\`.
+
+### POST /api/rag/query
+Retrieves token-budgeted local RAG chunks. Body: \`query\`, optional \`top_k\`, optional \`token_budget\`.
+
+### POST /api/booking/confirm
+Confirms or cancels an existing booking. Body: \`booking_id\`, \`user_confirmed\`.
+
+### GET /api/booking/:booking_id
+Gets booking details.
+
+### POST /api/booking/:booking_id/feedback
+Submits a 1-5 rating and optional comment.
+
+### GET /api/logs
+Returns persisted agent trace files.
+`;
 
   fs.writeFileSync(filepath, content);
-  console.log("[DOCS] API docs generated to " + docFilename);
+  console.log('[DOCS] API docs generated to ' + docFilename);
 }
 
 module.exports = {

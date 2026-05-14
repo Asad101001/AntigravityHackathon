@@ -1,140 +1,91 @@
-/**
- * Screen 1: HomeScreen
- * Large text input + service quick-select buttons
- * The entry point of the app
- */
-
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, KeyboardAvoidingView, Platform,
-  Animated, Dimensions
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SERVICES } from '../config';
 
-const { width } = Dimensions.get('window');
-
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ route, navigation }) {
   const [text, setText] = useState('');
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [pickedLocation, setPickedLocation] = useState(null);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
-    ]).start();
-
-    // Pulse animation for send button
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.05, duration: 1500, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1500, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
+    if (route.params?.pickedLocation) setPickedLocation(route.params.pickedLocation);
+  }, [route.params?.pickedLocation]);
 
   const handleSend = () => {
     if (!text.trim()) return;
-    navigation.navigate('Loading', { userText: text.trim() });
+    navigation.navigate('Loading', {
+      userText: text.trim(),
+      userLocation: pickedLocation,
+      locationSource: pickedLocation ? 'map' : 'typed'
+    });
   };
 
-  const handleQuickSelect = (service) => {
-    const quickText = `${service.label} chahiye`;
-    setText(quickText);
-  };
+  const locationLabel = pickedLocation?.label || 'Pick location';
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
-      >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header */}
-          <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <Ionicons name="flash" size={48} color={COLORS.primary} style={{marginBottom: 8}} />
-            <Text style={styles.logo}>آسانیات</Text>
-            <Text style={styles.logoSub}>Asaaniyat</Text>
-            <Text style={styles.tagline}>Find verified professionals instantly</Text>
-            <View style={styles.divider} />
-            <Text style={styles.subtitle}>
-              Describe what you need in Urdu or English
-            </Text>
-          </Animated.View>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.topBar}>
+            <TouchableOpacity style={styles.explorePill} onPress={() => navigation.navigate('LocationPicker', { pickedLocation })}>
+              <Ionicons name="menu-outline" size={18} color={COLORS.primaryDim} />
+              <Text style={styles.exploreText}>Explore</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.locationPill} onPress={() => navigation.navigate('LocationPicker', { pickedLocation })}>
+              <Ionicons name="location-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.locationText} numberOfLines={1}>{locationLabel}</Text>
+            </TouchableOpacity>
+            <View style={styles.avatar}><Text style={styles.avatarText}>👷</Text></View>
+          </View>
 
-          {/* Text Input */}
-          <Animated.View style={[styles.inputContainer, { opacity: fadeAnim }]}>
+          <Text style={styles.hero}>What can we help{`\n`}with today?</Text>
+          <Text style={styles.subhero}>Tell us what you need in plain English, Urdu, or Roman Urdu.</Text>
+
+          <View style={styles.searchCard}>
+            <Ionicons name="sparkles-outline" size={18} color={COLORS.primary} />
             <TextInput
-              style={styles.textInput}
-              placeholder={'E.g. "Electrician chahiye G-11 mein kal subah"'}
+              style={styles.input}
+              placeholder={'e.g., "Fix the sink today"'}
               placeholderTextColor={COLORS.textMuted}
               value={text}
               onChangeText={setText}
               multiline
-              numberOfLines={3}
               maxLength={500}
-              textAlignVertical="top"
             />
-            <Text style={styles.charCount}>{text.length}/500</Text>
-          </Animated.View>
-
-          {/* Send Button */}
-          <Animated.View style={{ transform: [{ scale: text.trim() ? pulseAnim : 1 }] }}>
-            <TouchableOpacity
-              style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]}
-              onPress={handleSend}
-              disabled={!text.trim()}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.sendButtonText}>Find Professionals</Text>
+            <TouchableOpacity style={[styles.sendButton, !text.trim() && styles.disabled]} onPress={handleSend} disabled={!text.trim()}>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
             </TouchableOpacity>
-          </Animated.View>
-
-          {/* Quick Select */}
-          <View style={styles.quickSection}>
-            <Text style={styles.quickLabel}>Quick Select</Text>
-            <View style={styles.quickGrid}>
-              {SERVICES.map((service) => (
-                <TouchableOpacity
-                  key={service.id}
-                  style={styles.quickButton}
-                  onPress={() => handleQuickSelect(service)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.iconWrapper}>
-                    <Ionicons name={service.icon} size={28} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.quickText}>{service.label}</Text>
-                  <Text style={styles.quickUrdu}>{service.urdu}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
 
-          {/* Example phrases */}
-          <View style={styles.examplesSection}>
-            <Text style={styles.examplesTitle}>Popular requests</Text>
-            {[
-              '"Electrician chahiye G-11 mein kal subah"',
-              '"Plumber chahiye DHA Lahore mein abhi"',
-              '"AC repair needed in Clifton Karachi"',
-              '"Carpenter chahiye F-8 mein kal"',
-            ].map((example, i) => (
-              <TouchableOpacity
-                key={i}
-                style={styles.exampleChip}
-                onPress={() => setText(example.replace(/"/g, ''))}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.exampleText}>{example}</Text>
+          <View style={styles.quickRow}>
+            {SERVICES.slice(0, 3).map(service => (
+              <TouchableOpacity key={service.id} style={styles.quickChip} onPress={() => setText(`${service.label} chahiye ${pickedLocation?.label || ''}`.trim())}>
+                <Ionicons name={service.icon} size={14} color={COLORS.primary} />
+                <Text style={styles.quickText}>{service.label}</Text>
               </TouchableOpacity>
             ))}
+          </View>
+
+          <View style={styles.featureCard}>
+            <View style={styles.badge}><Text style={styles.badgeText}>Popular Near You</Text></View>
+            <Text style={styles.featureTitle}>Emergency Plumbing</Text>
+            <Text style={styles.featureCopy}>Verified experts available within 30 minutes in your current area.</Text>
+            <TouchableOpacity onPress={() => setText(`Plumber needed ${pickedLocation?.label || 'near me'} today`)}>
+              <Text style={styles.bookNow}>Book Now →</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.expressCard}>
+            <Ionicons name="flash-outline" size={22} color={COLORS.primary} />
+            <Text style={styles.expressTitle}>Express</Text>
+            <Text style={styles.expressText}>Instant booking for small, quick tasks</Text>
+          </View>
+
+          <View style={styles.bottomTabs}>
+            <Tab icon="home" label="Home" active />
+            <Tab icon="calendar-outline" label="Bookings" />
+            <Tab icon="chatbubble-outline" label="Messages" />
+            <Tab icon="person-outline" label="Profile" />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -142,85 +93,41 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+function Tab({ icon, label, active }) {
+  return <View style={[styles.tab, active && styles.tabActive]}><Ionicons name={icon} size={16} color={active ? '#fff' : COLORS.textSecondary} /><Text style={[styles.tabText, active && styles.tabTextActive]}>{label}</Text></View>;
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  flex: { flex: 1 },
-  scrollContent: { padding: 24, paddingTop: 60 },
-  
-  // Header
-  header: { alignItems: 'center', marginBottom: 32 },
-  logo: { fontSize: 42, fontWeight: '800', color: COLORS.primary, textAlign: 'center' },
-  logoSub: { fontSize: 20, fontWeight: '700', color: COLORS.textPrimary, marginTop: 4 },
-  tagline: { fontSize: 14, color: COLORS.accent, marginTop: 4, fontWeight: '500' },
-  divider: { width: 60, height: 3, backgroundColor: COLORS.primary, borderRadius: 2, marginVertical: 16 },
-  subtitle: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22 },
-
-  // Input
-  inputContainer: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    padding: 16,
-    marginBottom: 16,
-  },
-  textInput: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    minHeight: 80,
-    lineHeight: 24,
-  },
-  charCount: { fontSize: 11, color: COLORS.textMuted, textAlign: 'right', marginTop: 8 },
-
-  // Send
-  sendButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  sendButtonDisabled: { backgroundColor: COLORS.bgCard, borderWidth: 1, borderColor: COLORS.border },
-  sendButtonText: { fontSize: 17, fontWeight: '700', color: '#0A0E17' },
-
-  // Quick Select
-  quickSection: { marginBottom: 28 },
-  quickLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  quickButton: {
-    width: (width - 68) / 3,
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  quickIcon: { fontSize: 26, marginBottom: 6 },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primaryGlow,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickText: { fontSize: 12, fontWeight: '600', color: COLORS.textPrimary },
-  quickUrdu: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
-
-  // Examples
-  examplesSection: { marginBottom: 40 },
-  examplesTitle: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 },
-  exampleChip: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  exampleText: { fontSize: 13, color: COLORS.accent, fontStyle: 'italic' },
+  content: { padding: 20, paddingTop: 14, paddingBottom: 36 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
+  explorePill: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  exploreText: { fontWeight: '800', color: COLORS.primaryDim, fontSize: 13 },
+  locationPill: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: 140, backgroundColor: COLORS.bgCard, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 18, borderWidth: 1, borderColor: COLORS.border },
+  locationText: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700' },
+  avatar: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.primaryGlow, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 16 },
+  hero: { fontSize: 30, lineHeight: 36, fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center', marginTop: 8 },
+  subhero: { color: COLORS.textSecondary, fontSize: 13, textAlign: 'center', marginTop: 12, marginBottom: 24 },
+  searchCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#DDF7E8', borderRadius: 28, padding: 14, shadowColor: COLORS.primary, shadowOpacity: 0.18, shadowRadius: 18, elevation: 4 },
+  input: { flex: 1, minHeight: 42, maxHeight: 84, color: COLORS.textPrimary, fontWeight: '600' },
+  sendButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  disabled: { opacity: 0.45 },
+  quickRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginVertical: 22 },
+  quickChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.bgCard, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: COLORS.border },
+  quickText: { color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
+  featureCard: { minHeight: 154, backgroundColor: '#BFEBD1', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden' },
+  badge: { alignSelf: 'flex-start', backgroundColor: '#79E5A0', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 12 },
+  badgeText: { fontSize: 10, fontWeight: '900', color: COLORS.primaryDim },
+  featureTitle: { fontSize: 20, fontWeight: '900', color: COLORS.textPrimary },
+  featureCopy: { color: COLORS.textSecondary, fontSize: 12, width: '72%', lineHeight: 18, marginTop: 4, marginBottom: 18 },
+  bookNow: { fontSize: 13, fontWeight: '900', color: COLORS.primaryDim },
+  expressCard: { backgroundColor: COLORS.bgCard, borderRadius: 22, padding: 22, alignItems: 'center', borderWidth: 1, borderColor: COLORS.border, marginBottom: 22 },
+  expressTitle: { fontWeight: '900', color: COLORS.textPrimary, marginTop: 8 },
+  expressText: { color: COLORS.textSecondary, fontSize: 11, marginTop: 4 },
+  bottomTabs: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: COLORS.bgCard, borderRadius: 24, padding: 8, borderWidth: 1, borderColor: COLORS.border },
+  tab: { alignItems: 'center', gap: 2, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 18 },
+  tabActive: { backgroundColor: COLORS.primary },
+  tabText: { fontSize: 10, color: COLORS.textSecondary, fontWeight: '700' },
+  tabTextActive: { color: '#fff' }
 });
-

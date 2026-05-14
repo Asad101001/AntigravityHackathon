@@ -68,6 +68,25 @@ All agents share a single context object managed by the Antigravity orchestrator
 - **60 pre-seeded mock providers** across all cities
 - **6 service types**: Electrician, Plumber, AC Technician, Carpenter, Painter, Handyman
 
+## 2026 Agentic Refinement Update
+
+- Light mint React Native Expo UI inspired by the supplied Stitch-style booking screens.
+- Tokenized intent parsing with fuzzy location resolution for variants such as `Gulshan-e-Iqbal`, `gulshan e iqbal`, and `gulshan`.
+- Optional map-picked coordinates are sent to the backend and used for haversine distance provider discovery.
+- Agentic provider chat is available through a local RAG pipeline with Groq primary, Gemini fallback, and no-key demo mode.
+- Runtime API-doc generation is disabled by default; set `GENERATE_API_DOCS_ON_START=true` only when you intentionally want timestamped API docs.
+
+### Optional AI keys
+
+Copy `backend/.env.example` to `backend/.env` and add keys only if you want live model responses:
+
+```bash
+GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
+```
+
+If no keys are provided, the RAG/chat endpoints still work with deterministic local demo replies, so a fresh clone remains runnable.
+
 ## 🚀 Quick Start
 
 ### Backend
