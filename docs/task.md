@@ -1,0 +1,21 @@
+# Hackathon MVP Updates Task Tracker
+
+- `[x]` **Backend: Database & Environment Setup**
+  - `[x]` Install `sqlite3` and `sqlite`.
+  - `[x]` Create `db.js` for SQLite initialization and seeding.
+  - `[x]` Migrate `providers.json`, `keywords.json`, and `coordinates.json` logic to DB queries.
+- `[x]` **Backend: Logging & API**
+  - `[x]` Create `traceLogger.js` to write timestamped logs in `logs/`.
+  - `[x]` Add `GET /api/logs` endpoint.
+  - `[x]` Create documentation generation script or middleware to save in `docs/`.
+- `[x]` **Mobile: Dependencies & Core**
+  - `[x]` Install `react-native-maps`, `expo-location`, `@expo/vector-icons`.
+  - `[x]` Generate and apply a cool app icon (black/neon green).
+- `[x]` **Mobile: UI/UX & Theme Overhaul**
+  - `[x]` Update all screens to the new black/white with neon/lime/dark green accents theme.
+  - `[x]` Add an Entrance Loading Screen component with smooth animations.
+  - `[x]` Update typography and layout for warmth and invitin UX.
+- `[x]` **Mobile: Features (Maps & Logs)**
+  - `[x]` Integrate `expo-location` to get user location.
+  - `[x]` Integrate `react-native-maps` on `ProviderResultsScreen` and `ConfirmationScreen`.
+  - `[x]` Add a settings/log viewer screen to fetch and display backend traces.
