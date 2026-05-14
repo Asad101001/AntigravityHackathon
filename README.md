@@ -155,6 +155,14 @@ $env:EXPO_PUBLIC_API_PORT="3001"
 npx expo start
 ```
 
+
+### Browser URLs that matter
+
+- Do **not** open `http://0.0.0.0:3001` in Chrome. `0.0.0.0` is a bind address for the server, not a browser destination.
+- Open the backend status page at `http://localhost:3001/` or health JSON at `http://localhost:3001/health`.
+- Open the frontend through Expo at the URL Expo prints, for example `http://localhost:8082` if Metro switches from `8081` to `8082`.
+- If web bundling fails, stop Expo with `Ctrl+C`, run `npm install`, then restart with `npx expo start --web`.
+
 ### Test the API
 ```bash
 # PowerShell

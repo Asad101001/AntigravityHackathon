@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapPanel from '../components/MapPanel';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
@@ -39,13 +39,12 @@ export default function LocationPickerScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MapView
+      <MapPanel
         style={styles.map}
         initialRegion={{ latitude: pin.lat, longitude: pin.lng, latitudeDelta: 0.08, longitudeDelta: 0.08 }}
         onPress={onPick}
-      >
-        <Marker coordinate={{ latitude: pin.lat, longitude: pin.lng }} title={pin.label} pinColor={COLORS.primary} />
-      </MapView>
+        markers={[{ id: 'selected-pin', coordinate: { latitude: pin.lat, longitude: pin.lng }, title: pin.label, pinColor: COLORS.primary }]}
+      />
       <View style={styles.sheet}>
         <Text style={styles.kicker}>Map location</Text>
         <Text style={styles.title}>Pick where the service is needed</Text>

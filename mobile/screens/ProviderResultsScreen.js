@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapPanel from '../components/MapPanel';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
 
@@ -24,10 +24,16 @@ export default function ProviderResultsScreen({ route, navigation }) {
         <Text style={styles.subtitle}>Choose the best match for your requested service.</Text>
 
         <View style={styles.mapWrap}>
-          <MapView style={styles.map} initialRegion={initialRegion}>
-            {userCoords && <Marker coordinate={{ latitude: userCoords.lat, longitude: userCoords.lng }} title="Service location" pinColor={COLORS.primaryDim} />}
-            {providers.map(p => p.lat && p.lng ? <Marker key={p.id || p.rank} coordinate={{ latitude: p.lat, longitude: p.lng }} title={p.name} description={`${p.distance_km} km away`} pinColor={p.isRecommended ? COLORS.primary : COLORS.warning} /> : null)}
-          </MapView>
+          <MapPanel
+            style={styles.map}
+            initialRegion={initialRegion}
+            markers={[
+              ...(userCoords ? [{ id: 'user-location', coordinate: { latitude: userCoords.lat, longitude: userCoords.lng }, title: 'Service location', pinColor: COLORS.primaryDim }] : []),
+              ...providers
+                .filter(p => p.lat && p.lng)
+                .map(p => ({ id: p.id || `provider-${p.rank}`, coordinate: { latitude: p.lat, longitude: p.lng }, title: p.name, description: `${p.distance_km} km away`, pinColor: p.isRecommended ? COLORS.primary : COLORS.warning }))
+            ]}
+          />
         </View>
 
         {providers.map(provider => (
