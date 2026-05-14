@@ -7,6 +7,8 @@
 const BaseAgent = require('./BaseAgent');
 const keywords = require('../data/keywords.json');
 const coordinates = require('../data/coordinates.json');
+const { tokenize } = require('../utils/textTokenizer');
+const { findLocationCandidate } = require('../utils/locationNormalizer');
 
 class IntentParserAgent extends BaseAgent {
   constructor() {
@@ -15,6 +17,7 @@ class IntentParserAgent extends BaseAgent {
 
   async execute(context) {
     const text = (context.user_text || '').toLowerCase().trim();
+    const tokenized = tokenize(context.user_text || '');
     
     if (!text) {
       return {
@@ -32,7 +35,8 @@ class IntentParserAgent extends BaseAgent {
     const service = this._parseService(text);
 
     // ── Parse Location ──
-    const location = this._parseLocation(text);
+    const locationCandidate = this._parseLocation(text);
+    const location = locationCandidate?.canonical || null;
 
     // ── Parse Time Preference ──
     const time = this._parseTime(text);
@@ -59,11 +63,14 @@ class IntentParserAgent extends BaseAgent {
 
     return {
       input: context.user_text,
-      output: { service_type: service, location, time_preference: time, confidence, language, urgency },
+      output: { service_type: service, location, location_candidate: locationCandidate, tokens: tokenized.tokens, time_preference: time, confidence, language, urgency },
       reasoning,
       contextUpdates: {
         service_type: service,
         location,
+        location_candidate: locationCandidate,
+        tokens: tokenized.tokens,
+        tokenized_input: tokenized,
         time_preference: time,
         confidence,
         language,
@@ -105,33 +112,25 @@ class IntentParserAgent extends BaseAgent {
   }
 
   _parseLocation(text) {
-    // Build a list of all known area names and cities
-    const allAreas = [];
-    for (const [city, areas] of Object.entries(coordinates)) {
-      allAreas.push(city); // Add city name
-      for (const area of Object.keys(areas)) {
-        allAreas.push(area);
-      }
-    }
-
-    // Sort by length descending to match longer names first (e.g., "Johar Town" before "Town")
-    allAreas.sort((a, b) => b.length - a.length);
-
-    for (const area of allAreas) {
-      const regex = new RegExp(`\\b${this._escapeRegex(area)}\\b`, 'i');
-      if (regex.test(text)) {
-        return area;
-      }
+    const fuzzyCandidate = findLocationCandidate(text, { minConfidence: 0.58 });
+    if (fuzzyCandidate) {
+      return fuzzyCandidate;
     }
 
     // Also check for sector patterns like G-11, F-8, I-9
-    const sectorMatch = text.match(/\b([gfGF][\s-]?\d{1,2})\b/i);
+    const sectorMatch = text.match(/\b([gfiGFI][\s-]?\d{1,2})\b/i);
     if (sectorMatch) {
       let sector = sectorMatch[1].toUpperCase().replace(/\s+/, '-');
       if (!sector.includes('-')) {
         sector = sector[0] + '-' + sector.slice(1);
       }
-      return sector;
+      return findLocationCandidate(sector, { minConfidence: 0.5 }) || {
+        canonical: sector,
+        area: sector,
+        city: null,
+        confidence: 0.62,
+        matched_query: sector
+      };
     }
 
     return null;
@@ -168,7 +167,7 @@ class IntentParserAgent extends BaseAgent {
     parts.push(`Language: ${language} detected.`);
     if (service) parts.push(`Matched service keyword: "${service}".`);
     else parts.push('Service type could not be determined.');
-    if (location) parts.push(`Area matched: "${location}".`);
+    if (location) parts.push(`Area matched after tokenized/fuzzy parsing: "${location}".`);
     else parts.push('Location not specified.');
     if (time) parts.push(`Time preference: ${time.replace(/_/g, ' ')}.`);
     else parts.push('Time not specified, defaulting to earliest available.');

@@ -15,7 +15,7 @@ const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const getLanUrls = (port) => {
   const interfaces = os.networkInterfaces();
@@ -68,7 +68,7 @@ app.use((err, req, res, next) => {
 // ─── Start ───────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', async () => {
   await db.setupDatabase();
-  generateApiDocs();
+  if (process.env.GENERATE_API_DOCS_ON_START === 'true') generateApiDocs();
   const lanUrls = getLanUrls(PORT);
 
   console.log(`\n🚀 Asaaniyat Backend running on http://0.0.0.0:${PORT}`);

@@ -40,6 +40,26 @@ async function setupDatabase() {
         );
       `);
 
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS chat_messages (
+          id TEXT PRIMARY KEY,
+          booking_id TEXT,
+          role TEXT,
+          content TEXT,
+          token_count INTEGER,
+          created_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS rag_chunks (
+          id TEXT PRIMARY KEY,
+          source TEXT,
+          content TEXT,
+          tokens TEXT,
+          metadata TEXT,
+          created_at TEXT
+        );
+      `);
+
       // Check if providers are empty
       const count = await db.get('SELECT COUNT(*) as count FROM providers');
       if (count.count === 0) {
@@ -78,11 +98,18 @@ async function setupDatabase() {
         if (fs.existsSync(keywordsPath)) {
           const intents = JSON.parse(fs.readFileSync(keywordsPath, 'utf8'));
           const stmt = await db.prepare('INSERT INTO keywords (intent, keyword) VALUES (?, ?)');
-          for (const intent in intents) {
-            for (const kw of intents[intent]) {
-              await stmt.run(intent, kw);
+          for (const [serviceKey, serviceData] of Object.entries(intents.services || {})) {
+            for (const kw of serviceData.keywords || []) {
+              await stmt.run(serviceKey, kw);
             }
           }
+          for (const [timeKey, timeData] of Object.entries(intents.time_expressions || {})) {
+            for (const kw of timeData.keywords || []) {
+              await stmt.run(timeKey, kw);
+            }
+          }
+          for (const kw of intents.need_indicators || []) await stmt.run('need_indicator', kw);
+          for (const kw of intents.urgency_indicators || []) await stmt.run('urgency_indicator', kw);
           await stmt.finalize();
         }
         
@@ -93,6 +120,14 @@ async function setupDatabase() {
     });
   }
   return dbPromise;
+}
+
+function hydrateProvider(r) {
+  return {
+    ...r,
+    verified: r.verified === 1 || r.verified === true,
+    available_slots: Array.isArray(r.available_slots) ? r.available_slots : JSON.parse(r.available_slots || '[]')
+  };
 }
 
 // Helper to get providers matching criteria
@@ -106,21 +141,68 @@ async function findProviders(service, location) {
       params.push(`%${location}%`, `%${location}%`);
   }
   
-  query += ' ORDER BY rating DESC, distance_km ASC LIMIT 5';
-  
+  query += ' ORDER BY rating DESC, distance_km ASC LIMIT 10';
   const results = await db.all(query, params);
-  
-  // Parse available_slots back to array
-  return results.map(r => ({
-    ...r,
-    verified: r.verified === 1,
-    available_slots: JSON.parse(r.available_slots)
+  return results.map(hydrateProvider);
+}
+
+async function findProvidersByService(service) {
+  const db = await setupDatabase();
+  const results = await db.all(
+    'SELECT * FROM providers WHERE service LIKE ? ORDER BY rating DESC, distance_km ASC LIMIT 50',
+    [`%${service}%`]
+  );
+  return results.map(hydrateProvider);
+}
+
+async function saveChatMessage({ booking_id, role, content, token_count = 0 }) {
+  const db = await setupDatabase();
+  const id = `MSG_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const created_at = new Date().toISOString();
+  await db.run(
+    'INSERT INTO chat_messages (id, booking_id, role, content, token_count, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, booking_id, role, content, token_count, created_at]
+  );
+  return { id, booking_id, role, content, token_count, created_at };
+}
+
+async function getChatMessages(booking_id, limit = 40) {
+  const db = await setupDatabase();
+  return db.all(
+    'SELECT * FROM chat_messages WHERE booking_id = ? ORDER BY created_at ASC LIMIT ?',
+    [booking_id, limit]
+  );
+}
+
+async function saveRagChunk({ source, content, tokens = [], metadata = {} }) {
+  const db = await setupDatabase();
+  const id = `RAG_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const created_at = new Date().toISOString();
+  await db.run(
+    'INSERT INTO rag_chunks (id, source, content, tokens, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, source || 'manual', content, JSON.stringify(tokens), JSON.stringify(metadata), created_at]
+  );
+  return { id, source, content, tokens, metadata, created_at };
+}
+
+async function getRagChunks(limit = 200) {
+  const db = await setupDatabase();
+  const rows = await db.all('SELECT * FROM rag_chunks ORDER BY created_at DESC LIMIT ?', [limit]);
+  return rows.map(row => ({
+    ...row,
+    tokens: JSON.parse(row.tokens || '[]'),
+    metadata: JSON.parse(row.metadata || '{}')
   }));
 }
 
 module.exports = {
   setupDatabase,
-  findProviders
+  findProviders,
+  findProvidersByService,
+  saveChatMessage,
+  getChatMessages,
+  saveRagChunk,
+  getRagChunks
 };
 
 
