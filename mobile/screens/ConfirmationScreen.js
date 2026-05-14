@@ -1,181 +1,58 @@
-/**
- * Screen 6: ConfirmationScreen
- * Success screen: booking ID, provider contact, arrival time
- * Shows reminders scheduled. "View Agent Trace" button.
- */
-
 import React, { useEffect, useRef } from 'react';
-import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
-  ScrollView, Animated, Share
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
 
 export default function ConfirmationScreen({ route, navigation }) {
   const { fullResult } = route.params;
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.7)).current;
+  const provider = fullResult.provider || {};
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 60, useNativeDriver: true }),
-      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-    ]).start();
+    Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }).start();
   }, []);
-
-  const provider = fullResult.provider || {};
-  const bookingId = fullResult.booking_id || 'N/A';
-
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `✅ Booking Confirmed!\n\nProvider: ${provider.name}\nContact: ${provider.phone}\nSlot: ${provider.confirmed_slot || 'TBD'}\nBooking ID: ${bookingId}\n\nBooked via Asaaniyat 🚀`,
-      });
-    } catch (e) {}
-  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Success Animation */}
-        <Animated.View style={[styles.successCircle, { transform: [{ scale: scaleAnim }] }]}>
-          <Text style={styles.successIcon}>✅</Text>
+      <View style={styles.content}>
+        <Animated.View style={[styles.successCircle, { transform: [{ scale }] }]}>
+          <Ionicons name="checkmark-circle-outline" size={58} color={COLORS.primary} />
         </Animated.View>
+        <Text style={styles.title}>Booking{`\n`}Confirmed</Text>
+        <Text style={styles.copy}>Your service has been successfully scheduled. Our professional is already preparing for your visit.</Text>
 
-        <Animated.View style={{ opacity: fadeAnim }}>
-          <Text style={styles.successTitle}>Booking Confirmed!</Text>
-          <Text style={styles.successMessage}>
-            {fullResult.confirmation_message || `${provider.name} has been booked successfully.`}
-          </Text>
+        <View style={styles.card}>
+          <Detail label="Technician" value={provider.name || 'TBD'} />
+          <Detail label="Service details" value={provider.service_type || provider.service || 'Service'} />
+          <Detail label="Appointment time" value={provider.confirmed_slot || 'Today 4:00 PM'} />
+          <Detail label="Booking ID" value={fullResult.booking_id || 'N/A'} />
+        </View>
 
-          {/* Booking Details */}
-          <View style={styles.detailCard}>
-            <View style={styles.idRow}>
-              <Text style={styles.idLabel}>Booking ID</Text>
-              <Text style={styles.idValue}>{bookingId}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <DetailItem icon="👤" label="Provider" value={provider.name} />
-            <DetailItem icon="📞" label="Contact" value={provider.phone} />
-            <DetailItem icon="🕐" label="Time Slot" value={provider.confirmed_slot || 'First available'} />
-            <DetailItem icon="📍" label="Distance" value={`${provider.distance_km} km`} />
-            <DetailItem icon="⭐" label="Rating" value={`${provider.rating}/5`} />
-            <DetailItem icon="🔔" label="Reminders" value={`${fullResult.reminders_scheduled || 3} scheduled`} />
-          </View>
-
-          {/* Actions */}
-          <TouchableOpacity
-            style={styles.shareButton}
-            onPress={handleShare}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.shareButtonText}>📤  Share Booking Details</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.homeButton}
-            onPress={() => navigation.popToTop()}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.homeButtonText}>🏠  Back to Home</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
+        <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('ProviderChat', { fullResult })}>
+          <Ionicons name="chatbubble-outline" size={18} color="#fff" />
+          <Text style={styles.chatText}>Go to Chat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.popToTop()}><Text style={styles.link}>View Schedule</Text></TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
-function DetailItem({ icon, label, value }) {
-  return (
-    <View style={styles.detailRow}>
-      <Text style={styles.detailIcon}>{icon}</Text>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value || '—'}</Text>
-    </View>
-  );
+function Detail({ label, value }) {
+  return <View style={styles.detail}><Text style={styles.detailLabel}>{label}</Text><Text style={styles.detailValue}>{value}</Text></View>;
 }
-
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { padding: 24, alignItems: 'center', paddingTop: 60 },
-
-  // Success
-  successCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary + '22',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  successIcon: { fontSize: 40 },
-  successTitle: { fontSize: 26, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 10 },
-  successMessage: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24, paddingHorizontal: 10 },
-
-  // Details
-  detailCard: {
-    width: '100%',
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '33',
-    marginBottom: 16,
-  },
-  idRow: { alignItems: 'center', paddingVertical: 8 },
-  idLabel: { fontSize: 11, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 1 },
-  idValue: { fontSize: 16, fontWeight: '800', color: COLORS.accent, fontFamily: 'monospace', marginTop: 4 },
-  separator: { height: 1, backgroundColor: COLORS.border, marginVertical: 8 },
-
-  detailRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
-  detailIcon: { fontSize: 14, marginRight: 10, width: 22 },
-  detailLabel: { fontSize: 13, color: COLORS.textSecondary, width: 80 },
-  detailValue: { fontSize: 14, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
-
-  // Stats
-  statsCard: {
-    width: '100%',
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 24,
-  },
-  statsTitle: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, textAlign: 'center' },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  statBadge: {
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    minWidth: 80,
-  },
-  statBadgeValue: { fontSize: 20, fontWeight: '800' },
-  statBadgeLabel: { fontSize: 10, color: COLORS.textMuted, marginTop: 4, textTransform: 'uppercase' },
-
-  // Buttons
-  shareButton: {
-    width: '100%',
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 12,
-  },
-  shareButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.textSecondary },
-  homeButton: {
-    width: '100%',
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  homeButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  content: { flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center' },
+  successCircle: { width: 112, height: 112, borderRadius: 56, backgroundColor: COLORS.bgCard, alignItems: 'center', justifyContent: 'center', marginBottom: 24, shadowColor: COLORS.primary, shadowOpacity: 0.14, shadowRadius: 24, elevation: 4 },
+  title: { textAlign: 'center', fontSize: 32, fontWeight: '900', color: COLORS.textPrimary, lineHeight: 38 },
+  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, fontSize: 13, marginTop: 14, marginBottom: 24 },
+  card: { width: '100%', backgroundColor: COLORS.bgCard, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: COLORS.border, marginBottom: 24 },
+  detail: { paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  detailLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
+  detailValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900', marginTop: 4 },
+  chatButton: { width: '100%', backgroundColor: COLORS.accent, borderRadius: 22, flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 16, marginBottom: 16 },
+  chatText: { color: '#fff', fontWeight: '900', fontSize: 16 },
+  link: { color: COLORS.primary, fontWeight: '800' }
 });
-
