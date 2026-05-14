@@ -15,7 +15,7 @@ const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const getLanUrls = (port) => {
   const interfaces = os.networkInterfaces();

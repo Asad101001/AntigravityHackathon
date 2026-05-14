@@ -2,10 +2,10 @@ import { NativeModules, Platform } from 'react-native';
 
 // API configuration
 // Resolution order:
-// 1. EXPO_PUBLIC_API_BASE_URL (best for production/EAS builds)
-// 2. Expo dev-server LAN host (keeps physical devices off localhost)
+// 1. EXPO_PUBLIC_API_BASE_URL (best for production/EAS builds or custom ports)
+// 2. Expo dev-server LAN host + EXPO_PUBLIC_API_PORT/default 3001
 // 3. Platform fallback (Android emulator: 10.0.2.2, otherwise localhost)
-const API_PORT = 3000;
+const API_PORT = Number(process.env.EXPO_PUBLIC_API_PORT || 3001);
 
 const trimTrailingSlash = (value) => value?.replace(/\/+$/, '');
 

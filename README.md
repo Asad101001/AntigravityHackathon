@@ -94,7 +94,7 @@ If no keys are provided, the RAG/chat endpoints still work with deterministic lo
 cd backend
 npm install
 npm start
-# Server runs on http://localhost:3000
+# Server runs on http://localhost:3001
 ```
 
 ### Mobile App
@@ -105,16 +105,60 @@ npx expo start
 # Scan QR code with Expo Go app
 ```
 
-The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3000`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
+The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3001`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
 
 ```bash
-EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3000 npx expo start
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3001 npx expo start
+```
+
+
+### Windows local testing checklist
+
+Your backend log should show the same LAN IP as Expo, but on API port `3001`. For example, if Expo prints `exp://192.168.100.24:8081`, the backend should print `http://192.168.100.24:3001`, and the app will call `http://192.168.100.24:3001/api`.
+
+Use two terminals:
+
+```powershell
+# Terminal 1
+cd D:\Desktop\hackathonMVP\backend
+npm install
+npm start
+```
+
+```powershell
+# Terminal 2
+cd D:\Desktop\hackathonMVP\mobile
+npm install
+npx expo start
+```
+
+If you want to test in the browser, install the web packages once, then run web:
+
+```powershell
+cd D:\Desktop\hackathonMVP\mobile
+npx expo install react-dom react-native-web
+npx expo start --web
+```
+
+If your phone cannot connect to the backend, force the API URL before starting Expo:
+
+```powershell
+cd D:\Desktop\hackathonMVP\mobile
+$env:EXPO_PUBLIC_API_BASE_URL="http://192.168.100.24:3001"
+npx expo start
+```
+
+You can also override only the API port if needed:
+
+```powershell
+$env:EXPO_PUBLIC_API_PORT="3001"
+npx expo start
 ```
 
 ### Test the API
 ```bash
 # PowerShell
-Invoke-RestMethod -Uri "http://localhost:3000/api/service-request" -Method POST -ContentType "application/json" -Body '{"user_text": "Electrician chahiye G-11 mein kal subah", "user_id": "test_user"}'
+Invoke-RestMethod -Uri "http://localhost:3001/api/service-request" -Method POST -ContentType "application/json" -Body '{"user_text": "Electrician chahiye G-11 mein kal subah", "user_id": "test_user"}'
 ```
 
 ## 📡 API Endpoints
