@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-05-15T07:13:54.589Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "message": "joahr lahore"
+  },
+  "output": {
+    "reply": "I've checked the estimated arrival time for the plumber in Lahore. However, I need to confirm the exact location to provide you with a more accurate time. Can you please provide me with your house number or nearest landmark so I can inform the plumber?",
+    "provider": "groq",
+    "usage": {
+      "queue_time": 0.198802119,
+      "prompt_tokens": 190,
+      "prompt_time": 0.018141743,
+      "completion_tokens": 51,
+      "completion_time": 0.111967556,
+      "total_tokens": 241,
+      "total_time": 0.130109299
+    }
+  },
+  "durationMs": 603
+}

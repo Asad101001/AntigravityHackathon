@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-05-14T17:16:14.394Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778778939822",
+    "message": "no when is service"
+  },
+  "output": {
+    "reply": "I can help with that. I reviewed the booking context and provider guidance. For your message, \"no when is service\", the next best step is to confirm access, share a photo if useful, and keep the appointment window open.",
+    "provider": "demo",
+    "usage": {
+      "estimated_tokens": 158
+    }
+  },
+  "durationMs": 12
+}

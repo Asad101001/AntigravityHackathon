@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-05-14T20:13:31.701Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 10,
+    "qualified_count": 10
+  },
+  "output": {
+    "selected_provider": {
+      "id": "P040",
+      "name": "Clifton Plumbing Pro",
+      "service": "Plumber",
+      "city": "Karachi",
+      "area": "Clifton",
+      "distance_km": 1,
+      "rating": 4.8,
+      "reviews_count": 150,
+      "available_slots": [
+        "09:00",
+        "10:00",
+        "14:00"
+      ],
+      "phone": "0344-5678901",
+      "response_time_min": 12,
+      "verified": true,
+      "lat": 24.8504867422286,
+      "lng": 67.02486808543263,
+      "scores": {
+        "distance": 0.75,
+        "rating": 0.96,
+        "availability": 1,
+        "response_time": 0.54,
+        "total": 0.821
+      },
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": true,
+        "service_available": true
+      }
+    },
+    "constraint_checks": "✓ service_available = true\n✓ available_slots = 3 slots\n✓ provider_status = \"verified\"\n✓ distance_km = 1 (≤ 5km)",
+    "alternatives": [
+      {
+        "name": "Defence Pipe Works",
+        "score": 0.777,
+        "distance": 1.2
+      },
+      {
+        "name": "Tariq Plumbing",
+        "score": 0.754,
+        "distance": 1.5
+      }
+    ]
+  },
+  "durationMs": 0
+}

@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-15T07:12:32.903Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 2,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "P020",
+    "ranked_ids": [
+      "P020",
+      "P023"
+    ],
+    "reasoning_log": "Given the HIGH urgency of the service needed, I prioritized providers with faster response times. Khalid Plumbing (P020) has a significantly faster response time of 15 minutes compared to Model Town Plumbing (P023) at 22 minutes, making them the best choice for an immediate solution."
+  },
+  "durationMs": 566
+}

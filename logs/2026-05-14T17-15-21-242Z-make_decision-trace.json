@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-05-14T17:15:21.242Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 1
+  },
+  "output": {
+    "selected_provider": {
+      "id": "P041",
+      "name": "Gulshan Plumber",
+      "service": "Plumber",
+      "city": "Karachi",
+      "area": "Gulshan",
+      "distance_km": 9.3,
+      "rating": 4.4,
+      "reviews_count": 78,
+      "available_slots": [
+        "10:00",
+        "15:00",
+        "16:00"
+      ],
+      "phone": "0345-6789012",
+      "response_time_min": 28,
+      "verified": true,
+      "lat": 24.876360163065538,
+      "lng": 67.01839109848606,
+      "computed_distance": true,
+      "scores": {
+        "distance": 0,
+        "rating": 0.88,
+        "availability": 1,
+        "response_time": 0.03,
+        "total": 0.471
+      },
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 1
+}

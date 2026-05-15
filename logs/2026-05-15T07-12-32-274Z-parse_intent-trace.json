@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-05-15T07:12:32.274Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber chahiye aaj raat johar mein",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Johar",
+    "time_preference": "today_night",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User requested a plumber for tonight in Johar area, implying high urgency and neutral price sensitivity."
+  },
+  "durationMs": 746
+}

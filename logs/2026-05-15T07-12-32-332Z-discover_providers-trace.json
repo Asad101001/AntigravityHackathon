@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-05-15T07:12:32.333Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "service": "Plumber",
+    "location": "Johar Town",
+    "city": "Lahore",
+    "coordinates": {
+      "lat": 31.4607,
+      "lng": 74.272
+    }
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "P020",
+        "name": "Khalid Plumbing",
+        "service": "Plumber",
+        "city": "Lahore",
+        "area": "DHA",
+        "distance_km": 9.3,
+        "rating": 4.8,
+        "reviews_count": 142,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00"
+        ],
+        "phone": "0324-5678901",
+        "response_time_min": 15,
+        "verified": true,
+        "lat": 31.52014366387145,
+        "lng": 74.34158559587475,
+        "computed_distance": true
+      },
+      {
+        "id": "P023",
+        "name": "Model Town Plumbing",
+        "service": "Plumber",
+        "city": "Lahore",
+        "area": "Model Town",
+        "distance_km": 9.3,
+        "rating": 4.5,
+        "reviews_count": 82,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00"
+        ],
+        "phone": "0335-6789012",
+        "response_time_min": 22,
+        "verified": true,
+        "lat": 31.503860756473284,
+        "lng": 74.35627357960007,
+        "computed_distance": true
+      }
+    ],
+    "count": 2,
+    "source": "coordinate_distance",
+    "radius_km": 10
+  },
+  "durationMs": 15
+}

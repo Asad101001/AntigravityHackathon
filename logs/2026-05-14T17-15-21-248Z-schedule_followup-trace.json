@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-05-14T17:15:21.248Z",
+  "agent": "schedule_followup",
+  "action": "schedule_followup",
+  "input": {
+    "booking_id": "BK_1778778921244",
+    "scheduled_time": "2026-05-15T05:00:00.000Z"
+  },
+  "output": {
+    "reminders_scheduled": 3,
+    "reminders": [
+      {
+        "type": "push",
+        "time": "2026-05-15T04:00:00.000Z",
+        "status": "scheduled"
+      },
+      {
+        "type": "sms",
+        "time": "2026-05-15T04:30:00.000Z",
+        "status": "scheduled"
+      },
+      {
+        "type": "push",
+        "time": "2026-05-16T05:00:00.000Z",
+        "status": "scheduled"
+      }
+    ],
+    "next_actions": [
+      "Wait for service completion",
+      "Collect user feedback",
+      "Update provider rating"
+    ]
+  },
+  "durationMs": 0
+}

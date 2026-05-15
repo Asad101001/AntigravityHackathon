@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-05-15T07:12:32.912Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 2
+  },
+  "output": {
+    "selected_provider": {
+      "id": "P020",
+      "name": "Khalid Plumbing",
+      "service": "Plumber",
+      "city": "Lahore",
+      "area": "DHA",
+      "distance_km": 9.3,
+      "rating": 4.8,
+      "reviews_count": 142,
+      "available_slots": [
+        "09:00",
+        "10:00",
+        "14:00"
+      ],
+      "phone": "0324-5678901",
+      "response_time_min": 15,
+      "verified": true,
+      "lat": 31.52014366387145,
+      "lng": 74.34158559587475,
+      "computed_distance": true,
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.96,
+        "availability": 0,
+        "response_time": 0
+      },
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 1
+}

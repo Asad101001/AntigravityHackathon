@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-14T20:13:31.685Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": "No location provided",
+  "output": {
+    "lat": null,
+    "lng": null,
+    "area_name": null,
+    "city": null
+  },
+  "durationMs": 8
+}

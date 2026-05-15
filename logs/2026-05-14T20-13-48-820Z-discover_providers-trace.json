@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-05-14T20:13:48.820Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "service": "Plumber",
+    "location": "Gulshan",
+    "city": "Karachi",
+    "coordinates": {
+      "lat": 24.926,
+      "lng": 67.092
+    }
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "P041",
+        "name": "Gulshan Plumber",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "distance_km": 9.3,
+        "rating": 4.4,
+        "reviews_count": 78,
+        "available_slots": [
+          "10:00",
+          "15:00",
+          "16:00"
+        ],
+        "phone": "0345-6789012",
+        "response_time_min": 28,
+        "verified": true,
+        "lat": 24.876360163065538,
+        "lng": 67.01839109848606,
+        "computed_distance": true
+      }
+    ],
+    "count": 1,
+    "source": "coordinate_distance",
+    "radius_km": 10
+  },
+  "durationMs": 2
+}

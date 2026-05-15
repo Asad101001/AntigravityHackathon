@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-14T17:14:59.411Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Clifton Plumbing Pro",
+    "time_slot": "09:00"
+  },
+  "output": {
+    "booking_id": "BK_1778778899410",
+    "confirmation_message": "Booking confirmed! Clifton Plumbing Pro arrives today at 09:00. Contact: 0344-5678901. Booking ID: BK_1778778899410",
+    "scheduled_time": "2026-05-14T04:00:00.000Z",
+    "time_slot": "09:00"
+  },
+  "durationMs": 1
+}

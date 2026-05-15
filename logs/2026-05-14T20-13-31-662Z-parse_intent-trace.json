@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-14T20:13:31.662Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber chahiye",
+  "output": {
+    "service_type": "Plumber",
+    "location": null,
+    "location_candidate": null,
+    "tokens": [
+      "plumber"
+    ],
+    "time_preference": null,
+    "confidence": 0.5,
+    "language": "roman_urdu",
+    "urgency": "normal"
+  },
+  "durationMs": 9
+}

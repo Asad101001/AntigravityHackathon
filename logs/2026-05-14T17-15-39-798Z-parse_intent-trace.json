@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-05-14T17:15:39.799Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber chahiye kal raat gulistan-e-johar",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Johar Town",
+    "location_candidate": {
+      "city": "Lahore",
+      "area": "Johar Town",
+      "canonical": "Johar Town",
+      "coords": {
+        "lat": 31.4607,
+        "lng": 74.272,
+        "area_name": "Johar Town Lahore"
+      },
+      "searchText": "Johar Town",
+      "normalized": "johar town",
+      "cityOnly": false,
+      "matched_query": "johar",
+      "confidence": 0.8
+    },
+    "tokens": [
+      "plumber",
+      "kal",
+      "raat",
+      "gulistan",
+      "e",
+      "johar"
+    ],
+    "time_preference": "tomorrow",
+    "confidence": 0.92,
+    "language": "roman_urdu",
+    "urgency": "normal"
+  },
+  "durationMs": 56
+}

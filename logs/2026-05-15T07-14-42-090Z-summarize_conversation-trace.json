@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-15T07:14:42.090Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "messages": 4
+  },
+  "output": {
+    "summary": "user: what time will you arrive\nassistant: Hello! Welcome to Khalid Plumbing. I'm Asaaniyat, your service coordinator. \n\nTo confirm, you've booked a plumber from Khalid Plumbing for your service. Can you please confirm your address so I can check the estimated arrival time with the plumber?\nuser: joahr lahore\nassistant: I've checked the estimated arrival time for the plumber in Lahore. However, I need to confirm the exact location to provide you with a more accurate time. Can you please provide me with your house number or nearest landmark so I can inform the plumber?"
+  },
+  "durationMs": 1
+}

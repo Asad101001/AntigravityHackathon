@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-05-15T07:12:32.919Z",
+  "agent": "dynamic_pricing",
+  "action": "dynamic_pricing",
+  "input": {
+    "provider_id": "P020",
+    "distance_km": 9.3,
+    "urgency": "high"
+  },
+  "output": {
+    "quote_pkr": 4343,
+    "quote_breakdown": {
+      "base_rate": 1500,
+      "distance_surcharge": 1395,
+      "urgency_multiplier": 1.5,
+      "subtotal": 2895,
+      "total": 4343
+    }
+  },
+  "durationMs": 0
+}

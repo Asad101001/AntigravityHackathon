@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-05-15T07:14:53.465Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "message": "sure"
+  },
+  "output": {
+    "reply": "I've noted that you'd like to be reminded about the plumber's arrival time the day before. I'll send you a confirmation message tomorrow morning with the estimated arrival time and any other important details.\n\nAlso, just to confirm, is there anyone who will be present at the location to receive the plumber when he arrives?",
+    "provider": "groq",
+    "usage": {
+      "queue_time": 0.197534835,
+      "prompt_tokens": 314,
+      "prompt_time": 0.019753837,
+      "completion_tokens": 65,
+      "completion_time": 0.096503721,
+      "total_tokens": 379,
+      "total_time": 0.116257558
+    }
+  },
+  "durationMs": 477
+}

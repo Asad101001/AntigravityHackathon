@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-14T17:16:14.380Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1778778939822",
+    "messages": 2
+  },
+  "output": {
+    "summary": "user: hello\nassistant: I can help with that. I reviewed the booking context and provider guidance. For your message, \"hello\", the next best step is to confirm access, share a photo if useful, and keep the appointment window open."
+  },
+  "durationMs": 1
+}

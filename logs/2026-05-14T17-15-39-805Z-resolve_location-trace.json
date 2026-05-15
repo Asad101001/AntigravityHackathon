@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-05-14T17:15:39.805Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": "Johar Town",
+  "output": {
+    "lat": 31.4607,
+    "lng": 74.272,
+    "area_name": "Johar Town Lahore",
+    "city": "Lahore",
+    "confidence": 0.8
+  },
+  "durationMs": 0
+}

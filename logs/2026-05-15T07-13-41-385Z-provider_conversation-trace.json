@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-05-15T07:13:41.385Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "message": "what time will you arrive"
+  },
+  "output": {
+    "reply": "Hello! Welcome to Khalid Plumbing. I'm Asaaniyat, your service coordinator. \n\nTo confirm, you've booked a plumber from Khalid Plumbing for your service. Can you please confirm your address so I can check the estimated arrival time with the plumber?",
+    "provider": "groq",
+    "usage": {
+      "queue_time": 0.005398522,
+      "prompt_tokens": 141,
+      "prompt_time": 0.010272783,
+      "completion_tokens": 55,
+      "completion_time": 0.128917604,
+      "total_tokens": 196,
+      "total_time": 0.139190387
+    }
+  },
+  "durationMs": 417
+}

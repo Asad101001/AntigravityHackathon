@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-05-14T20:14:06.222Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778789628832",
+    "message": "hello"
+  },
+  "output": {
+    "reply": "I can help with that. I reviewed the booking context and provider guidance. For your message, \"hello\", the next best step is to confirm access, share a photo if useful, and keep the appointment window open.",
+    "provider": "demo",
+    "usage": {
+      "estimated_tokens": 119
+    }
+  },
+  "durationMs": 32
+}

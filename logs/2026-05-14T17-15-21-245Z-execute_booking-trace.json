@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-14T17:15:21.245Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Gulshan Plumber",
+    "time_slot": "10:00"
+  },
+  "output": {
+    "booking_id": "BK_1778778921244",
+    "confirmation_message": "Booking confirmed! Gulshan Plumber arrives tomorrow at 10:00. Contact: 0345-6789012. Booking ID: BK_1778778921244",
+    "scheduled_time": "2026-05-15T05:00:00.000Z",
+    "time_slot": "10:00"
+  },
+  "durationMs": 0
+}

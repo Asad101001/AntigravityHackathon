@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-05-14T20:08:12.298Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": "Karachi",
+  "output": {
+    "lat": 24.8138,
+    "lng": 67.03,
+    "area_name": "Clifton Karachi",
+    "city": "Karachi",
+    "confidence": 0.72
+  },
+  "durationMs": 1
+}

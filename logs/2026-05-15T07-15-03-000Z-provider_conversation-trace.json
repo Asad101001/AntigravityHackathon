@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-05-15T07:15:03.000Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "message": "nope"
+  },
+  "output": {
+    "reply": "I've made a note that no one will be present at the location to receive the plumber. If you have any other questions or concerns before the plumber arrives, please feel free to reach out to me.",
+    "provider": "groq",
+    "usage": {
+      "queue_time": 0.005431978,
+      "prompt_tokens": 377,
+      "prompt_time": 0.022963436,
+      "completion_tokens": 42,
+      "completion_time": 0.101038716,
+      "total_tokens": 419,
+      "total_time": 0.124002152
+    }
+  },
+  "durationMs": 326
+}

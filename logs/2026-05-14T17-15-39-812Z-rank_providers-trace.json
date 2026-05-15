@@ -1,0 +1,79 @@
+{
+  "timestamp": "2026-05-14T17:15:39.812Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 2
+  },
+  "output": {
+    "ranked_providers": [
+      {
+        "id": "P020",
+        "name": "Khalid Plumbing",
+        "service": "Plumber",
+        "city": "Lahore",
+        "area": "DHA",
+        "distance_km": 9.3,
+        "rating": 4.8,
+        "reviews_count": 142,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00"
+        ],
+        "phone": "0324-5678901",
+        "response_time_min": 15,
+        "verified": true,
+        "lat": 31.52014366387145,
+        "lng": 74.34158559587475,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0,
+          "rating": 0.96,
+          "availability": 1,
+          "response_time": 0.35,
+          "total": 0.558
+        }
+      },
+      {
+        "id": "P023",
+        "name": "Model Town Plumbing",
+        "service": "Plumber",
+        "city": "Lahore",
+        "area": "Model Town",
+        "distance_km": 9.3,
+        "rating": 4.5,
+        "reviews_count": 82,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00"
+        ],
+        "phone": "0335-6789012",
+        "response_time_min": 22,
+        "verified": true,
+        "lat": 31.503860756473284,
+        "lng": 74.35627357960007,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0,
+          "rating": 0.9,
+          "availability": 1,
+          "response_time": 0.04,
+          "total": 0.479
+        }
+      }
+    ],
+    "top_3": [
+      {
+        "name": "Khalid Plumbing",
+        "score": 0.558
+      },
+      {
+        "name": "Model Town Plumbing",
+        "score": 0.479
+      }
+    ]
+  },
+  "durationMs": 0
+}

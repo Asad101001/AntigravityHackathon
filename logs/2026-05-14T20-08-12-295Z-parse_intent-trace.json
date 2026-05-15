@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-05-14T20:08:12.295Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "AC Repair chahiye",
+  "output": {
+    "service_type": "AC Technician",
+    "location": "Karachi",
+    "location_candidate": {
+      "city": "Karachi",
+      "area": "Karachi",
+      "canonical": "Karachi",
+      "coords": {
+        "lat": 24.8138,
+        "lng": 67.03,
+        "area_name": "Clifton Karachi"
+      },
+      "searchText": "Karachi",
+      "normalized": "karachi",
+      "cityOnly": true,
+      "matched_query": "ac",
+      "confidence": 0.72
+    },
+    "tokens": [
+      "ac",
+      "repair"
+    ],
+    "time_preference": null,
+    "confidence": 0.75,
+    "language": "roman_urdu",
+    "urgency": "normal"
+  },
+  "durationMs": 29
+}

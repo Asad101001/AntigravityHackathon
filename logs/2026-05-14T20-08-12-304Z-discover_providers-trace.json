@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-05-14T20:08:12.304Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "service": "AC Technician",
+    "location": "Karachi",
+    "city": "Karachi",
+    "coordinates": {
+      "lat": 24.8138,
+      "lng": 67.03
+    }
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "AC041",
+        "name": "PECHS AC Services",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "PECHS",
+        "distance_km": 5,
+        "rating": 4.6,
+        "reviews_count": 88,
+        "available_slots": [
+          "10:00",
+          "11:00",
+          "15:00"
+        ],
+        "phone": "0348-9012345",
+        "response_time_min": 22,
+        "verified": true,
+        "lat": 24.849644907808248,
+        "lng": 67.00000759717328,
+        "computed_distance": true
+      }
+    ],
+    "count": 1,
+    "source": "coordinate_distance",
+    "radius_km": 5
+  },
+  "durationMs": 3
+}

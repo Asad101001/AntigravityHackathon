@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-05-14T20:14:47.472Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician chahiye abhi gulshan e iqbal",
+  "output": {
+    "service_type": "Electrician",
+    "location": "Gulshan",
+    "location_candidate": {
+      "city": "Karachi",
+      "area": "Gulshan",
+      "canonical": "Gulshan",
+      "coords": {
+        "lat": 24.926,
+        "lng": 67.092,
+        "area_name": "Gulshan-e-Iqbal Karachi"
+      },
+      "searchText": "Gulshan",
+      "normalized": "gulshan",
+      "cityOnly": false,
+      "matched_query": "gulshan",
+      "confidence": 1
+    },
+    "tokens": [
+      "electrician",
+      "abhi",
+      "gulshan",
+      "e",
+      "iqbal"
+    ],
+    "time_preference": "today_now",
+    "confidence": 0.9700000000000001,
+    "language": "roman_urdu",
+    "urgency": "high"
+  },
+  "durationMs": 44
+}

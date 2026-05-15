@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-15T07:12:32.924Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Khalid Plumbing",
+    "time_slot": "09:00"
+  },
+  "output": {
+    "booking_id": "BK_1778829152923",
+    "confirmation_message": "Booking confirmed! Khalid Plumbing arrives today at 09:00. Contact: 0324-5678901. Booking ID: BK_1778829152923",
+    "scheduled_time": "2026-05-15T04:00:00.000Z",
+    "time_slot": "09:00"
+  },
+  "durationMs": 1
+}

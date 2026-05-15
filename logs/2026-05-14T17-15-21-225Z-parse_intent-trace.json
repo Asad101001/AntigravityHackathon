@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-05-14T17:15:21.225Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber chahiye kal raat gulshan-e-hadeed",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Gulshan",
+    "location_candidate": {
+      "city": "Karachi",
+      "area": "Gulshan",
+      "canonical": "Gulshan",
+      "coords": {
+        "lat": 24.926,
+        "lng": 67.092,
+        "area_name": "Gulshan-e-Iqbal Karachi"
+      },
+      "searchText": "Gulshan",
+      "normalized": "gulshan",
+      "cityOnly": false,
+      "matched_query": "gulshan",
+      "confidence": 1
+    },
+    "tokens": [
+      "plumber",
+      "kal",
+      "raat",
+      "gulshan",
+      "e",
+      "hadeed"
+    ],
+    "time_preference": "tomorrow",
+    "confidence": 0.92,
+    "language": "roman_urdu",
+    "urgency": "normal"
+  },
+  "durationMs": 53
+}

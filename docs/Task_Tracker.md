@@ -1,0 +1,6 @@
+- `[x]` Fix string interpolation bugs in mobile code
+    - `[x]` LoadingScreen.js
+    - `[x]` ProviderResultsScreen.js
+    - `[x]` AgentTraceScreen.js
+- `[x]` Verify backend validation
+- `[x]` Provide build command to user

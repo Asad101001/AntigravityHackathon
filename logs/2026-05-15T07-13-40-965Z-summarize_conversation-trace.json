@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-15T07:13:40.966Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "messages": 0
+  },
+  "output": {
+    "summary": "No previous conversation. Start by greeting the customer and confirming service details."
+  },
+  "durationMs": 2
+}

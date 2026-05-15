@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-05-15T07:13:40.961Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "what time will you arrive"
+  },
+  "output": {
+    "chunks": []
+  },
+  "durationMs": 2
+}

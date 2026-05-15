@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-05-15T07:15:02.667Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "nope"
+  },
+  "output": {
+    "chunks": []
+  },
+  "durationMs": 1
+}

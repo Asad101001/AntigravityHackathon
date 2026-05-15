@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-14T20:08:30.290Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "PECHS AC Services",
+    "time_slot": "10:00"
+  },
+  "output": {
+    "booking_id": "BK_1778789310289",
+    "confirmation_message": "Booking confirmed! PECHS AC Services arrives today at 10:00. Contact: 0348-9012345. Booking ID: BK_1778789310289",
+    "scheduled_time": "2026-05-15T05:00:00.000Z",
+    "time_slot": "10:00"
+  },
+  "durationMs": 0
+}

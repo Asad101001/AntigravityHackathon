@@ -1,0 +1,169 @@
+{
+  "timestamp": "2026-05-14T20:14:47.492Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5
+  },
+  "output": {
+    "ranked_providers": [
+      {
+        "id": "E040",
+        "name": "Karachi Electrician Hub",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Clifton",
+        "distance_km": 11.1,
+        "rating": 4.7,
+        "reviews_count": 138,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00",
+          "15:00"
+        ],
+        "phone": "0340-1234567",
+        "response_time_min": 18,
+        "verified": true,
+        "lat": 24.8737585069598,
+        "lng": 66.99765550225914,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0.15,
+          "rating": 0.94,
+          "availability": 1,
+          "response_time": 0.5,
+          "total": 0.626
+        }
+      },
+      {
+        "id": "E043",
+        "name": "PECHS Electrical",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "PECHS",
+        "distance_km": 11.3,
+        "rating": 4.6,
+        "reviews_count": 105,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "15:00",
+          "16:00"
+        ],
+        "phone": "0343-4567890",
+        "response_time_min": 20,
+        "verified": true,
+        "lat": 24.854323707546595,
+        "lng": 67.01246778547882,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0.13,
+          "rating": 0.92,
+          "availability": 1,
+          "response_time": 0.44,
+          "total": 0.604
+        }
+      },
+      {
+        "id": "E044",
+        "name": "Gulshan Electric Works",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "distance_km": 10.9,
+        "rating": 4.4,
+        "reviews_count": 80,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00",
+          "15:00"
+        ],
+        "phone": "0357-8901234",
+        "response_time_min": 22,
+        "verified": true,
+        "lat": 24.86730401584696,
+        "lng": 67.00527069681,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0.16,
+          "rating": 0.88,
+          "availability": 1,
+          "response_time": 0.39,
+          "total": 0.59
+        }
+      },
+      {
+        "id": "E041",
+        "name": "Asad Electric",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Defence",
+        "distance_km": 13,
+        "rating": 4.5,
+        "reviews_count": 92,
+        "available_slots": [
+          "10:00",
+          "11:00",
+          "15:00"
+        ],
+        "phone": "0341-2345678",
+        "response_time_min": 25,
+        "verified": true,
+        "lat": 24.852983266526365,
+        "lng": 66.99141452220603,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0,
+          "rating": 0.9,
+          "availability": 0.75,
+          "response_time": 0.31,
+          "total": 0.481
+        }
+      },
+      {
+        "id": "E042",
+        "name": "Saddar Electric Point",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Saddar",
+        "distance_km": 12.4,
+        "rating": 4.2,
+        "reviews_count": 57,
+        "available_slots": [
+          "09:00",
+          "14:00"
+        ],
+        "phone": "0342-3456789",
+        "response_time_min": 35,
+        "verified": true,
+        "lat": 24.88311681154871,
+        "lng": 66.9780423765449,
+        "computed_distance": true,
+        "scores": {
+          "distance": 0.05,
+          "rating": 0.84,
+          "availability": 0.5,
+          "response_time": 0.03,
+          "total": 0.371
+        }
+      }
+    ],
+    "top_3": [
+      {
+        "name": "Karachi Electrician Hub",
+        "score": 0.626
+      },
+      {
+        "name": "PECHS Electrical",
+        "score": 0.604
+      },
+      {
+        "name": "Gulshan Electric Works",
+        "score": 0.59
+      }
+    ]
+  },
+  "durationMs": 0
+}

@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-15T07:13:53.978Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1778829152923",
+    "messages": 2
+  },
+  "output": {
+    "summary": "user: what time will you arrive\nassistant: Hello! Welcome to Khalid Plumbing. I'm Asaaniyat, your service coordinator. \n\nTo confirm, you've booked a plumber from Khalid Plumbing for your service. Can you please confirm your address so I can check the estimated arrival time with the plumber?"
+  },
+  "durationMs": 2
+}
