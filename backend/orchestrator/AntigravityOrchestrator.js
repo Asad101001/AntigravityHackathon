@@ -1,60 +1,44 @@
-/**
- * AntigravityOrchestrator
- * Central orchestration engine that manages the 7-agent pipeline
- * Maintains shared context, sequences execution, emits traces
- * 
- * Mimics the Google Antigravity SDK surface:
- * - Workflow definition with task plan
- * - run() method with options
- * - Full execution trace output
- */
-
-const IntentParserAgent = require('../agents/IntentParserAgent');
+const LLMIntentParserAgent = require('../agents/LLMIntentParserAgent');
 const LocationResolverAgent = require('../agents/LocationResolverAgent');
 const ProviderDiscovererAgent = require('../agents/ProviderDiscovererAgent');
-const ProviderRankerAgent = require('../agents/ProviderRankerAgent');
+const LLMRankerAgent = require('../agents/LLMRankerAgent');
 const DecisionMakerAgent = require('../agents/DecisionMakerAgent');
+const DynamicPricingAgent = require('../agents/DynamicPricingAgent');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
 const RagRetrievalAgent = require('../agents/RagRetrievalAgent');
 const SummarizationAgent = require('../agents/SummarizationAgent');
 const ConversationAgent = require('../agents/ConversationAgent');
+const ChaosSimulatorAgent = require('../agents/ChaosSimulatorAgent');
 
 class AntigravityOrchestrator {
   constructor(options = {}) {
     this.apiKey = options.apiKey || 'demo-key';
-    
-    // Define the workflow per Antigravity spec
+
     this.workflow = {
       name: 'service_booking_workflow',
-      description: 'End-to-end service request to booking',
+      description: 'End-to-end service request to booking — fully agentic with LLM reasoning',
       task_plan: [
-        { id: 1, name: 'parse_intent', agent: new IntentParserAgent() },
-        { id: 2, name: 'resolve_location', agent: new LocationResolverAgent() },
-        { id: 3, name: 'discover_providers', agent: new ProviderDiscovererAgent() },
-        { id: 4, name: 'rank_providers', agent: new ProviderRankerAgent() },
-        { id: 5, name: 'make_decision', agent: new DecisionMakerAgent() },
-        { id: 6, name: 'execute_booking', agent: new BookingExecutorAgent() },
-        { id: 7, name: 'schedule_followup', agent: new FollowUpManagerAgent() }
+        { id: 1, name: 'parse_intent',        agent: new LLMIntentParserAgent() },
+        { id: 2, name: 'resolve_location',     agent: new LocationResolverAgent() },
+        { id: 3, name: 'discover_providers',   agent: new ProviderDiscovererAgent() },
+        { id: 4, name: 'rank_providers',        agent: new LLMRankerAgent() },
+        { id: 5, name: 'make_decision',         agent: new DecisionMakerAgent() },
+        { id: 6, name: 'dynamic_pricing',       agent: new DynamicPricingAgent() },
+        { id: 7, name: 'execute_booking',       agent: new BookingExecutorAgent() },
+        { id: 8, name: 'schedule_followup',     agent: new FollowUpManagerAgent() }
       ],
       context_schema: {
         input: ['user_text', 'user_id'],
-        output: ['booking_id', 'provider', 'reasoning', 'execution_logs']
+        output: ['booking_id', 'provider', 'reasoning', 'reasoning_log', 'quote_pkr', 'execution_logs']
       }
     };
   }
 
-  /**
-   * Run the full orchestration pipeline
-   * @param {Object} params
-   * @param {Object} params.input - { user_text, user_id }
-   * @param {Object} params.options - { emit_trace, timeout_ms, retry_on_failure, fallback_mode }
-   * @returns {Object} Full result with output, trace, and metadata
-   */
   async run({ input, options = {} }) {
     const {
       emit_trace = true,
-      timeout_ms = 10000,
+      timeout_ms = 15000,
       retry_on_failure = true,
       fallback_mode = 'graceful'
     } = options;
@@ -62,7 +46,6 @@ class AntigravityOrchestrator {
     const workflowId = `WF_${Date.now()}`;
     const startTime = Date.now();
 
-    // ── Initialize Shared Context ──
     const context = {
       user_text: input.user_text,
       user_id: input.user_id,
@@ -73,83 +56,48 @@ class AntigravityOrchestrator {
     };
 
     console.log(`\n═══════════════════════════════════════════════════════`);
-    console.log(`🚀 Antigravity Workflow Started: ${workflowId}`);
+    console.log(`🚀 Antigravity Agentic Workflow: ${workflowId}`);
     console.log(`📝 Input: "${input.user_text}"`);
     console.log(`═══════════════════════════════════════════════════════\n`);
 
-    // ── Execute Agents Sequentially ──
     let lastSuccessfulAgent = 0;
-    let earlyExit = false;
 
     for (const task of this.workflow.task_plan) {
       const elapsed = Date.now() - startTime;
-      
-      // Timeout check
       if (elapsed > timeout_ms) {
         console.warn(`⏰ Workflow timeout after ${elapsed}ms at agent ${task.id}`);
-        context.execution_logs.push({
-          id: task.id,
-          name: task.name,
-          status: 'timeout',
-          duration_ms: 0,
-          error: `Workflow timeout after ${elapsed}ms`
-        });
+        context.execution_logs.push({ id: task.id, name: task.name, status: 'timeout', duration_ms: 0, error: `Timeout after ${elapsed}ms` });
         break;
       }
 
       console.log(`  ▶ Agent ${task.id}: ${task.name}...`);
-      
+
       try {
         await task.agent.run(context);
         const lastLog = context.execution_logs[context.execution_logs.length - 1];
-        
+
         if (lastLog.status === 'success') {
-          console.log(`  ✅ Agent ${task.id}: ${task.name} completed (${lastLog.duration_ms}ms)`);
+          console.log(`  ✅ ${task.name} (${lastLog.duration_ms}ms)`);
           lastSuccessfulAgent = task.id;
         } else if (lastLog.status === 'error') {
-          console.log(`  ❌ Agent ${task.id}: ${task.name} failed: ${lastLog.error}`);
-          
+          console.log(`  ❌ ${task.name} failed: ${lastLog.error}`);
           if (retry_on_failure) {
-            console.log(`  🔄 Retrying agent ${task.id}...`);
-            // Remove failed log entry
             context.execution_logs.pop();
             await task.agent.run(context);
           }
-          
-          if (fallback_mode !== 'graceful') {
-            earlyExit = true;
-            break;
-          }
+          if (fallback_mode !== 'graceful') break;
         }
 
-        // ── Early Exit Checks ──
-        // After Agent 1: if confidence too low, might need clarification
         if (task.id === 1 && context.confidence < 0.6) {
-          console.log(`  ⚠️  Low confidence (${context.confidence}). Needs clarification.`);
-          // Continue but flag it
           context.needs_clarification = true;
         }
-
-        // After Agent 3: if no providers found
         if (task.id === 3 && (!context.providers || context.providers.length === 0)) {
-          console.log(`  ⚠️  No providers found. Suggesting alternative.`);
           context.no_providers = true;
-          if (fallback_mode !== 'graceful') {
-            earlyExit = true;
-            break;
-          }
+          if (fallback_mode !== 'graceful') break;
         }
-
       } catch (error) {
         console.error(`  💥 Agent ${task.id} threw:`, error.message);
-        context.execution_logs.push({
-          id: task.id,
-          name: task.name,
-          status: 'error',
-          duration_ms: Date.now() - startTime,
-          error: error.message
-        });
-        
+        context.execution_logs.push({ id: task.id, name: task.name, status: 'error', duration_ms: Date.now() - startTime, error: error.message });
         if (fallback_mode !== 'graceful') break;
       }
     }
@@ -158,18 +106,16 @@ class AntigravityOrchestrator {
 
     console.log(`\n═══════════════════════════════════════════════════════`);
     console.log(`🏁 Workflow ${context.booking_id ? 'Completed' : 'Finished'}: ${workflowId}`);
-    console.log(`⏱️  Duration: ${totalDuration}ms | Agents: ${lastSuccessfulAgent}/7`);
-    if (context.booking_id) {
-      console.log(`📋 Booking: ${context.booking_id}`);
-    }
+    console.log(`⏱️  Duration: ${totalDuration}ms | Agents: ${lastSuccessfulAgent}/${this.workflow.task_plan.length}`);
+    if (context.reasoning_log) console.log(`🤖 LLM Reasoning: ${context.reasoning_log.slice(0, 120)}...`);
     console.log(`═══════════════════════════════════════════════════════\n`);
 
-    // ── Build Result ──
-    const overallStatus = context.booking_id ? 'completed' : 
-                          context.needs_clarification ? 'clarification_needed' :
-                          context.no_providers ? 'no_providers' : 'partial';
+    const overallStatus = context.booking_id ? 'completed'
+      : context.needs_clarification ? 'clarification_needed'
+      : context.no_providers ? 'no_providers'
+      : 'partial';
 
-    const result = {
+    return {
       workflow_id: workflowId,
       status: overallStatus,
       duration_ms: totalDuration,
@@ -177,9 +123,12 @@ class AntigravityOrchestrator {
         booking_id: context.booking_id || null,
         provider: context.selected_provider ? this._serializeProvider(context.selected_provider, context.booking?.time_slot || null) : null,
         reasoning: context.decision_reasoning || null,
+        reasoning_log: context.reasoning_log || null,
         confirmation_message: context.confirmation_message || null,
         alternatives: (context.alternatives || []).map(a => this._serializeProvider(a, null)),
         reminders_scheduled: context.reminders_count || 0,
+        quote_pkr: context.quote_pkr || null,
+        quote_breakdown: context.quote_breakdown || null,
         parsed_intent: {
           service_type: context.service_type || null,
           location: context.location || null,
@@ -190,7 +139,9 @@ class AntigravityOrchestrator {
           coordinates: context.coordinates || null,
           tokens: context.tokens || [],
           language: context.language || null,
-          urgency: context.urgency || 'normal'
+          urgency: context.urgency || 'normal',
+          urgency_level: context.urgency_level || 'normal',
+          price_sensitivity: context.price_sensitivity || 'neutral'
         }
       },
       execution_logs: emit_trace ? context.execution_logs : [],
@@ -201,14 +152,10 @@ class AntigravityOrchestrator {
           location: context.location || null,
           time: context.time_preference || null
         },
-        prompt: !context.service_type ? 'What service do you need?' :
-                !context.location ? 'Which area/city are you in?' :
-                'Could you please clarify your request?',
+        prompt: !context.service_type ? 'What service do you need?' : !context.location ? 'Which area/city are you in?' : 'Could you please clarify your request?',
         suggestions: !context.service_type ? ['Electrician', 'Plumber', 'AC Technician', 'Carpenter', 'Painter'] : []
       } : null
     };
-
-    return result;
   }
 
   _serializeProvider(provider, confirmedSlot = null) {
@@ -230,7 +177,12 @@ class AntigravityOrchestrator {
       available_slots: provider.available_slots || [],
       confirmed_slot: confirmedSlot,
       scores: provider.scores || null,
-      score: provider.scores?.total || provider.score || null
+      score: provider.scores?.total || provider.score || null,
+      base_rate_pkr: provider.base_rate_pkr || null,
+      on_time_score: provider.on_time_score || null,
+      cancellation_risk: provider.cancellation_risk || null,
+      specialization: provider.specialization || [],
+      recent_sentiment: provider.recent_sentiment || null
     };
   }
 
@@ -245,12 +197,7 @@ class AntigravityOrchestrator {
       workflow_id: workflowId
     };
 
-    const chatPlan = [
-      new RagRetrievalAgent(),
-      new SummarizationAgent(),
-      new ConversationAgent()
-    ];
-
+    const chatPlan = [new RagRetrievalAgent(), new SummarizationAgent(), new ConversationAgent()];
     for (const agent of chatPlan) {
       await agent.run(context);
     }
@@ -264,8 +211,29 @@ class AntigravityOrchestrator {
     };
   }
 
+  async runChaosSimulation({ input, options = {} }) {
+    const workflowId = `CHAOS_${Date.now()}`;
+    const context = {
+      ...input,
+      execution_logs: [],
+      workflow_id: workflowId
+    };
+
+    const chaosAgent = new ChaosSimulatorAgent();
+    await chaosAgent.run(context);
+
+    const log = context.execution_logs[context.execution_logs.length - 1];
+    return {
+      workflow_id: workflowId,
+      duration_ms: log?.duration_ms || 0,
+      cancelled_provider: context.chaos_cancelled_provider,
+      new_provider: context.chaos_new_provider ? this._serializeProvider(context.chaos_new_provider, null) : null,
+      reasoning_log: context.reasoning_log,
+      new_quote_pkr: context.quote_pkr,
+      new_quote_breakdown: context.quote_breakdown,
+      execution_logs: options.emit_trace === false ? [] : context.execution_logs
+    };
+  }
 }
 
 module.exports = AntigravityOrchestrator;
-
-
