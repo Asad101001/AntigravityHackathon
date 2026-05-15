@@ -1,0 +1,26 @@
+---
+skill_id: chaos_simulator
+name: Chaos Simulator / Dispute & Fallback Agent
+version: 1.0.0
+description: >
+  Stress-test agent that simulates a provider cancellation scenario.
+  Given a booking, it marks the selected provider as cancelled, removes them
+  from the candidate list, re-invokes LLMRankerAgent on the remaining
+  providers, selects a new provider, and returns a full re-booking result
+  with an updated reasoning_log explaining the recovery.
+agent_class: ChaosSimulatorAgent
+input:
+  booking_id: string
+  providers: Provider[]
+  urgency_level: string
+  price_sensitivity: string
+output:
+  cancelled_provider: Provider
+  new_provider: Provider
+  reasoning_log: string
+  new_quote_pkr: number
+  recovery_time_ms: number
+fallback: returns top-scored provider from original ProviderRankerAgent
+latency_ms_p50: 300
+cost_per_call_usd: 0.000025
+---

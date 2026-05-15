@@ -1,0 +1,25 @@
+---
+skill_id: dynamic_pricing
+name: Dynamic Pricing Agent
+version: 1.0.0
+description: >
+  Generates a contextual price quote for a selected provider booking.
+  Formula: base_rate_pkr + (distance_km * 150 PKR) * urgency_multiplier.
+  urgency_multiplier is 1.5 for high urgency, 1.0 otherwise.
+  Returns a structured quote_breakdown and total quote_pkr.
+agent_class: DynamicPricingAgent
+input:
+  selected_provider: Provider
+  urgency_level: '"high" | "low"'
+  distance_km: number
+output:
+  quote_pkr: number
+  quote_breakdown:
+    base_rate: number
+    distance_surcharge: number
+    urgency_multiplier: number
+    total: number
+fallback: fixed estimate of 2000 PKR if provider data incomplete
+latency_ms_p50: 1
+cost_per_call_usd: 0
+---

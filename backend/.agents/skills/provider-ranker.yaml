@@ -1,0 +1,25 @@
+---
+skill_id: llm_provider_ranker
+name: LLM Reasoning Provider Ranker
+version: 2.0.0
+description: >
+  Evaluates a list of candidate providers against user constraints (budget,
+  urgency, location) using LLM trade-off reasoning. Returns the selected
+  provider ID, a natural-language reasoning_log explaining the choice, and an
+  ordered ranked_ids list. Replaces the deterministic weighted-formula ranker.
+agent_class: LLMRankerAgent
+input:
+  providers: Provider[]
+  urgency_level: '"high" | "low"'
+  price_sensitivity: '"high" | "low" | "neutral"'
+  service_type: string
+  location: string
+output:
+  selected_provider_id: string
+  reasoning_log: string
+  ranked_ids: string[]
+fallback: ProviderRankerAgent (weighted formula)
+model: groq/llama-3.1-8b-instant → gemini-1.5-flash → local demo
+latency_ms_p50: 250
+cost_per_call_usd: 0.000025
+---

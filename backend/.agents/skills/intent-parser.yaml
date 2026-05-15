@@ -1,0 +1,27 @@
+---
+skill_id: llm_intent_parser
+name: LLM Deep-Context Intent Parser
+version: 2.0.0
+description: >
+  Parses raw user text (Urdu, Roman Urdu, English) into a structured intent
+  object using an LLM call. Extracts service_type, location, time_preference,
+  urgency_level (high/low) and price_sensitivity (high/low/neutral).
+  Falls back to regex-based parsing if the LLM is unavailable or returns
+  malformed JSON.
+agent_class: LLMIntentParserAgent
+input:
+  user_text: string
+output:
+  service_type: string | null
+  location: string | null
+  time_preference: string | null
+  urgency_level: '"high" | "low"'
+  price_sensitivity: '"high" | "low" | "neutral"'
+  confidence: number
+  language: string
+  reasoning: string
+fallback: IntentParserAgent (regex)
+model: groq/llama-3.1-8b-instant → gemini-1.5-flash → local demo
+latency_ms_p50: 180
+cost_per_call_usd: 0.000015
+---
