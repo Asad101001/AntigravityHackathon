@@ -104,13 +104,19 @@ function getLocationCatalog() {
 
 function findLocationCandidate(input = '', options = {}) {
   const minConfidence = options.minConfidence || 0.58;
+  const requestedCity = options.city ? normalizeLocation(options.city) : '';
   const parsed = tokenize(input);
   const phrases = [parsed.normalized, ...parsed.ngrams]
     .map(normalizeLocation)
     .filter(Boolean);
 
   let best = null;
-  for (const item of getLocationCatalog()) {
+  const catalog = getLocationCatalog().filter(item => {
+    if (!requestedCity) return true;
+    return normalizeLocation(item.city) === requestedCity;
+  });
+
+  for (const item of catalog) {
     for (const phrase of phrases) {
       const score = similarity(phrase, item.normalized);
       const tokenBoost = locationTokens(item.normalized).some(token => locationTokens(phrase).includes(token)) ? 0.08 : 0;

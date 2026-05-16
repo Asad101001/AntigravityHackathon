@@ -9,9 +9,11 @@ export default function ProviderResultsScreen({ route, navigation }) {
   const providers = [fullResult.provider, ...(fullResult.alternatives || [])].filter(Boolean).map((p, i) => ({ ...p, rank: i + 1, isRecommended: i === 0 }));
   const userCoords = fullResult.parsed_intent?.coordinates;
   const firstCoordinate = providers.find(p => p.lat && p.lng);
+  const fallbackLat = Number(process.env.EXPO_PUBLIC_DEFAULT_MAP_LAT || 24.8607);
+  const fallbackLng = Number(process.env.EXPO_PUBLIC_DEFAULT_MAP_LNG || 67.0104);
   const initialRegion = {
-    latitude: userCoords?.lat || firstCoordinate?.lat || 24.926,
-    longitude: userCoords?.lng || firstCoordinate?.lng || 67.092,
+    latitude: userCoords?.lat || firstCoordinate?.lat || fallbackLat,
+    longitude: userCoords?.lng || firstCoordinate?.lng || fallbackLng,
     latitudeDelta: 0.06,
     longitudeDelta: 0.06,
   };
@@ -26,12 +28,11 @@ export default function ProviderResultsScreen({ route, navigation }) {
         <View style={styles.mapWrap}>
           <MapPanel
             style={styles.map}
+            userCoordinates={userCoords}
+            providers={providers}
             initialRegion={initialRegion}
             markers={[
-              ...(userCoords ? [{ id: 'user-location', coordinate: { latitude: userCoords.lat, longitude: userCoords.lng }, title: 'Service location', pinColor: COLORS.primaryDim }] : []),
-              ...providers
-                .filter(p => p.lat && p.lng)
-                .map(p => ({ id: p.id || `provider-${p.rank}`, coordinate: { latitude: p.lat, longitude: p.lng }, title: p.name, description: `${p.distance_km} km away`, pinColor: p.isRecommended ? COLORS.primary : COLORS.warning }))
+              ...(userCoords ? [{ id: 'user-location', coordinate: { latitude: userCoords.lat, longitude: userCoords.lng }, title: 'Service location', pinColor: COLORS.primaryDim }] : [])
             ]}
           />
         </View>

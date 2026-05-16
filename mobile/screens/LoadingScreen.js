@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { COLORS, API_URL } from '../config';
+import { sendLocalNotification } from '../notifications';
 
 // ---------------------------------------------------------------------------
 // Pipeline definition — each step has rotating narration lines that simulate
@@ -106,7 +107,7 @@ const MIN_STEP_MS = NARRATION_TICK_MS * 2;
 
 // ---------------------------------------------------------------------------
 export default function LoadingScreen({ route, navigation }) {
-  const { userText, userLocation, locationSource } = route.params;
+  const { userText, userLocation, locationSource, city } = route.params;
 
   const [currentStep, setCurrentStep] = useState(0);   // 0-based pipeline index
   const [narrationIdx, setNarrationIdx] = useState(0); // which sub-message
@@ -185,7 +186,7 @@ export default function LoadingScreen({ route, navigation }) {
 
   // ── API call ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    callAPI();
+    void callAPI();
   }, []);
 
   const callAPI = async () => {
@@ -198,6 +199,7 @@ export default function LoadingScreen({ route, navigation }) {
         {
           user_text: userText,
           user_id: `user_${Date.now()}`,
+          city,
           user_location: userLocation || null,
           location_source: userLocation ? (locationSource || 'map') : 'typed',
         },
@@ -206,6 +208,13 @@ export default function LoadingScreen({ route, navigation }) {
 
       apiResultRef.current = response.data;
       apiDoneRef.current   = true;
+      if (response.data?.success) {
+        void sendLocalNotification(
+          'Provider match found',
+          `${response.data.provider?.name || 'A provider'} is ready for your ${response.data.provider?.service || 'service'} request.`,
+          { booking_id: response.data.booking_id || null, event: 'provider_match' }
+        );
+      }
       // The narration ticker will now advance steps as they finish
 
     } catch (err) {

@@ -46,6 +46,8 @@ class AntigravityOrchestrator {
     const context = {
       user_text: input.user_text,
       user_id: input.user_id,
+      city: input.city || input.explicit_city || null,
+      explicit_city: input.city || input.explicit_city || null,
       user_location: input.user_location || null,
       location_source: input.location_source || null,
       execution_logs: [],

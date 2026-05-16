@@ -1,18 +1,7 @@
-/**
- * Agent 8: RagRetrievalAgent — enriched query, error-safe
- *
- * Improvements over v1:
- *  • Query now includes service_type and provider name so BM25 scoring
- *    finds contextually relevant chunks (not just message keyword overlap).
- *  • Retrieval failure is caught and returns an empty chunk list —
- *    ConversationAgent handles no-context gracefully.
- *  • Output includes full score for transparency in trace logs.
- */
-
 'use strict';
 
-const BaseAgent      = require('./BaseAgent');
-const { retrieve }   = require('../rag/retriever');
+const BaseAgent = require('./BaseAgent');
+const { retrieve } = require('../rag/retriever');
 
 class RagRetrievalAgent extends BaseAgent {
   constructor() {
@@ -20,51 +9,50 @@ class RagRetrievalAgent extends BaseAgent {
   }
 
   async execute(context) {
-    // Build a semantically richer query by blending the user message with
-    // known service/provider context — this lifts BM25 recall significantly.
     const parts = [
       context.chat_message || context.user_text || '',
       context.service_type ? `service: ${context.service_type}` : '',
-      context.provider?.name      ? `provider: ${context.provider.name}`      : '',
-      context.provider?.service   ? `type: ${context.provider.service}`        : '',
-      context.resolved_area       ? `area: ${context.resolved_area}`           : '',
+      context.provider?.name ? `provider: ${context.provider.name}` : '',
+      context.provider?.service ? `type: ${context.provider.service}` : '',
+      context.resolved_area ? `area: ${context.resolved_area}` : '',
     ].filter(Boolean);
 
     const query = parts.join(' ').trim();
-
     if (!query) {
       return {
-        input:          { query: '' },
-        output:         { chunk_count: 0, chunks: [] },
-        reasoning:      'Empty query — skipped retrieval.',
-        contextUpdates: { rag_chunks: [] },
+        input: { query: '' },
+        output: { chunk_count: 0, chunks: [] },
+        reasoning: 'Empty query; skipped retrieval.',
+        contextUpdates: { rag_chunks: [], rag_grounding_required: true },
       };
     }
 
     let chunks = [];
     try {
       chunks = await retrieve(query, {
-        topK:        4,
+        topK: Number(process.env.RAG_TOP_K || 4),
         tokenBudget: Number(process.env.RAG_TOKEN_BUDGET || 450),
       });
+      chunks = chunks
+        .filter(chunk => String(chunk.content || '').trim())
+        .filter(chunk => typeof chunk.score !== 'number' || chunk.score >= Number(process.env.RAG_MIN_SCORE || 0));
     } catch (err) {
       console.error('[RagRetrievalAgent] Retrieval error:', err.message);
-      // Return empty — ConversationAgent will note missing context in its reply
     }
 
     return {
       input: { query: query.slice(0, 140) },
       output: {
         chunk_count: chunks.length,
-        chunks: chunks.map(c => ({
-          id:      c.id,
-          source:  c.source,
-          score:   typeof c.score === 'number' ? +c.score.toFixed(4) : null,
-          content: (c.content || '').slice(0, 200),
+        chunks: chunks.map(chunk => ({
+          id: chunk.id,
+          source: chunk.source,
+          score: typeof chunk.score === 'number' ? Number(chunk.score.toFixed(4)) : null,
+          content: String(chunk.content || '').slice(0, 200),
         })),
       },
-      reasoning:      `Retrieved ${chunks.length} chunk(s) (BM25 + phrase-bonus) for query: "${query.slice(0, 80)}…"`,
-      contextUpdates: { rag_chunks: chunks },
+      reasoning: `Retrieved ${chunks.length} grounded chunk(s) for query: "${query.slice(0, 80)}". ConversationAgent may only answer from these chunks.`,
+      contextUpdates: { rag_chunks: chunks, rag_grounding_required: true },
     };
   }
 }

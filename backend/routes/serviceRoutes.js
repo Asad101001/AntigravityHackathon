@@ -20,7 +20,7 @@ const orchestrator = new AntigravityOrchestrator({
 // ═══════════════════════════════════════════════════════════════
 router.post('/service-request', async (req, res) => {
   try {
-    const { user_text, user_id, user_location, location_source } = req.body;
+    const { user_text, user_id, user_location, location_source, city } = req.body;
 
     if (!user_text || typeof user_text !== 'string') {
       return res.status(400).json({ success: false, error: 'user_text is required and must be a string' });
@@ -30,6 +30,7 @@ router.post('/service-request', async (req, res) => {
       input: {
         user_text,
         user_id: user_id || `user_${Date.now()}`,
+        city: city || null,
         user_location: user_location || null,
         location_source: location_source || null
       },
@@ -280,13 +281,19 @@ router.post('/booking/:booking_id/feedback', async (req, res) => {
 router.get('/logs', (req, res) => {
   const fs = require('fs');
   const path = require('path');
-  const logsDir = path.join(__dirname, '..', '..', 'logs');
+  const { LOGS_ROOT } = require('../traceLogger');
+  const logsDir = LOGS_ROOT;
   try {
     if (!fs.existsSync(logsDir)) return res.json([]);
-    const files = fs.readdirSync(logsDir).filter(f => f.endsWith('.json'));
-    const logs = files.map(f => {
-      const data = JSON.parse(fs.readFileSync(path.join(logsDir, f), 'utf8'));
-      return { file: f, ...data };
+    const runDirs = fs.readdirSync(logsDir, { withFileTypes: true }).filter(entry => entry.isDirectory());
+    const logs = runDirs.flatMap(dir => {
+      const runPath = path.join(logsDir, dir.name);
+      return fs.readdirSync(runPath)
+        .filter(file => file.endsWith('.json'))
+        .map(file => {
+          const data = JSON.parse(fs.readFileSync(path.join(runPath, file), 'utf8'));
+          return { file: path.join(dir.name, file), ...data };
+        });
     });
     logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     res.json(logs);

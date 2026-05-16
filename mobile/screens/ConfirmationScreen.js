@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
+import { addSessionBooking } from '../sessionBookings';
+import { sendLocalNotification } from '../notifications';
 
 export default function ConfirmationScreen({ route, navigation }) {
   const { fullResult } = route.params;
@@ -10,7 +12,13 @@ export default function ConfirmationScreen({ route, navigation }) {
 
   useEffect(() => {
     Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }).start();
-  }, []);
+    const booking = addSessionBooking(fullResult);
+    void sendLocalNotification(
+      'Booking confirmed',
+      `${booking.provider} is assigned for ${booking.service}.`,
+      { booking_id: booking.id, event: 'booking_confirmed' }
+    );
+  }, [fullResult, scale]);
 
   return (
     <SafeAreaView style={styles.container}>

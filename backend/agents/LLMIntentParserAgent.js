@@ -21,7 +21,7 @@ class LLMIntentParserAgent extends BaseAgent {
       'Extract the booking intent and return ONLY a valid JSON object — no markdown, no explanation, no preamble.',
       'JSON schema:',
       '{',
-      '  "service_type": string | null,  // canonical: Electrician|Plumber|AC Technician|Carpenter|Painter|Handyman',
+      '  "service_type": string | null,  // canonical: Electrician|Plumber|AC Technician|Carpenter|Painter|Handyman|Maid|Car Mechanic|Cleaning Lady|Hairdresser|Salon',
       '  "location": string | null,       // area or city name as written by user',
       '  "time_preference": string | null, // e.g. "today_morning","tomorrow","today_now","weekend"',
       '  "urgency_level": "high" | "low",  // high if user uses urgent/abhi/foran/emergency/jaldi',
@@ -31,6 +31,8 @@ class LLMIntentParserAgent extends BaseAgent {
       '  "reasoning": string               // one sentence explaining your parse',
       '}',
       'If a field cannot be determined, set it to null.',
+      'Recognize informal Pakistani service phrases natively: maid/masi/kaam wali/bai -> Maid; cleaning lady/safai wali -> Cleaning Lady; mechanic/car mechanic/gaari mechanic -> Car Mechanic; hairdresser/salon/parlour/barber -> Hairdresser or Salon based on wording.',
+      'Preserve the frontend-selected city outside this JSON; only put area/city in "location" when the user actually typed it.',
       'Do NOT wrap the JSON in ```json``` or any other delimiters.'
     ].join('\n');
 
