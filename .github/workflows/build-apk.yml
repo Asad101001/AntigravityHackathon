@@ -1,0 +1,152 @@
+name: Build Android APK (Local EAS)
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'mobile/**'
+      - 'package.json'
+      - 'app.json'
+      - 'eas.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: false
+        default: 'preview'
+        type: choice
+        options: [preview, production]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  EXPO_CLI_VERSION: 'latest'
+  EAS_CLI_VERSION: 'latest'
+
+jobs:
+  build-apk:
+    name: Build APK (${{ github.event.inputs.profile || 'preview' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── 2. Java 17 (required by Android Gradle 8+) ───────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ── 3. Android SDK ───────────────────────────────────────────────────
+      #    ubuntu-latest ships with the Android SDK pre-installed at
+      #    $ANDROID_SDK_ROOT (~/.android/sdk). We only need to accept
+      #    licenses and ensure build-tools 34 is present.
+      - name: Accept Android SDK licenses & verify build-tools
+        run: |
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "build-tools;34.0.0" \
+            "platforms;android-34" \
+            "platform-tools" \
+            --sdk_root=$ANDROID_SDK_ROOT
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+
+      # ── 4. Node.js + dependency cache ────────────────────────────────────
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci --prefer-offline
+
+      # ── 5. Expo CLI ──────────────────────────────────────────────────────
+      - name: Install Expo CLI
+        run: npm install -g expo-cli@${{ env.EXPO_CLI_VERSION }}
+
+      # ── 6. EAS CLI ───────────────────────────────────────────────────────
+      - name: Install EAS CLI
+        run: npm install -g eas-cli@${{ env.EAS_CLI_VERSION }}
+
+      - name: Verify EAS CLI version
+        run: eas --version
+
+      # ── 7. Expo token auth (no interactive login) ────────────────────────
+      - name: Authenticate with Expo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas whoami
+
+      # ── 8. Inject secrets into .env for Metro bundler ────────────────────
+      - name: Write runtime environment file
+        run: |
+          cat > .env << 'EOF'
+          MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}
+          GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          EXPO_PUBLIC_API_BASE_URL=${{ secrets.API_BASE_URL }}
+          EOF
+
+      # ── 9. EAS local build (no cloud queue, uses runner's SDK) ──────────
+      - name: Run EAS local Android build
+        env:
+          EXPO_TOKEN:    ${{ secrets.EXPO_TOKEN }}
+          ANDROID_HOME:  ${{ env.ANDROID_HOME }}
+        run: |
+          eas build \
+            --platform android \
+            --profile ${{ github.event.inputs.profile || 'preview' }} \
+            --local \
+            --non-interactive \
+            --output ./build/app.apk
+        # --local    → builds on this runner, no Expo cloud
+        # --output   → deterministic output path for the upload step
+
+      # ── 10. Verify APK was produced ──────────────────────────────────────
+      - name: Verify APK exists
+        run: |
+          ls -lh build/
+          file build/app.apk
+          echo "APK_SIZE=$(du -sh build/app.apk | cut -f1)" >> $GITHUB_ENV
+
+      # ── 11. Upload APK as GitHub Actions Artifact ────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: antigravity-apk-${{ github.event.inputs.profile || 'preview' }}-${{ github.sha }}
+          path: build/app.apk
+          retention-days: 14
+          if-no-files-found: error
+
+      # ── 12. Post build summary ───────────────────────────────────────────
+      - name: Post build summary
+        if: always()
+        run: |
+          echo "## 📦 APK Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | ----- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Profile | \`${{ github.event.inputs.profile || 'preview' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| APK Size | ${{ env.APK_SIZE }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner OS | \`${{ runner.os }}\` |" >> $GITHUB_STEP_SUMMARY
+
+      # ── 13. Cleanup secrets from runner ──────────────────────────────────
+      - name: Remove .env
+        if: always()
+        run: rm -f .env
