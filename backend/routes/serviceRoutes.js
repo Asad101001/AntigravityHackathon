@@ -91,6 +91,7 @@ router.post('/chaos/simulate', async (req, res) => {
     const {
       booking_id,
       provider_id_to_cancel,
+      provider_id,
       providers,
       urgency_level,
       price_sensitivity,
@@ -100,7 +101,7 @@ router.post('/chaos/simulate', async (req, res) => {
 
     // If booking_id provided, try to reconstruct providers from booking store
     let providerList = providers || [];
-    let cancelId = provider_id_to_cancel;
+    let cancelId = provider_id_to_cancel || provider_id;
 
     if (booking_id && providerList.length === 0) {
       const booking = BookingExecutorAgent.getBooking(booking_id);
@@ -141,6 +142,9 @@ router.post('/chaos/simulate', async (req, res) => {
       reasoning_log: result.reasoning_log,
       new_quote_pkr: result.new_quote_pkr,
       new_quote_breakdown: result.new_quote_breakdown,
+      // Backward-compatible aliases for older mobile builds.
+      quote_pkr: result.new_quote_pkr,
+      quote_breakdown: result.new_quote_breakdown,
       recovery_time_ms: result.duration_ms,
       workflow_id: result.workflow_id,
       execution_logs: result.execution_logs

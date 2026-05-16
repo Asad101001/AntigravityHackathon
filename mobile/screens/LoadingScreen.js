@@ -75,6 +75,18 @@ const PIPELINE = [
   },
   {
     id: 5,
+    label: 'Selecting Provider',
+    icon: '🎯',
+    agentName: 'DecisionMakerAgent',
+    narration: [
+      'Applying hard constraints...',
+      'Checking verification and available slots...',
+      'Selecting the safest recommendation...',
+      'Decision explanation ready ✓',
+    ],
+  },
+  {
+    id: 6,
     label: 'Dynamic Pricing',
     icon: '💰',
     agentName: 'DynamicPricingAgent',
@@ -87,7 +99,7 @@ const PIPELINE = [
     ],
   },
   {
-    id: 6,
+    id: 7,
     label: 'Executing Booking',
     icon: '📋',
     agentName: 'BookingExecutorAgent',
@@ -96,6 +108,18 @@ const PIPELINE = [
       'Writing booking record...',
       'Issuing confirmation ID...',
       'Booking confirmed ✓',
+    ],
+  },
+  {
+    id: 8,
+    label: 'Scheduling Follow-up',
+    icon: '🔔',
+    agentName: 'FollowUpManagerAgent',
+    narration: [
+      'Preparing reminder schedule...',
+      'Queueing one-hour service reminder...',
+      'Queueing feedback follow-up...',
+      'Follow-up plan confirmed ✓',
     ],
   },
 ];

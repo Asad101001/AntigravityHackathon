@@ -2,7 +2,7 @@
 
 > **Google Antigravity Hackathon · Challenge 2**
 
-A mobile-first agentic AI application that connects users with informal service providers (electricians, plumbers, AC technicians, carpenters, painters) across Pakistan. Users describe their needs in **Urdu, Roman Urdu, or English**, and a 7-agent pipeline autonomously finds, ranks, and books the best provider.
+A mobile-first agentic AI application that connects users with informal service providers (electricians, plumbers, AC technicians, carpenters, painters) across Pakistan. Users describe their needs in **Urdu, Roman Urdu, or English**, and an 8-agent pipeline autonomously finds, ranks, prices, books, and follows up with the best provider.
 
 ---
 
@@ -23,9 +23,9 @@ A mobile-first agentic AI application that connects users with informal service 
 │  │  └───┘ └───┘ └───┘ └───┘ └───┘    │ │
 │  │  IntPrs LocRes PrvDsc PrvRnk DecMkr│ │
 │  │  ┌───┐ ┌───┐                       │ │
-│  │  │ 6 │→│ 7 │ → Complete            │ │
-│  │  └───┘ └───┘                       │ │
-│  │  BkExec FlwMgr                     │ │
+│  │  │ 6 │→│ 7 │→│ 8 │ → Complete      │ │
+│  │  └───┘ └───┘ └───┘                 │ │
+│  │  Price BkExec FlwMgr               │ │
 │  └─────────────────────────────────────┘ │
 └──────────────┬───────────────────────────┘
                │
@@ -36,17 +36,18 @@ A mobile-first agentic AI application that connects users with informal service 
 └──────────────────────────────────────────┘
 ```
 
-## 🤖 7-Agent Pipeline (Antigravity Orchestrated)
+## 🤖 8-Agent Pipeline (Antigravity Orchestrated)
 
 | # | Agent | Responsibility | I/O |
 |---|-------|---------------|-----|
 | 1 | **IntentParser** | Extract service, location, time from raw text (Urdu/Roman Urdu/English) | Text → parsed intent |
 | 2 | **LocationResolver** | Convert area name to lat/lng from cached coordinate map | Area → coordinates |
-| 3 | **ProviderDiscoverer** | Filter 60 mock providers by service + location within 5km | Service + location → provider list |
-| 4 | **ProviderRanker** | Score providers: `(distance×0.30) + (rating×0.30) + (availability×0.20) + (response_time×0.20)` | List → ranked list |
+| 3 | **ProviderDiscoverer** | Filter 300 mock providers by service + location within the search radius | Service + location → provider list |
+| 4 | **ProviderRanker** | Score providers across distance, rating, availability, response time, risk, and sentiment | List → ranked list |
 | 5 | **DecisionMaker** | Apply hard constraints (verified, slots, distance), select best, explain why | Ranked → selected + reasoning |
-| 6 | **BookingExecutor** | Write booking to Firestore, generate confirmation ID | Provider + slot → booking |
-| 7 | **FollowUpManager** | Schedule 3 reminders (1hr push, 30min SMS, next-day feedback) | Booking → reminders |
+| 6 | **DynamicPricing** | Generate a PKR quote with distance and urgency adjustments | Provider + context → quote |
+| 7 | **BookingExecutor** | Write booking to the demo store, generate confirmation ID | Provider + slot → booking |
+| 8 | **FollowUpManager** | Schedule reminders and feedback follow-up | Booking → reminders |
 
 All agents share a single context object managed by the Antigravity orchestrator. Each agent reads from context and writes its output back. No agent calls another directly.
 
@@ -54,18 +55,18 @@ All agents share a single context object managed by the Antigravity orchestrator
 
 1. **Home** — Text input + quick-select service buttons (with Urdu labels)
 2. **Intent Confirm** — Parsed intent display with confidence meter & edit option
-3. **Loading** — Animated 7-step pipeline progress with real API progress
+3. **Loading** — Animated 8-step pipeline progress with real API progress
 4. **Provider Results** — Top 3 providers with scores, breakdowns, recommended badge
 5. **Booking Confirm** — Provider details, time slot, reminder preview
 6. **Confirmation** — Success with booking ID, contact, share option
-7. **Agent Trace** — Expandable logs for all 7 agents with timeline visualization
+7. **Agent Trace** — Expandable logs for all 8 agents with timeline visualization
 
 ## 🌍 Pakistan Coverage
 
 - **Islamabad**: G-6 to G-15, F-6 to F-11, I-8, I-9
 - **Lahore**: DHA, Defence, Gulberg, Johar Town, Model Town
 - **Karachi**: Clifton, Defence, Saddar, PECHS, Gulshan
-- **60 pre-seeded mock providers** across all cities
+- **300 pre-seeded mock providers** across all cities
 - **6 service types**: Electrician, Plumber, AC Technician, Carpenter, Painter, Handyman
 
 ## 2026 Agentic Refinement Update
@@ -173,10 +174,16 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/service-request" -Method POST 
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/service-request` | Main pipeline — runs all 7 agents |
+| `POST` | `/api/service-request` | Main pipeline — runs all 8 agents |
+| `POST` | `/api/chaos/simulate` | Simulate provider cancellation and re-route to a replacement |
+| `POST` | `/api/chat/message` | Run grounded provider-chat response generation |
+| `GET`  | `/api/chat/:booking_id` | Get stored chat history |
+| `POST` | `/api/rag/ingest` | Add local RAG context chunks |
+| `POST` | `/api/rag/query` | Query local RAG context chunks |
 | `POST` | `/api/booking/confirm` | Confirm/cancel a booking |
 | `GET`  | `/api/booking/:id` | Get booking details |
 | `POST` | `/api/booking/:id/feedback` | Submit rating (1-5) |
+| `GET`  | `/api/logs` | Return persisted agent trace logs |
 
 ## 🛡 Error Handling
 
@@ -197,15 +204,17 @@ hackathonMVP/
 │   │   ├── LocationResolverAgent.js
 │   │   ├── ProviderDiscovererAgent.js
 │   │   ├── ProviderRankerAgent.js
+│   │   ├── LLMRankerAgent.js
 │   │   ├── DecisionMakerAgent.js
+│   │   ├── DynamicPricingAgent.js
 │   │   ├── BookingExecutorAgent.js
 │   │   └── FollowUpManagerAgent.js
 │   ├── orchestrator/
-│   │   └── AntigravityOrchestrator.js  # Central 7-agent coordinator
+│   │   └── AntigravityOrchestrator.js  # Central 8-agent coordinator
 │   ├── routes/
-│   │   └── serviceRoutes.js     # 4 API endpoints
+│   │   └── serviceRoutes.js     # API endpoints
 │   ├── data/
-│   │   ├── providers.json       # 60 mock providers
+│   │   ├── providers.json       # 300 mock providers
 │   │   ├── coordinates.json     # Area → lat/lng cache
 │   │   └── keywords.json        # Trilingual keyword dictionary
 │   └── middleware/
@@ -228,8 +237,8 @@ hackathonMVP/
 
 | Criterion | Weight | Coverage |
 |-----------|--------|----------|
-| Antigravity Usage | 25% | Central orchestrator managing all 7 agents with trace emission |
-| Agentic Workflow | 20% | 7-agent sequential pipeline with shared context |
+| Antigravity Usage | 25% | Central orchestrator managing all 8 agents with trace emission |
+| Agentic Workflow | 20% | 8-agent sequential pipeline with shared context |
 | Decision Quality | 20% | Multi-factor scoring with visible reasoning per provider |
 | Action Simulation | 15% | Firestore booking + FCM notification scheduling |
 | Implementation | 10% | Clean Node.js + React Native, proper error handling |
