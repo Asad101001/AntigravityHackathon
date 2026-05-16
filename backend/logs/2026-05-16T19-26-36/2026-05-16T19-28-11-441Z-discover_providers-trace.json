@@ -1,0 +1,191 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:28:11.441Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.949611,
+      "lng": 67.107805
+    },
+    "service_type": "Carpenter"
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "C041",
+        "name": "Gulshan Furniture",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "distance_km": 5.68,
+        "rating": 4.3,
+        "reviews_count": 62,
+        "available_slots": [
+          "10:00",
+          "15:00",
+          "16:00"
+        ],
+        "phone": "0351-2345678",
+        "response_time_min": 14,
+        "verified": true,
+        "specialization": [
+          "furniture_repair",
+          "almari",
+          "woodwork"
+        ],
+        "base_rate_pkr": 1000,
+        "on_time_score": 79,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Good furniture repair in Gulshan. Almari and general repairs done well. Slightly slower on bigger jobs. Reasonable prices for the area.",
+        "lat": 24.926,
+        "lng": 67.092,
+        "coordinates_source": "local_area_cache",
+        "haversine_km": 3.07,
+        "distance_text": "5.7 km",
+        "duration_text": "14 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "C061",
+        "name": "Scheme 33 Wood & Wardrobe",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Scheme 33",
+        "distance_km": 8.28,
+        "rating": 4.5,
+        "reviews_count": 64,
+        "available_slots": [
+          "10:00",
+          "13:00",
+          "16:00"
+        ],
+        "phone": "0363-1112233",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "wardrobe",
+          "door_repair",
+          "kitchen_cabinets",
+          "furniture_assembly"
+        ],
+        "base_rate_pkr": 1300,
+        "on_time_score": 85,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Practical carpenter for apartment wardrobes and kitchen cabinet fixes. Finishing is solid for mid-budget work.",
+        "lat": 24.9538,
+        "lng": 67.1629,
+        "coordinates_source": "local_area_cache",
+        "haversine_km": 5.57,
+        "distance_text": "8.3 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "C062",
+        "name": "North Nazimabad Furniture Fix",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "North Nazimabad",
+        "distance_km": 10.49,
+        "rating": 4.3,
+        "reviews_count": 80,
+        "available_slots": [
+          "09:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0363-2223344",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "furniture_repair",
+          "door_locks",
+          "polishing"
+        ],
+        "base_rate_pkr": 1150,
+        "on_time_score": 81,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Reliable for furniture repair and door alignment. Quotes are fair, but complex polish work takes extra days.",
+        "lat": 24.9372,
+        "lng": 67.0432,
+        "coordinates_source": "local_area_cache",
+        "haversine_km": 6.66,
+        "distance_text": "10.5 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "C042",
+        "name": "Defence Wood Master",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Defence",
+        "distance_km": 25.48,
+        "rating": 4.5,
+        "reviews_count": 90,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "15:00"
+        ],
+        "phone": "0359-0123456",
+        "response_time_min": 40,
+        "verified": true,
+        "specialization": [
+          "custom_furniture",
+          "wardrobe",
+          "kitchen_cabinets",
+          "woodwork"
+        ],
+        "base_rate_pkr": 1400,
+        "on_time_score": 87,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Premium carpenter in DHA Karachi. Custom wardrobes and kitchen cabinets delivered on schedule. Uses quality wood and hardware throughout.",
+        "lat": 24.805,
+        "lng": 67.07,
+        "coordinates_source": "local_area_cache",
+        "haversine_km": 16.53,
+        "distance_text": "25.5 km",
+        "duration_text": "40 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "C040",
+        "name": "Clifton Carpentry",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Clifton",
+        "distance_km": 29.1,
+        "rating": 4.7,
+        "reviews_count": 115,
+        "available_slots": [
+          "09:00",
+          "10:00",
+          "14:00"
+        ],
+        "phone": "0350-1234567",
+        "response_time_min": 40,
+        "verified": true,
+        "specialization": [
+          "custom_furniture",
+          "kitchen_cabinets",
+          "woodwork",
+          "polish"
+        ],
+        "base_rate_pkr": 1400,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Exceptional carpentry work in Clifton. Kitchen cabinets built to exact specifications. Clients recommend him for any high-end woodwork needs.",
+        "lat": 24.8138,
+        "lng": 67.03,
+        "coordinates_source": "local_area_cache",
+        "haversine_km": 17.02,
+        "distance_text": "29.1 km",
+        "duration_text": "40 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 449
+}

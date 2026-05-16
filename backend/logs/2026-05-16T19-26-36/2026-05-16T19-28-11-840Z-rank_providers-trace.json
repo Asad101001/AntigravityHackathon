@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:28:11.840Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "C040",
+    "ranked_ids": [
+      "C040",
+      "C042",
+      "C061",
+      "C062",
+      "C041"
+    ],
+    "reasoning_log": "Given the normal urgency and neutral price sensitivity, I prioritized providers with high ratings and on-time scores. Clifton Carpentry (C040) stood out with the highest rating and on-time score, making it the best choice despite being the farthest. Defence Wood Master (C042) was a close second, but its higher base rate and longer response time made C040 the top pick."
+  },
+  "durationMs": 397
+}

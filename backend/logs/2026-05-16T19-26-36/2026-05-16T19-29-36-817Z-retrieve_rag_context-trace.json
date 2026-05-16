@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:29:36.817Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "I've just given it provider: Scheme 33 Wood & Wardrobe type: Carpenter"
+  },
+  "output": {
+    "chunk_count": 0,
+    "chunks": []
+  },
+  "durationMs": 2
+}

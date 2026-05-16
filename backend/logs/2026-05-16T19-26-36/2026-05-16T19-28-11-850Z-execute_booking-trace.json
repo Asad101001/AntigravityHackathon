@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:28:11.850Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Clifton Carpentry",
+    "time_slot": "09:00"
+  },
+  "output": {
+    "booking_id": "BK_1778959691849",
+    "confirmation_message": "Booking confirmed! Clifton Carpentry arrives today at 09:00. Contact: 0350-1234567. Booking ID: BK_1778959691849",
+    "scheduled_time": "2026-05-17T04:00:00.000Z",
+    "time_slot": "09:00"
+  },
+  "durationMs": 0
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:29:37.058Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1778959691849",
+    "message": "I've just given it"
+  },
+  "output": {
+    "reply": "I don't have specific information about that right now — could you clarify what you've given regarding your location for services?",
+    "provider": "groq",
+    "usage": null,
+    "rag_chunks_used": 0
+  },
+  "durationMs": 236
+}

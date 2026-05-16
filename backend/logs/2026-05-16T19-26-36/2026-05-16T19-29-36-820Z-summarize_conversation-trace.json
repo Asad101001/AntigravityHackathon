@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-16T19-26-36",
+  "timestamp": "2026-05-16T19:29:36.820Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1778959691849",
+    "messages": 2
+  },
+  "output": {
+    "summary": "user: location of services\nassistant: Assalamu alaikum! Welcome to our service-booking coordination. I'd be happy to assist you. Could you please confirm your location for services? Are you looking for services in Karachi, Lahore, or Islamabad?"
+  },
+  "durationMs": 0
+}
