@@ -6,9 +6,6 @@ const DecisionMakerAgent = require('../agents/DecisionMakerAgent');
 const DynamicPricingAgent = require('../agents/DynamicPricingAgent');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
-const RagRetrievalAgent = require('../agents/RagRetrievalAgent');
-const SummarizationAgent = require('../agents/SummarizationAgent');
-const ConversationAgent = require('../agents/ConversationAgent');
 const ChaosSimulatorAgent = require('../agents/ChaosSimulatorAgent');
 
 class AntigravityOrchestrator {
@@ -131,7 +128,9 @@ class AntigravityOrchestrator {
         quote_breakdown: context.quote_breakdown || null,
         parsed_intent: {
           service_type: context.service_type || null,
-          location: context.location || null,
+          location: context.location || context.resolved_area || null,
+          typed_location: context.location || null,
+          resolved_area: context.resolved_area || null,
           time_preference: context.time_preference || null,
           confidence: context.confidence || 0,
           location_confidence: context.location_confidence || null,
@@ -149,7 +148,9 @@ class AntigravityOrchestrator {
       clarification: context.needs_clarification ? {
         parsed: {
           service_type: context.service_type || null,
-          location: context.location || null,
+          location: context.location || context.resolved_area || null,
+          typed_location: context.location || null,
+          resolved_area: context.resolved_area || null,
           time: context.time_preference || null
         },
         prompt: !context.service_type ? 'What service do you need?' : !context.location ? 'Which area/city are you in?' : 'Could you please clarify your request?',
@@ -197,6 +198,9 @@ class AntigravityOrchestrator {
       workflow_id: workflowId
     };
 
+    const RagRetrievalAgent = require('../agents/RagRetrievalAgent');
+    const SummarizationAgent = require('../agents/SummarizationAgent');
+    const ConversationAgent = require('../agents/ConversationAgent');
     const chatPlan = [new RagRetrievalAgent(), new SummarizationAgent(), new ConversationAgent()];
     for (const agent of chatPlan) {
       await agent.run(context);

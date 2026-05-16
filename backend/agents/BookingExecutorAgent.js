@@ -5,7 +5,6 @@
  */
 
 const BaseAgent = require('./BaseAgent');
-const { v4: uuidv4 } = require('uuid');
 
 // In-memory booking store (demo mode — replaces Firestore)
 const bookingStore = new Map();

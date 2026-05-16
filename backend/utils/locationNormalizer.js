@@ -64,11 +64,20 @@ function getLocationCatalog() {
   const catalog = [];
   for (const [city, areas] of Object.entries(coordinates)) {
     const cityTitle = city.charAt(0).toUpperCase() + city.slice(1);
+    const areaValues = Object.values(areas);
+    const centroid = areaValues.length
+      ? {
+          lat: areaValues.reduce((sum, item) => sum + item.lat, 0) / areaValues.length,
+          lng: areaValues.reduce((sum, item) => sum + item.lng, 0) / areaValues.length,
+          area_name: `${cityTitle} city center`
+        }
+      : null;
+
     catalog.push({
       city: cityTitle,
       area: cityTitle,
       canonical: cityTitle,
-      coords: Object.values(areas)[0],
+      coords: centroid,
       searchText: cityTitle,
       normalized: normalizeLocation(cityTitle),
       cityOnly: true

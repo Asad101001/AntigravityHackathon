@@ -11,7 +11,6 @@ import {
   View, Text, StyleSheet, SafeAreaView, Animated, Easing
 } from 'react-native';
 import axios from 'axios';
-import * as Location from 'expo-location';
 import { COLORS, API_URL } from '../config';
 
 // ---------------------------------------------------------------------------
@@ -39,9 +38,9 @@ const PIPELINE = [
     icon: '📍',
     agentName: 'LocationResolverAgent',
     narration: [
-      'Reading GPS coordinates...',
-      'Reverse-geocoding to district...',
-      'Checking service-area coverage map...',
+      'Checking typed area against the request...',
+      'Using picked/current coordinates only if text has no area...',
+      'Validating service-area coverage map...',
       'Location context confirmed ✓',
     ],
   },
@@ -191,34 +190,13 @@ export default function LoadingScreen({ route, navigation }) {
 
   const callAPI = async () => {
     try {
-      let finalUserText = userText;
-
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({});
-          const geocode = await Location.reverseGeocodeAsync({
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-          });
-          if (geocode?.length > 0) {
-            const city = geocode[0].city || geocode[0].region || 'Islamabad';
-            if (
-              !finalUserText.toLowerCase().includes(' in ') &&
-              !finalUserText.toLowerCase().includes(' mein ')
-            ) {
-              finalUserText += ` in ${city}`;
-            }
-          }
-        }
-      } catch (locErr) {
-        console.warn('Location error:', locErr);
-      }
-
+      // Never mutate the typed request with device-derived city text here.
+      // The backend parser should decide whether the user specified a location;
+      // GPS/map coordinates are sent separately and only used when text has no location.
       const response = await axios.post(
         `${API_URL}/service-request`,
         {
-          user_text: finalUserText,
+          user_text: userText,
           user_id: `user_${Date.now()}`,
           user_location: userLocation || null,
           location_source: userLocation ? (locationSource || 'map') : 'typed',

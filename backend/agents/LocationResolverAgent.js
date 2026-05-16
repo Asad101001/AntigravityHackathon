@@ -2,17 +2,15 @@
  * Agent 2: LocationResolverAgent — Google Geocoding Edition
  *
  * Resolution priority:
- *   1. Explicit user_location (map pin) — use as-is, validate Pakistan bbox
- *   2. Parsed location string — send to Google Geocoding API → lat/lng
- *   3. Local coordinate cache fallback (fuzzy match) — if Geocoding fails
- *   4. Return null → orchestrator will ask user to clarify
+ *   1. Parsed location string from user text — geocode/cache it; typed intent wins
+ *   2. Explicit user_location (map pin/GPS) — use only when text has no real location
+ *   3. Return null → orchestrator will ask user to clarify
  *
  * Google Geocoding costs $0.005/request (free tier covers 40,000/month).
  * We bias every query to Pakistan to avoid mis-geocoding common area names.
  */
 
 const BaseAgent   = require('./BaseAgent');
-const coordinates = require('../data/coordinates.json');
 const { findLocationCandidate } = require('../utils/locationNormalizer');
 const { withRetry } = require('../utils/retryHelper');
 
@@ -31,78 +29,111 @@ class LocationResolverAgent extends BaseAgent {
 
   // ── Public execute ────────────────────────────────────────────────────
   async execute(context) {
-    // ── 1. Explicit map-picked coordinates ──────────────────────────────
+    const rawLocation = this._usableParsedLocation(context.location);
+
+    // ── 1. Location explicitly typed in the request ─────────────────────
+    // The text parser is authoritative: if the user wrote "Gulzar-e-Hijri"
+    // while a map pin is also present, resolve the typed area and ignore the pin.
+    if (rawLocation) {
+      const cached = this._fromLocalCache(rawLocation);
+      if (cached) return cached;
+
+      if (this.apiKey) {
+        const geoResult = await this._geocode(rawLocation);
+        if (geoResult) {
+          return {
+            input: rawLocation,
+            output: geoResult,
+            reasoning: `Google Geocoding resolved "${rawLocation}" → ${geoResult.area_name} (${geoResult.lat.toFixed(4)}, ${geoResult.lng.toFixed(4)}). Confidence: ${geoResult.confidence}.`,
+            contextUpdates: {
+              coordinates:        { lat: geoResult.lat, lng: geoResult.lng },
+              city:               geoResult.city,
+              resolved_area:      geoResult.area_name,
+              location:           geoResult.area_name,
+              location_confidence: geoResult.confidence,
+              location_source:    'geocoding_api',
+            },
+          };
+        }
+      }
+
+      return {
+        input: rawLocation,
+        output: { lat: null, lng: null, area_name: null, city: null, fallback: true },
+        reasoning: `Could not resolve typed location "${rawLocation}". User must clarify location.`,
+        contextUpdates: { coordinates: null, city: null, resolved_area: null, location_fallback: true },
+      };
+    }
+
+    // ── 2. Explicit map-picked/current-location coordinates ─────────────
     const explicit = context.user_location;
     if (explicit?.lat != null && explicit?.lng != null) {
-      if (!this._inPakistan(explicit.lat, explicit.lng)) {
-        return this._reject(explicit, 'Coordinates outside Pakistan');
+      const lat = Number(explicit.lat);
+      const lng = Number(explicit.lng);
+      if (!this._inPakistan(lat, lng)) {
+        return this._reject({ lat, lng }, 'Coordinates outside Pakistan');
       }
       return {
         input: explicit,
         output: {
-          lat: explicit.lat, lng: explicit.lng,
-          area_name: explicit.label || 'Pinned location',
+          lat, lng,
+          area_name: explicit.label || 'Current location',
           city: explicit.city || null,
           source: context.location_source || 'map',
         },
-        reasoning: `Using map-pinned coordinates (${explicit.lat.toFixed(4)}, ${explicit.lng.toFixed(4)}).`,
+        reasoning: `No typed location found. Using provided ${context.location_source || 'map'} coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)}).`,
         contextUpdates: {
-          coordinates:        { lat: explicit.lat, lng: explicit.lng },
+          coordinates:        { lat, lng },
           city:               explicit.city || null,
-          resolved_area:      explicit.label || 'Pinned location',
+          resolved_area:      explicit.label || 'Current location',
           location_confidence: 1,
           location_source:    context.location_source || 'map',
         },
       };
     }
 
-    const rawLocation = context.location || context.user_text || '';
+    // ── 3. Cannot resolve ──────────────────────────────────────────────
+    return {
+      input: context.location || '',
+      output: { lat: null, lng: null, area_name: null, city: null, fallback: true },
+      reasoning: 'No typed location or provided coordinates were available. User must clarify location.',
+      contextUpdates: { coordinates: null, city: null, resolved_area: null, location_fallback: true },
+    };
+  }
 
-    // ── 2. Google Geocoding API ─────────────────────────────────────────
-    if (this.apiKey && rawLocation.trim()) {
-      const geoResult = await this._geocode(rawLocation);
-      if (geoResult) {
-        return {
-          input: rawLocation,
-          output: geoResult,
-          reasoning: `Google Geocoding resolved "${rawLocation}" → ${geoResult.area_name} (${geoResult.lat.toFixed(4)}, ${geoResult.lng.toFixed(4)}). Confidence: ${geoResult.confidence}.`,
-          contextUpdates: {
-            coordinates:        { lat: geoResult.lat, lng: geoResult.lng },
-            city:               geoResult.city,
-            resolved_area:      geoResult.area_name,
-            location:           geoResult.area_name,
-            location_confidence: geoResult.confidence,
-            location_source:    'geocoding_api',
-          },
-        };
-      }
-    }
+  _usableParsedLocation(value) {
+    const text = String(value || '').trim();
+    if (!text) return '';
+    const normalized = text.toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const currentLocationOnly = new Set([
+      'current location',
+      'my current location',
+      'near me',
+      'meri current location',
+      'mere current location',
+      'yahan',
+      'idhar'
+    ]);
+    return currentLocationOnly.has(normalized) ? '' : text;
+  }
 
-    // ── 3. Local fuzzy cache fallback ──────────────────────────────────
+  _fromLocalCache(rawLocation) {
     const candidate = findLocationCandidate(rawLocation, { minConfidence: 0.55 });
-    if (candidate?.coords) {
-      const { lat, lng } = candidate.coords;
-      if (!this._inPakistan(lat, lng)) return this._reject({ lat, lng }, 'Coordinates outside Pakistan');
-      return {
-        input: rawLocation,
-        output: { lat, lng, area_name: candidate.coords.area_name, city: candidate.city, source: 'local_cache' },
-        reasoning: `Geocoding unavailable. Matched "${rawLocation}" via local fuzzy cache → ${candidate.coords.area_name}.`,
-        contextUpdates: {
-          coordinates:        { lat, lng },
-          city:               candidate.city,
-          resolved_area:      candidate.coords.area_name,
-          location_confidence: candidate.confidence,
-          location_source:    'local_cache',
-        },
-      };
-    }
-
-    // ── 4. Cannot resolve ──────────────────────────────────────────────
+    if (!candidate?.coords) return null;
+    const { lat, lng } = candidate.coords;
+    if (!this._inPakistan(lat, lng)) return this._reject({ lat, lng }, 'Coordinates outside Pakistan');
     return {
       input: rawLocation,
-      output: { lat: null, lng: null, area_name: null, city: null, fallback: true },
-      reasoning: `Could not resolve "${rawLocation}" via Geocoding API or local cache. User must clarify location.`,
-      contextUpdates: { coordinates: null, city: null, resolved_area: null, location_fallback: true },
+      output: { lat, lng, area_name: candidate.coords.area_name, city: candidate.city, source: 'local_cache' },
+      reasoning: `Matched typed location "${rawLocation}" via local cache → ${candidate.coords.area_name}.`,
+      contextUpdates: {
+        coordinates:        { lat, lng },
+        city:               candidate.city,
+        resolved_area:      candidate.coords.area_name,
+        location:           candidate.coords.area_name,
+        location_confidence: candidate.confidence,
+        location_source:    'local_cache',
+      },
     };
   }
 
