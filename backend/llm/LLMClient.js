@@ -16,8 +16,8 @@ const { withRetry } = require('../utils/retryHelper');
 const GROQ_ENDPOINT   = 'https://api.groq.com/openai/v1/chat/completions';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const DEFAULT_GROQ_MODEL   = 'llama3-8b-8192';
-const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash-latest';
+const DEFAULT_GROQ_MODEL   = 'llama-3.1-8b-instant'; 
+const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
 
 const RETRY_OPTS = {
   maxAttempts: 4,

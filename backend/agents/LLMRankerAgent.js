@@ -65,13 +65,11 @@ class LLMRankerAgent extends BaseAgent {
     ].join('\n');
 
     try {
-      const llmResult = await this.llm.generate({
+      // Use completeJSON to safely hit the LLM and get a parsed object back
+      const parsed = await this.llm.completeJSON({
         system,
-        messages: [{ role: 'user', content: userMessage }]
+        user: userMessage
       });
-
-      const raw = (llmResult.text || '').trim().replace(/^```json|```$/g, '').trim();
-      const parsed = JSON.parse(raw);
 
       const selectedId = parsed.selected_provider_id;
       const rankedIds = Array.isArray(parsed.ranked_ids) ? parsed.ranked_ids : [];
@@ -102,7 +100,7 @@ class LLMRankerAgent extends BaseAgent {
         contextUpdates: {
           ranked_providers: fullRanked,
           reasoning_log: reasoningLog,
-          llm_ranker_provider: llmResult.provider
+          llm_ranker_provider: 'primary_llm'
         }
       };
     } catch (err) {

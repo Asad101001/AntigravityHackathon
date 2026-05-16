@@ -34,15 +34,12 @@ class LLMIntentParserAgent extends BaseAgent {
       'Do NOT wrap the JSON in ```json``` or any other delimiters.'
     ].join('\n');
 
-    let llmResult;
     try {
-      llmResult = await this.llm.generate({
+      // Use the new completeJSON method which handles parsing and retries automatically
+      const parsed = await this.llm.completeJSON({
         system,
-        messages: [{ role: 'user', content: userText }]
+        user: userText
       });
-
-      const raw = (llmResult.text || '').trim().replace(/^```json|```$/g, '').trim();
-      const parsed = JSON.parse(raw);
 
       const service = parsed.service_type || null;
       const location = parsed.location || null;
@@ -67,7 +64,7 @@ class LLMIntentParserAgent extends BaseAgent {
           urgency_level: urgency,
           price_sensitivity: priceSensitivity,
           llm_intent_reasoning: reasoning,
-          llm_provider: llmResult.provider
+          llm_provider: 'primary_llm'
         }
       };
     } catch (err) {
