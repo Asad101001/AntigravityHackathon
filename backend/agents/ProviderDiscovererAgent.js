@@ -6,11 +6,12 @@
  *                 for those 5 only. Costs $0.005 × 5 = $0.025 per user query.
  *
  * Output shape per provider:
- *   { id, name, type, lat, lng, distance_km, response_time_min, phone, rating }
+ *   { id, name, service, lat, lng, distance_km, response_time_min, phone, rating }
  */
 
 const BaseAgent = require('./BaseAgent');
 const providers = require('../data/providers.json');
+const coordinatesByCity = require('../data/coordinates.json');
 const { withRetry } = require('../utils/retryHelper');
 
 const DISTANCE_MATRIX_ENDPOINT = 'https://maps.googleapis.com/maps/api/distancematrix/json';
@@ -34,14 +35,16 @@ class ProviderDiscovererAgent extends BaseAgent {
         input: context,
         output: { providers: [], error: 'No resolved coordinates in context' },
         reasoning: 'Cannot discover providers without resolved coordinates.',
-        contextUpdates: { nearby_providers: [], provider_discovery_failed: true },
+        contextUpdates: { providers: [], nearby_providers: [], provider_discovery_failed: true },
       };
     }
 
     const { lat: userLat, lng: userLng } = coordinates;
 
     // ── Pass 1: Haversine filter ─────────────────────────────────────────
-    const filtered = this._filterByType(providers, service_type);
+    const filtered = this._filterByType(providers, service_type)
+      .map(provider => this._withResolvedCoordinates(provider))
+      .filter(provider => this._hasUsableCoordinates(provider));
     const ranked   = this._haversineRank(filtered, userLat, userLng);
     const topN     = ranked.slice(0, TOP_N_HAVERSINE);
 
@@ -50,12 +53,12 @@ class ProviderDiscovererAgent extends BaseAgent {
         input: { coordinates, service_type },
         output: { providers: [] },
         reasoning: `No providers found for type "${service_type}" near (${userLat}, ${userLng}).`,
-        contextUpdates: { nearby_providers: [], provider_count: 0 },
+        contextUpdates: { providers: [], nearby_providers: [], provider_count: 0 },
       };
     }
 
     // ── Pass 2: Distance Matrix for exact driving metrics ────────────────
-    let enriched = topN;
+    let enriched = topN.map(provider => this._withEstimatedTravel(provider));
     if (this.apiKey) {
       enriched = await this._enrichWithDrivingTimes(topN, userLat, userLng);
     }
@@ -76,6 +79,7 @@ class ProviderDiscovererAgent extends BaseAgent {
           : 'Pass 2: Skipped (no API key) — using haversine estimates.',
       ].join(' '),
       contextUpdates: {
+        providers: enriched,
         nearby_providers: enriched,
         provider_count:   enriched.length,
         closest_provider: enriched[0] ?? null,
@@ -102,8 +106,83 @@ class ProviderDiscovererAgent extends BaseAgent {
 
   _filterByType(list, serviceType) {
     if (!serviceType) return list;
-    const t = serviceType.toLowerCase();
-    return list.filter(p => p.type?.toLowerCase().includes(t) || p.services?.some(s => s.toLowerCase().includes(t)));
+    const t = this._normalizeServiceText(serviceType);
+    return list.filter(p => {
+      const searchable = [
+        p.service,
+        p.type,
+        ...(p.services || []),
+        ...(p.specialization || [])
+      ]
+        .filter(Boolean)
+        .map(value => this._normalizeServiceText(value));
+
+      return searchable.some(value => value.includes(t) || t.includes(value));
+    });
+  }
+
+  _normalizeServiceText(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  _withResolvedCoordinates(provider) {
+    if (provider.lat != null && provider.lng != null) return provider;
+
+    const cityKey = this._findCoordinateCityKey(provider.city);
+    const cityCoordinates = cityKey ? coordinatesByCity[cityKey] : null;
+    const areaCoordinates = cityCoordinates ? this._findAreaCoordinates(cityCoordinates, provider.area) : null;
+
+    if (!areaCoordinates) return provider;
+
+    return {
+      ...provider,
+      lat: areaCoordinates.lat,
+      lng: areaCoordinates.lng,
+      coordinates_source: 'local_area_cache',
+    };
+  }
+
+  _findCoordinateCityKey(city) {
+    const normalizedCity = this._normalizeAreaKey(city);
+    return Object.keys(coordinatesByCity).find(key => this._normalizeAreaKey(key) === normalizedCity);
+  }
+
+  _findAreaCoordinates(cityCoordinates, area) {
+    const normalizedArea = this._normalizeAreaKey(area);
+    const exactKey = Object.keys(cityCoordinates).find(key => this._normalizeAreaKey(key) === normalizedArea);
+    if (exactKey) return cityCoordinates[exactKey];
+
+    const partialKey = Object.keys(cityCoordinates).find(key => {
+      const normalizedKey = this._normalizeAreaKey(key);
+      return normalizedKey.includes(normalizedArea) || normalizedArea.includes(normalizedKey);
+    });
+    return partialKey ? cityCoordinates[partialKey] : null;
+  }
+
+  _normalizeAreaKey(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/[-_]+/g, ' ')
+      .replace(/\be\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  _hasUsableCoordinates(provider) {
+    return Number.isFinite(Number(provider.lat)) && Number.isFinite(Number(provider.lng));
+  }
+
+  _withEstimatedTravel(provider) {
+    return {
+      ...provider,
+      distance_km: provider.haversine_km,
+      response_time_min: Math.max(5, Math.round(provider.haversine_km * 2.5)),
+      distance_source: 'haversine_estimate',
+    };
   }
 
   // ── Distance Matrix API ───────────────────────────────────────────────
@@ -122,16 +201,17 @@ class ProviderDiscovererAgent extends BaseAgent {
     } catch (err) {
       console.warn('[ProviderDiscoverer] Distance Matrix failed:', err.message);
       return topProviders.map(p => ({
-        ...p,
-        distance_km:      p.haversine_km,
-        response_time_min: Math.round(p.haversine_km * 2.5),
-        distance_source:   'haversine_fallback',
+        ...this._withEstimatedTravel(p),
+        distance_source: 'haversine_fallback',
       }));
     }
 
     if (data?.status !== 'OK') {
       console.warn('[ProviderDiscoverer] Distance Matrix status:', data?.status);
-      return topProviders;
+      return topProviders.map(p => ({
+        ...this._withEstimatedTravel(p),
+        distance_source: 'haversine_fallback',
+      }));
     }
 
     const elements = data.rows?.[0]?.elements ?? [];
@@ -140,9 +220,7 @@ class ProviderDiscovererAgent extends BaseAgent {
       const el = elements[i];
       if (!el || el.status !== 'OK') {
         return {
-          ...provider,
-          distance_km:       provider.haversine_km,
-          response_time_min: Math.round(provider.haversine_km * 2.5),
+          ...this._withEstimatedTravel(provider),
           distance_source:   'haversine_fallback',
         };
       }
