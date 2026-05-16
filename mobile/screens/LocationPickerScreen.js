@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
-import MapPanel from '../components/MapPanel';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config';
+import MapPanel from '../components/MapPanel';
+import LiquidGlass from '../components/LiquidGlass';
+import { COLORS, RADII } from '../theme';
 
 const DEFAULT_REGION = { latitude: 24.926, longitude: 67.092, latitudeDelta: 0.08, longitudeDelta: 0.08 };
 
@@ -22,7 +23,7 @@ export default function LocationPickerScreen({ route, navigation }) {
         console.warn('Location permission/current position skipped', error.message);
       }
     })();
-  }, []);
+  }, [route.params?.pickedLocation]);
 
   const onPick = async (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
@@ -39,35 +40,43 @@ export default function LocationPickerScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.orb} />
       <MapPanel
         style={styles.map}
-        initialRegion={{ latitude: pin.lat, longitude: pin.lng, latitudeDelta: 0.08, longitudeDelta: 0.08 }}
+        userCoordinates={{ lat: pin.lat, lng: pin.lng }}
+        initialRegion={{ latitude: pin.lat, longitude: pin.lng, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
         onPress={onPick}
         markers={[{ id: 'selected-pin', coordinate: { latitude: pin.lat, longitude: pin.lng }, title: pin.label, pinColor: COLORS.primary }]}
       />
-      <View style={styles.sheet}>
+      <LiquidGlass style={styles.sheet} contentStyle={styles.sheetInner} strong radius={RADII.xl}>
+        <View style={styles.handle} />
         <Text style={styles.kicker}>Map location</Text>
         <Text style={styles.title}>Pick where the service is needed</Text>
         <View style={styles.locationRow}>
-          <Ionicons name="location" size={18} color={COLORS.primary} />
+          <View style={styles.locationIcon}><Ionicons name="location" size={18} color={COLORS.primary} /></View>
           <Text style={styles.locationText}>{pin.label}</Text>
         </View>
-        <TouchableOpacity style={styles.button} onPress={confirm}>
+        <TouchableOpacity style={styles.button} onPress={confirm} activeOpacity={0.84}>
           <Text style={styles.buttonText}>Use this location</Text>
+          <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
         </TouchableOpacity>
-      </View>
+      </LiquidGlass>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
-  map: { flex: 1 },
-  sheet: { backgroundColor: COLORS.bgCard, padding: 20, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderWidth: 1, borderColor: COLORS.border },
+  container: { flex: 1, backgroundColor: COLORS.bg, paddingTop: 112 },
+  orb: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(34,197,94,0.14)', top: 70, right: -88 },
+  map: { flex: 1, marginHorizontal: 16, marginBottom: 246 },
+  sheet: { position: 'absolute', left: 14, right: 14, bottom: 18 },
+  sheetInner: { padding: 20 },
+  handle: { alignSelf: 'center', width: 42, height: 5, borderRadius: 4, backgroundColor: 'rgba(14,143,70,0.22)', marginBottom: 14 },
   kicker: { color: COLORS.primary, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
   title: { color: COLORS.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 4 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 16, backgroundColor: COLORS.chip, padding: 12, borderRadius: 14 },
-  locationText: { color: COLORS.textSecondary, fontWeight: '700', flex: 1 },
-  button: { backgroundColor: COLORS.primary, borderRadius: 18, alignItems: 'center', paddingVertical: 15 },
-  buttonText: { color: '#fff', fontWeight: '900' }
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 16, backgroundColor: 'rgba(255,255,255,0.68)', padding: 12, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.92)' },
+  locationIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.accentSoft },
+  locationText: { color: COLORS.textSecondary, fontWeight: '800', flex: 1 },
+  button: { backgroundColor: COLORS.primary, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingVertical: 15, flexDirection: 'row', gap: 8 },
+  buttonText: { color: '#fff', fontWeight: '900' },
 });

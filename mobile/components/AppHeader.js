@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config';
+import LiquidGlass from './LiquidGlass';
+import { COLORS, RADII, SHADOWS } from '../theme';
 
-const GLASS_BG = 'rgba(9, 22, 35, 0.62)';
-const GLASS_BORDER = 'rgba(255, 255, 255, 0.20)';
-
-export default function AppHeader({ navigation, routeName, canGoBack }) {
+export default function AppHeader({ navigation, routeName, canGoBack, onProfilePress }) {
   const shimmer = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -18,34 +16,43 @@ export default function AppHeader({ navigation, routeName, canGoBack }) {
     ).start();
   }, [shimmer]);
 
-  const resetToStartup = () => {
-    navigation.reset({ index: 0, routes: [{ name: 'Splash' }] });
+  const resetToHome = () => {
+    navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
+
+  const glowTranslate = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-42, 44] });
 
   return (
     <View style={styles.shell} pointerEvents="box-none">
       {canGoBack ? (
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-          <Ionicons name="chevron-back" size={20} color="#F8FAFC" />
+        <TouchableOpacity style={styles.circleButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
+          <Ionicons name="chevron-back" size={21} color={COLORS.primary} />
         </TouchableOpacity>
       ) : (
-        <View style={styles.backSpacer} />
+        <View style={styles.circleSpacer} />
       )}
 
-      <TouchableOpacity style={styles.brandGlass} onPress={resetToStartup} activeOpacity={0.88}>
-        <View style={styles.monogramWrap}>
-          <Text style={[styles.monogramLetter, styles.letterM]}>M</Text>
-          <Text style={[styles.monogramLetter, styles.letterA]}>A</Text>
-          <Text style={[styles.monogramLetter, styles.letterK]}>K</Text>
-          <Animated.View style={[styles.monogramGlow, { opacity: shimmer }]} />
-        </View>
-        <View>
-          <Text style={styles.appName}>Asaaniyat</Text>
-          <Text style={styles.routeLabel}>{routeName || 'Home'}</Text>
-        </View>
+      <TouchableOpacity onPress={resetToHome} activeOpacity={0.9} style={styles.brandTapTarget}>
+        <LiquidGlass style={styles.brandGlass} contentStyle={styles.brandContent} strong radius={RADII.pill}>
+          <View style={styles.monogramWrap}>
+            <Text style={styles.monogramLetter}>A</Text>
+            <View style={styles.monogramDivider} />
+            <Text style={styles.monogramLeaf}>آ</Text>
+            <Animated.View style={[styles.monogramGlow, { transform: [{ translateX: glowTranslate }, { rotate: '22deg' }] }]} />
+          </View>
+          <View style={styles.brandTextWrap}>
+            <Text style={styles.appName}>Asaaniyat</Text>
+            <Text style={styles.routeLabel}>{routeName || 'Home'}</Text>
+          </View>
+        </LiquidGlass>
       </TouchableOpacity>
 
-      <View style={styles.rightSpacer} />
+      <TouchableOpacity style={styles.avatarButton} onPress={onProfilePress} activeOpacity={0.84}>
+        <View style={styles.avatarInner}>
+          <Text style={styles.avatarText}>A</Text>
+        </View>
+        <View style={styles.statusDot} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -58,81 +65,115 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 14,
   },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  circleButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: GLASS_BORDER,
+    borderColor: 'rgba(255,255,255,0.94)',
+    ...SHADOWS.card,
   },
-  backSpacer: { width: 42, height: 42 },
-  rightSpacer: { width: 42, height: 42 },
+  circleSpacer: { width: 44, height: 44 },
+  brandTapTarget: { flexShrink: 1 },
   brandGlass: {
-    minWidth: 218,
-    height: 58,
-    borderRadius: 29,
+    minWidth: 224,
+    maxWidth: 258,
+  },
+  brandContent: {
+    height: 60,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: GLASS_BG,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.24,
-    shadowRadius: 22,
-    elevation: 8,
-    overflow: 'hidden',
   },
   monogramWrap: {
-    width: 66,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    width: 70,
+    height: 32,
+    borderRadius: 18,
+    backgroundColor: 'rgba(234,248,239,0.78)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(255,255,255,0.96)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   monogramLetter: {
-    color: '#F8FAFC',
+    color: COLORS.primary,
+    fontWeight: '900',
+    fontSize: 17,
+    letterSpacing: -0.4,
+  },
+  monogramDivider: {
+    width: 1,
+    height: 16,
+    marginHorizontal: 7,
+    backgroundColor: 'rgba(14,143,70,0.22)',
+  },
+  monogramLeaf: {
+    color: COLORS.accent,
     fontWeight: '900',
     fontSize: 15,
-    letterSpacing: -1,
-    textShadowColor: 'rgba(34,197,94,0.75)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
   },
-  letterM: { marginRight: -1 },
-  letterA: { color: '#9EF7C2', transform: [{ translateY: -1 }] },
-  letterK: { marginLeft: -1 },
   monogramGlow: {
     position: 'absolute',
-    width: 28,
-    height: 54,
+    width: 26,
+    height: 58,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    transform: [{ rotate: '28deg' }, { translateX: 8 }],
+    backgroundColor: 'rgba(255,255,255,0.64)',
   },
+  brandTextWrap: { minWidth: 116 },
   appName: {
-    color: '#F8FAFC',
+    color: COLORS.textPrimary,
     fontSize: 18,
     fontWeight: '900',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   routeLabel: {
     marginTop: 1,
-    color: 'rgba(226, 232, 240, 0.72)',
+    color: COLORS.textSecondary,
     fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.4,
+    fontWeight: '900',
+    letterSpacing: 1.35,
     textTransform: 'uppercase',
+  },
+  avatarButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.76)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.96)',
+    ...SHADOWS.card,
+  },
+  avatarInner: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  statusDot: {
+    position: 'absolute',
+    right: 6,
+    bottom: 5,
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: COLORS.accent,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
 });
