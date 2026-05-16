@@ -2,6 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const fs = require('fs');
 const path = require('path');
+const coordinatesByCity = require('./data/coordinates.json');
 
 let dbPromise;
 
@@ -76,15 +77,9 @@ async function setupDatabase() {
           `);
           
           for (const p of providers) {
-            // Assign some random coords around city centers if none exists
-            let lat = p.lat || 33.6844; // Default to Islamabad approx
-            let lng = p.lng || 73.0479;
-            if (p.city === 'Lahore') { lat = 31.5204; lng = 74.3587; }
-            if (p.city === 'Karachi') { lat = 24.8607; lng = 67.0011; }
-            
-            // Add some noise to coordinates so they don't stack up exactly
-            lat += (Math.random() - 0.5) * 0.05;
-            lng += (Math.random() - 0.5) * 0.05;
+            const resolvedCoords = resolveProviderCoordinates(p);
+            const lat = resolvedCoords.lat;
+            const lng = resolvedCoords.lng;
 
             await stmt.run(
               p.id, p.name, p.service, p.city, p.area, p.distance_km, p.rating, 
@@ -120,6 +115,35 @@ async function setupDatabase() {
     });
   }
   return dbPromise;
+}
+
+
+function normalizeAreaKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\be\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function resolveProviderCoordinates(provider) {
+  if (Number.isFinite(Number(provider.lat)) && Number.isFinite(Number(provider.lng))) {
+    return { lat: Number(provider.lat), lng: Number(provider.lng) };
+  }
+
+  const cityKey = Object.keys(coordinatesByCity).find(key => normalizeAreaKey(key) === normalizeAreaKey(provider.city));
+  const cityCoordinates = cityKey ? coordinatesByCity[cityKey] : null;
+  if (!cityCoordinates) return { lat: null, lng: null };
+
+  const normalizedArea = normalizeAreaKey(provider.area);
+  const areaKey = Object.keys(cityCoordinates).find(key => {
+    const normalizedKey = normalizeAreaKey(key);
+    return normalizedKey === normalizedArea || normalizedKey.includes(normalizedArea) || normalizedArea.includes(normalizedKey);
+  });
+
+  const coords = areaKey ? cityCoordinates[areaKey] : Object.values(cityCoordinates)[0];
+  return { lat: coords?.lat ?? null, lng: coords?.lng ?? null };
 }
 
 function hydrateProvider(r) {

@@ -9,8 +9,6 @@ const router = express.Router();
 const AntigravityOrchestrator = require('../orchestrator/AntigravityOrchestrator');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
-const db = require('../db');
-const { ingestText, retrieve } = require('../rag/retriever');
 
 const orchestrator = new AntigravityOrchestrator({
   apiKey: process.env.ANTIGRAVITY_KEY || 'demo-key'
@@ -113,6 +111,7 @@ router.post('/chaos/simulate', async (req, res) => {
 
     if (providerList.length < 2) {
       // Load demo providers from DB as fallback
+      const db = require('../db');
       const dbProviders = await db.findProvidersByService(service_type || 'Electrician');
       providerList = dbProviders.slice(0, 5);
     }
@@ -174,6 +173,7 @@ router.post('/chat/message', async (req, res) => {
 // GET /api/chat/:booking_id
 router.get('/chat/:booking_id', async (req, res) => {
   try {
+    const db = require('../db');
     const messages = await db.getChatMessages(req.params.booking_id, 80);
     return res.json({ success: true, messages });
   } catch (error) {
@@ -188,6 +188,7 @@ router.post('/rag/ingest', async (req, res) => {
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ success: false, error: 'content is required' });
     }
+    const { ingestText } = require('../rag/retriever');
     const chunks = await ingestText({ source, content, metadata });
     return res.json({ success: true, chunks_ingested: chunks.length, chunks });
   } catch (error) {
@@ -202,6 +203,7 @@ router.post('/rag/query', async (req, res) => {
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ success: false, error: 'query is required' });
     }
+    const { retrieve } = require('../rag/retriever');
     const chunks = await retrieve(query, { topK: top_k || 4, tokenBudget: token_budget || 450 });
     return res.json({ success: true, chunks });
   } catch (error) {

@@ -23,21 +23,31 @@ class ConversationAgent extends BaseAgent {
     ].filter(Boolean).join('\n');
 
     await db.saveChatMessage({ booking_id: bookingId, role: 'user', content: message, token_count: tokenize(message).tokens.length });
-    const llmResult = await this.llm.generate({
-      system,
-      messages: [
-        { role: 'user', content: `Conversation summary:\n${context.conversation_summary || ''}` },
-        { role: 'user', content: message }
-      ]
-    });
-    const reply = llmResult.text || 'I checked the service context. Please confirm the exact issue and your availability window.';
+
+    const prompt = [
+      `Conversation summary:\n${context.conversation_summary || 'No prior summary.'}`,
+      '',
+      `Latest customer message:\n${message}`
+    ].join('\n');
+
+    let reply;
+    let providerName = 'local_fallback';
+    let usage = null;
+    try {
+      reply = await this.llm.complete({ system, user: prompt, temperature: 0.35, maxTokens: 220 });
+      providerName = this.llm.groqKey ? 'groq' : 'gemini';
+    } catch (error) {
+      console.warn('[ConversationAgent] LLM chat unavailable, using safe fallback:', error.message);
+      reply = 'I can help coordinate this. Please confirm the exact issue, preferred time window, and any access instructions for the provider.';
+    }
+
     await db.saveChatMessage({ booking_id: bookingId, role: 'assistant', content: reply, token_count: tokenize(reply).tokens.length });
 
     return {
       input: { booking_id: bookingId, message },
-      output: { reply, provider: llmResult.provider, usage: llmResult.usage },
-      reasoning: `Generated autonomous provider chat response via ${llmResult.provider} with token-aware context.`,
-      contextUpdates: { chat_reply: reply, llm_provider: llmResult.provider, token_usage: llmResult.usage }
+      output: { reply, provider: providerName, usage },
+      reasoning: `Generated provider chat response via ${providerName} with token-aware context.`,
+      contextUpdates: { chat_reply: reply, llm_provider: providerName, token_usage: usage }
     };
   }
 }
