@@ -31,8 +31,8 @@ class BaseAgent {
     try {
       const result = await this.execute(context);
       log.status = 'success';
-      log.output = result.output || {};
-      log.input = result.input || '';
+      log.output = this._toLogSafe(result.output || {});
+      log.input = this._toLogSafe(result.input || '');
       log.reasoning = result.reasoning || '';
       
       // Merge agent output into context
@@ -53,6 +53,35 @@ class BaseAgent {
     context.execution_logs.push(log);
 
     return context;
+  }
+
+  /**
+   * Convert agent inputs/outputs into JSON-safe snapshots before storing them
+   * in execution logs. Some agents pass the shared workflow context as their
+   * input; keeping that object by reference makes context.execution_logs point
+   * back to the log entry and Express cannot JSON.stringify the API response.
+   *
+   * @param {*} value
+   * @returns {*} JSON-safe clone suitable for trace files and API responses
+   */
+  _toLogSafe(value) {
+    const seen = new WeakSet();
+    const serialized = JSON.stringify(value, (key, nestedValue) => {
+      if (key === 'execution_logs') {
+        return Array.isArray(nestedValue)
+          ? `[${nestedValue.length} execution log(s) omitted]`
+          : '[execution logs omitted]';
+      }
+
+      if (typeof nestedValue === 'object' && nestedValue !== null) {
+        if (seen.has(nestedValue)) return '[Circular]';
+        seen.add(nestedValue);
+      }
+
+      return nestedValue;
+    });
+
+    return serialized === undefined ? null : JSON.parse(serialized);
   }
 
   /**
