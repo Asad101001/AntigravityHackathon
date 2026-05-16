@@ -45,9 +45,12 @@ export default function BookingConfirmScreen({ route, navigation }) {
       const response = await axios.post(
         `${API_URL}/chaos/simulate`,
         {
-          provider_id:  provider.id || provider.provider_id || null,
-          booking_id:   fullResult?.booking_id || null,
-          user_id:      fullResult?.user_id    || null,
+          provider_id_to_cancel: provider.id || provider.provider_id || null,
+          providers: [fullResult?.provider, ...(fullResult?.alternatives || [])].filter(Boolean),
+          service_type: provider.service_type || provider.service || fullResult?.parsed_intent?.service_type || null,
+          location: fullResult?.parsed_intent?.location || provider.area || null,
+          booking_id: fullResult?.booking_id || null,
+          user_id: fullResult?.user_id || null,
         },
         { timeout: 15000 }
       );
@@ -80,8 +83,8 @@ export default function BookingConfirmScreen({ route, navigation }) {
         ...fullResult,
         provider:       chaosResult.new_provider,
         reasoning_log:  chaosResult.reasoning_log,
-        quote_pkr:      chaosResult.quote_pkr  ?? fullResult.quote_pkr,
-        quote_breakdown: chaosResult.quote_breakdown ?? fullResult.quote_breakdown,
+        quote_pkr:      chaosResult.new_quote_pkr ?? chaosResult.quote_pkr ?? fullResult.quote_pkr,
+        quote_breakdown: chaosResult.new_quote_breakdown ?? chaosResult.quote_breakdown ?? fullResult.quote_breakdown,
       },
     });
   };
@@ -263,9 +266,9 @@ export default function BookingConfirmScreen({ route, navigation }) {
                     <Text style={styles.providerChipName}>
                       {chaosResult.new_provider.name}
                     </Text>
-                    {chaosResult.quote_pkr && (
+                    {(chaosResult.new_quote_pkr ?? chaosResult.quote_pkr) && (
                       <Text style={styles.providerChipPrice}>
-                        PKR {Math.round(chaosResult.quote_pkr).toLocaleString('en-PK')}
+                        PKR {Math.round(chaosResult.new_quote_pkr ?? chaosResult.quote_pkr).toLocaleString('en-PK')}
                       </Text>
                     )}
                   </View>

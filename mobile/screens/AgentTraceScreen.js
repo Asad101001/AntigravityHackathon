@@ -28,6 +28,7 @@ const AGENT_META = {
   discover_providers: { label: 'Provider Discoverer', icon: '🔍', color: '#10B981' },
   rank_providers:     { label: 'Provider Ranker',     icon: '📊', color: '#F59E0B' },
   make_decision:      { label: 'Decision Maker',      icon: '🎯', color: '#EF4444' },
+  dynamic_pricing:    { label: 'Dynamic Pricing',     icon: '💰', color: '#14B8A6' },
   execute_booking:    { label: 'Booking Executor',    icon: '📋', color: '#6366F1' },
   schedule_followup:  { label: 'Follow-Up Manager',   icon: '🔔', color: '#EC4899' },
 };
