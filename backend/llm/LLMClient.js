@@ -184,4 +184,4 @@ class LLMClient {
   }
 }
 
-module.exports = new LLMClient();
+module.exports = LLMClient;
