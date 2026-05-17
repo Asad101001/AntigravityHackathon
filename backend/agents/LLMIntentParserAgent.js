@@ -1,12 +1,17 @@
 const BaseAgent = require('./BaseAgent');
 const LLMClient = require('../llm/LLMClient');
 const IntentParserAgent = require('./IntentParserAgent');
+const { findLocationCandidate, normalizeLocation } = require('../utils/locationNormalizer');
+const { withRetry } = require('../utils/retryHelper');
+
+const GEOCODING_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 
 class LLMIntentParserAgent extends BaseAgent {
   constructor() {
     super('parse_intent', 1);
     this.llm = new LLMClient();
     this.fallback = new IntentParserAgent();
+    this.apiKey = process.env.MAPS_API_KEY || null;
   }
 
   async execute(context) {
@@ -44,13 +49,15 @@ class LLMIntentParserAgent extends BaseAgent {
       });
 
       const service = parsed.service_type || null;
-      const location = parsed.location || null;
+      const locationResolution = await this._normalizeParsedLocation(parsed.location, context);
+      const location = locationResolution.location;
       const time = parsed.time_preference || null;
       const urgency = parsed.urgency_level === 'high' ? 'high' : 'normal';
       const priceSensitivity = parsed.price_sensitivity || 'neutral';
       const confidence = typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.75;
       const language = parsed.language || 'mixed';
-      const reasoning = parsed.reasoning || `LLM parsed intent from: "${userText.slice(0, 60)}"`;
+      const locationReason = locationResolution.reasoning ? ` ${locationResolution.reasoning}` : '';
+      const reasoning = `${parsed.reasoning || `LLM parsed intent from: "${userText.slice(0, 60)}"`}${locationReason}`;
 
       return {
         input: userText,
@@ -66,6 +73,8 @@ class LLMIntentParserAgent extends BaseAgent {
           urgency_level: urgency,
           price_sensitivity: priceSensitivity,
           llm_intent_reasoning: reasoning,
+          llm_location_cache_source: locationResolution.source,
+          llm_location_candidate: locationResolution.candidate || null,
           llm_provider: 'primary_llm'
         }
       };
@@ -74,6 +83,99 @@ class LLMIntentParserAgent extends BaseAgent {
       return this.fallback.execute(context);
     }
   }
+
+  async _normalizeParsedLocation(location, context) {
+    const text = String(location || '').trim();
+    if (!text) return { location: null, source: 'none', reasoning: '' };
+
+    const selectedCity = context.city || context.explicit_city || context.selected_city || null;
+    const local = findLocationCandidate(text, {
+      minConfidence: 0.52,
+      city: selectedCity,
+    }) || findLocationCandidate(text, { minConfidence: 0.58 });
+
+    if (local && !local.cityOnly) {
+      return {
+        location: local.coords.area_name || text,
+        source: 'local_json_cache',
+        candidate: { city: local.city, area: local.area, confidence: local.confidence },
+        reasoning: `Location cache normalized "${text}" to "${local.coords.area_name}" before resolver execution.`,
+      };
+    }
+
+    if (local?.cityOnly) {
+      return {
+        location: local.city,
+        source: 'local_json_city_cache',
+        candidate: { city: local.city, confidence: local.confidence },
+        reasoning: `Location cache recognized "${text}" as city-level only; resolver will prefer GPS for neighborhood precision when available.`,
+      };
+    }
+
+    if (this.apiKey) {
+      const geocoded = await this._geocodeAreaName(text, selectedCity);
+      if (geocoded) {
+        return {
+          location: geocoded.area_name,
+          source: 'geocoding_api',
+          candidate: geocoded,
+          reasoning: `Google Geocoding normalized "${text}" because the local cache had no area match.`,
+        };
+      }
+    }
+
+    return {
+      location: text,
+      source: 'llm_raw_location',
+      reasoning: `No local cache match${this.apiKey ? ' or geocoding match' : ''} was found for "${text}"; preserving the LLM text for LocationResolverAgent fallback.`,
+    };
+  }
+
+  async _geocodeAreaName(locationString, city) {
+    const query = [locationString, city, 'Pakistan'].filter(Boolean).join(', ');
+    const url = `${GEOCODING_ENDPOINT}?address=${encodeURIComponent(query)}&components=country:PK&key=${this.apiKey}&language=en`;
+
+    let data;
+    try {
+      data = await withRetry(async () => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Intent geocoding HTTP ${res.status}`);
+        return res.json();
+      }, { maxAttempts: 2, label: 'IntentGeocoding' });
+    } catch (err) {
+      console.warn('[LLMIntentParser] Location geocoding failed:', err.message);
+      return null;
+    }
+
+    if (data?.status !== 'OK' || !data.results?.length) return null;
+    const best = data.results[0];
+    const areaName = this._extractComponent(best.address_components, [
+      'neighborhood',
+      'sublocality_level_1',
+      'sublocality',
+      'route',
+    ]) || best.formatted_address;
+    const resolvedCity = this._extractComponent(best.address_components, ['locality', 'administrative_area_level_2'])
+      || this._extractComponent(best.address_components, ['administrative_area_level_1'])
+      || city
+      || null;
+
+    return {
+      area_name: areaName,
+      city: resolvedCity,
+      place_id: best.place_id,
+      normalized_query: normalizeLocation(locationString),
+    };
+  }
+
+  _extractComponent(components = [], types = []) {
+    for (const type of types) {
+      const found = components.find(component => component.types?.includes(type));
+      if (found) return found.long_name;
+    }
+    return null;
+  }
+
 }
 
 module.exports = LLMIntentParserAgent;

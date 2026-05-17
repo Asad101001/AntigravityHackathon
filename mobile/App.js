@@ -26,6 +26,7 @@ import LiquidGlass from './components/LiquidGlass';
 import { COLORS } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
 import { configureNotifications } from './notifications';
+import { AppContextProvider } from './context/AppContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -205,7 +206,9 @@ function AppNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AppNavigator />
+      <AppContextProvider>
+        <AppNavigator />
+      </AppContextProvider>
     </SafeAreaProvider>
   );
 }
