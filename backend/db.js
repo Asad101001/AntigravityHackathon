@@ -1,8 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
-const fs = require('fs');
 const path = require('path');
-const coordinatesByCity = require('./data/coordinates.json');
+const dataStore = require('./dataStore');
 
 let dbPromise;
 
@@ -64,49 +63,45 @@ async function setupDatabase() {
       // Check if providers are empty
       const count = await db.get('SELECT COUNT(*) as count FROM providers');
       if (count.count === 0) {
-        console.log('Seeding SQLite database with mock data...');
-        // Read JSON files and seed
-        const providersPath = path.join(__dirname, 'data', 'providers.json');
-        const keywordsPath = path.join(__dirname, 'data', 'keywords.json');
-        
-        if (fs.existsSync(providersPath)) {
-          const providers = JSON.parse(fs.readFileSync(providersPath, 'utf8'));
+        console.log('Seeding SQLite database with shared data store data...');
+        const [providers, intents, coords] = await Promise.all([
+          dataStore.getProviders(),
+          dataStore.getKeywords(),
+          dataStore.getCoordinates()
+        ]);
+
+        if (providers.length > 0) {
           const stmt = await db.prepare(`
             INSERT INTO providers (id, name, service, city, area, distance_km, rating, reviews_count, available_slots, phone, response_time_min, verified, lat, lng)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
-          
+
           for (const p of providers) {
-            const resolvedCoords = resolveProviderCoordinates(p);
-            const lat = resolvedCoords.lat;
-            const lng = resolvedCoords.lng;
+            const resolvedCoords = resolveProviderCoordinates(p, coords);
 
             await stmt.run(
-              p.id, p.name, p.service, p.city, p.area, p.distance_km, p.rating, 
-              p.reviews_count, JSON.stringify(p.available_slots), p.phone, 
-              p.response_time_min, p.verified ? 1 : 0, lat, lng
+              p.id, p.name, p.service, p.city, p.area, p.distance_km, p.rating,
+              p.reviews_count, JSON.stringify(p.available_slots), p.phone,
+              p.response_time_min, p.verified ? 1 : 0, resolvedCoords.lat, resolvedCoords.lng
             );
           }
           await stmt.finalize();
         }
 
-        if (fs.existsSync(keywordsPath)) {
-          const intents = JSON.parse(fs.readFileSync(keywordsPath, 'utf8'));
-          const stmt = await db.prepare('INSERT INTO keywords (intent, keyword) VALUES (?, ?)');
-          for (const [serviceKey, serviceData] of Object.entries(intents.services || {})) {
-            for (const kw of serviceData.keywords || []) {
-              await stmt.run(serviceKey, kw);
-            }
+        const stmt = await db.prepare('INSERT INTO keywords (intent, keyword) VALUES (?, ?)');
+        for (const [serviceKey, serviceData] of Object.entries(intents.services || {})) {
+          for (const kw of serviceData.keywords || []) {
+            await stmt.run(serviceKey, kw);
           }
-          for (const [timeKey, timeData] of Object.entries(intents.time_expressions || {})) {
-            for (const kw of timeData.keywords || []) {
-              await stmt.run(timeKey, kw);
-            }
-          }
-          for (const kw of intents.need_indicators || []) await stmt.run('need_indicator', kw);
-          for (const kw of intents.urgency_indicators || []) await stmt.run('urgency_indicator', kw);
-          await stmt.finalize();
         }
+        for (const [timeKey, timeData] of Object.entries(intents.time_expressions || {})) {
+          for (const kw of timeData.keywords || []) {
+            await stmt.run(timeKey, kw);
+          }
+        }
+        for (const kw of intents.need_indicators || []) await stmt.run('need_indicator', kw);
+        for (const kw of intents.urgency_indicators || []) await stmt.run('urgency_indicator', kw);
+        await stmt.finalize();
         
         console.log('Database seeding complete.');
       }
@@ -127,7 +122,7 @@ function normalizeAreaKey(value) {
     .trim();
 }
 
-function resolveProviderCoordinates(provider) {
+function resolveProviderCoordinates(provider, coordinatesByCity) {
   if (Number.isFinite(Number(provider.lat)) && Number.isFinite(Number(provider.lng))) {
     return { lat: Number(provider.lat), lng: Number(provider.lng) };
   }
@@ -156,27 +151,11 @@ function hydrateProvider(r) {
 
 // Helper to get providers matching criteria
 async function findProviders(service, location) {
-  const db = await setupDatabase();
-  let query = 'SELECT * FROM providers WHERE service LIKE ?';
-  let params = [`%${service}%`];
-  
-  if (location) {
-      query += ' AND (city LIKE ? OR area LIKE ?)';
-      params.push(`%${location}%`, `%${location}%`);
-  }
-  
-  query += ' ORDER BY rating DESC, distance_km ASC LIMIT 10';
-  const results = await db.all(query, params);
-  return results.map(hydrateProvider);
+  return dataStore.findProvidersByService(service, location, 10);
 }
 
 async function findProvidersByService(service) {
-  const db = await setupDatabase();
-  const results = await db.all(
-    'SELECT * FROM providers WHERE service LIKE ? ORDER BY rating DESC, distance_km ASC LIMIT 50',
-    [`%${service}%`]
-  );
-  return results.map(hydrateProvider);
+  return dataStore.findProvidersByService(service, '', 50);
 }
 
 async function saveChatMessage({ booking_id, role, content, token_count = 0 }) {

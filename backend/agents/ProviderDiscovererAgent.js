@@ -10,9 +10,8 @@
  */
 
 const BaseAgent = require('./BaseAgent');
-const providers = require('../data/providers.json');
-const coordinatesByCity = require('../data/coordinates.json');
 const { withRetry } = require('../utils/retryHelper');
+const dataStore = require('../dataStore');
 
 const DISTANCE_MATRIX_ENDPOINT = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 const TOP_N_HAVERSINE = 5;
@@ -29,6 +28,8 @@ class ProviderDiscovererAgent extends BaseAgent {
 
   async execute(context) {
     const { coordinates, service_type } = context;
+    const providers = await dataStore.getProviders();
+    const coordinatesByCity = await dataStore.getCoordinates();
 
     if (!coordinates?.lat || !coordinates?.lng) {
       return {
@@ -43,7 +44,7 @@ class ProviderDiscovererAgent extends BaseAgent {
 
     // ── Pass 1: Haversine filter ─────────────────────────────────────────
     const filtered = this._filterByType(providers, service_type)
-      .map(provider => this._withResolvedCoordinates(provider))
+      .map(provider => this._withResolvedCoordinates(provider, coordinatesByCity))
       .filter(provider => this._hasUsableCoordinates(provider));
     const ranked   = this._haversineRank(filtered, userLat, userLng);
     const topN     = ranked.slice(0, TOP_N_HAVERSINE);
@@ -129,10 +130,10 @@ class ProviderDiscovererAgent extends BaseAgent {
       .trim();
   }
 
-  _withResolvedCoordinates(provider) {
+  _withResolvedCoordinates(provider, coordinatesByCity) {
     if (provider.lat != null && provider.lng != null) return provider;
 
-    const cityKey = this._findCoordinateCityKey(provider.city);
+    const cityKey = this._findCoordinateCityKey(provider.city, coordinatesByCity);
     const cityCoordinates = cityKey ? coordinatesByCity[cityKey] : null;
     const areaCoordinates = cityCoordinates ? this._findAreaCoordinates(cityCoordinates, provider.area) : null;
 
@@ -146,9 +147,9 @@ class ProviderDiscovererAgent extends BaseAgent {
     };
   }
 
-  _findCoordinateCityKey(city) {
+  _findCoordinateCityKey(city, coordinatesByCity) {
     const normalizedCity = this._normalizeAreaKey(city);
-    return Object.keys(coordinatesByCity).find(key => this._normalizeAreaKey(key) === normalizedCity);
+    return Object.keys(coordinatesByCity || {}).find(key => this._normalizeAreaKey(key) === normalizedCity);
   }
 
   _findAreaCoordinates(cityCoordinates, area) {

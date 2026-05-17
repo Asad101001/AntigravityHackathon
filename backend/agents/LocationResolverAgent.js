@@ -35,7 +35,7 @@ class LocationResolverAgent extends BaseAgent {
     // The text parser is authoritative: if the user wrote "Gulzar-e-Hijri"
     // while a map pin is also present, resolve the typed area and ignore the pin.
     if (rawLocation) {
-      const cached = this._fromLocalCache(rawLocation);
+      const cached = await this._fromLocalCache(rawLocation);
       if (cached) return cached;
 
       if (this.apiKey) {
@@ -117,8 +117,8 @@ class LocationResolverAgent extends BaseAgent {
     return currentLocationOnly.has(normalized) ? '' : text;
   }
 
-  _fromLocalCache(rawLocation) {
-    const candidate = findLocationCandidate(rawLocation, { minConfidence: 0.55 });
+  async _fromLocalCache(rawLocation) {
+    const candidate = await findLocationCandidate(rawLocation, { minConfidence: 0.55 });
     if (!candidate?.coords) return null;
     const { lat, lng } = candidate.coords;
     if (!this._inPakistan(lat, lng)) return this._reject({ lat, lng }, 'Coordinates outside Pakistan');

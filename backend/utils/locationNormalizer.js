@@ -1,5 +1,5 @@
-const coordinates = require('../data/coordinates.json');
 const { normalizeText, tokenize } = require('./textTokenizer');
+const dataStore = require('../dataStore');
 
 const GENERIC_LOCATION_WORDS = new Set([
   'area', 'town', 'city', 'sector', 'block', 'phase', 'society', 'colony', 'karachi', 'lahore', 'islamabad', 'pakistan'
@@ -60,49 +60,11 @@ function similarity(a = '', b = '') {
   return Math.max(tokenScore, editScore * 0.9);
 }
 
-function getLocationCatalog() {
-  const catalog = [];
-  for (const [city, areas] of Object.entries(coordinates)) {
-    const cityTitle = city.charAt(0).toUpperCase() + city.slice(1);
-    const areaValues = Object.values(areas);
-    const centroid = areaValues.length
-      ? {
-          lat: areaValues.reduce((sum, item) => sum + item.lat, 0) / areaValues.length,
-          lng: areaValues.reduce((sum, item) => sum + item.lng, 0) / areaValues.length,
-          area_name: `${cityTitle} city center`
-        }
-      : null;
-
-    catalog.push({
-      city: cityTitle,
-      area: cityTitle,
-      canonical: cityTitle,
-      coords: centroid,
-      searchText: cityTitle,
-      normalized: normalizeLocation(cityTitle),
-      cityOnly: true
-    });
-
-    for (const [area, coords] of Object.entries(areas)) {
-      const areaName = coords.area_name || `${area} ${cityTitle}`;
-      const searchVariants = [area, areaName, `${area} ${cityTitle}`];
-      for (const variant of searchVariants) {
-        catalog.push({
-          city: cityTitle,
-          area,
-          canonical: area,
-          coords,
-          searchText: variant,
-          normalized: normalizeLocation(variant),
-          cityOnly: false
-        });
-      }
-    }
-  }
-  return catalog;
+async function getLocationCatalog() {
+  return dataStore.getLocationCatalog();
 }
 
-function findLocationCandidate(input = '', options = {}) {
+async function findLocationCandidate(input = '', options = {}) {
   const minConfidence = options.minConfidence || 0.58;
   const parsed = tokenize(input);
   const phrases = [parsed.normalized, ...parsed.ngrams]
@@ -110,7 +72,8 @@ function findLocationCandidate(input = '', options = {}) {
     .filter(Boolean);
 
   let best = null;
-  for (const item of getLocationCatalog()) {
+  const catalog = await getLocationCatalog();
+  for (const item of catalog) {
     for (const phrase of phrases) {
       const score = similarity(phrase, item.normalized);
       const tokenBoost = locationTokens(item.normalized).some(token => locationTokens(phrase).includes(token)) ? 0.08 : 0;
