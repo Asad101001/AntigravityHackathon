@@ -1,27 +1,26 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
 import { addSessionBooking } from '../sessionBookings';
-import { sendLocalNotification } from '../notifications';
+import { useAppContext } from '../context/AppContext';
 
 export default function ConfirmationScreen({ route, navigation }) {
   const { fullResult } = route.params;
   const scale = useRef(new Animated.Value(0.7)).current;
+  const insets = useSafeAreaInsets();
+  const { setActiveJob } = useAppContext();
   const provider = fullResult.provider || {};
 
   useEffect(() => {
     Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }).start();
     const booking = addSessionBooking(fullResult);
-    void sendLocalNotification(
-      'Booking confirmed',
-      `${booking.provider} is assigned for ${booking.service}.`,
-      { booking_id: booking.id, event: 'booking_confirmed' }
-    );
-  }, [fullResult, scale]);
+    setActiveJob(booking);
+  }, [fullResult, scale, setActiveJob]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.content}>
         <Animated.View style={[styles.successCircle, { transform: [{ scale }] }]}>
           <Ionicons name="checkmark-circle-outline" size={58} color={COLORS.primary} />
@@ -42,7 +41,7 @@ export default function ConfirmationScreen({ route, navigation }) {
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.popToTop()}><Text style={styles.link}>View Schedule</Text></TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

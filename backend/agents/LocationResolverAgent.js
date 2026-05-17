@@ -7,6 +7,7 @@ const {
   getLocationCatalog,
   normalizeLocation,
   similarity,
+  haversineKm,
 } = require('../utils/locationNormalizer');
 const { withRetry } = require('../utils/retryHelper');
 
@@ -36,13 +37,16 @@ class LocationResolverAgent extends BaseAgent {
     const explicitCity = this._resolveCity(context.city || context.explicit_city || context.selected_city);
     const rawLocation = this._usableParsedLocation(context.location);
     const userText = String(context.user_text || '');
+    const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
+
+    if (pinResolution) return pinResolution;
 
     if (rawLocation) {
       return this._resolveTyped(rawLocation, explicitCity, userText);
     }
 
     if (explicitCity) {
-      return this._cityResult(explicitCity.city, 'explicit_city', `Frontend selected city "${explicitCity.city}". No typed area was provided, so city-level coordinates were used.`);
+      return this._cityResult(explicitCity.city, 'explicit_city', `Frontend selected city "${explicitCity.city}". No typed area or GPS pin was provided, so city-level coordinates were used.`);
     }
 
     const inferredCity = this._extractCityFromText(userText);
@@ -50,30 +54,87 @@ class LocationResolverAgent extends BaseAgent {
       return this._cityResult(inferredCity.city, 'city_text_match', `Detected city "${inferredCity.city}" from request text.`);
     }
 
+    return this._defaultFallback(context, `No usable location was detected. Falling back to DEFAULT_CITY="${DEFAULT_CITY}".`);
+  }
+
+  async _resolvePinnedCoordinates(context, explicitCity, rawLocation, userText) {
     const pin = context.user_location;
-    if (pin?.lat != null && pin?.lng != null) {
-      const lat = Number(pin.lat);
-      const lng = Number(pin.lng);
-      if (!this._inPakistan(lat, lng)) {
-        return this._reject({ lat, lng }, 'Coordinates outside Pakistan bounding box');
-      }
-      const pinCity = this._resolveCity(pin.city) || this._nearestCity(lat, lng) || explicitCity;
-      const city = pinCity?.city || null;
-      return {
-        input: pin,
-        output: { lat, lng, area_name: pin.label || 'Pinned location', city, source: context.location_source || 'map' },
-        reasoning: `Using ${context.location_source || 'map'} coordinates because no typed area was provided.`,
-        contextUpdates: {
-          coordinates: { lat, lng },
-          city,
-          resolved_area: pin.label || 'Pinned location',
-          location_confidence: 1,
-          location_source: context.location_source || 'map',
-        },
-      };
+    if (pin?.lat == null || pin?.lng == null) return null;
+
+    const lat = Number(pin.lat);
+    const lng = Number(pin.lng);
+    if (!this._inPakistan(lat, lng)) {
+      return this._reject({ lat, lng }, 'Coordinates outside Pakistan bounding box');
     }
 
-    return this._defaultFallback(context, `No usable location was detected. Falling back to DEFAULT_CITY="${DEFAULT_CITY}".`);
+    const localArea = this._nearestArea(lat, lng, explicitCity?.city);
+    if (localArea && localArea.distance_km <= this._localReverseRadiusKm(localArea.city)) {
+      return this._pinResult({
+        pin,
+        lat,
+        lng,
+        areaName: localArea.coords.area_name,
+        city: localArea.city,
+        confidence: Math.max(0.82, 1 - (localArea.distance_km / 20)),
+        source: 'local_reverse_geocode',
+        reasoning: `Reverse-geocoded exact user GPS (${lat}, ${lng}) against coordinates.json and matched ${localArea.coords.area_name} ${localArea.distance_km}km away before applying city scope.`,
+        rawLocation,
+        userText,
+      });
+    }
+
+    if (this.apiKey) {
+      const geo = await this._reverseGeocode(lat, lng);
+      if (geo) {
+        return this._pinResult({
+          pin,
+          lat,
+          lng,
+          areaName: geo.area_name,
+          city: geo.city || explicitCity?.city || this._nearestCity(lat, lng)?.city || null,
+          confidence: geo.confidence,
+          source: 'reverse_geocoding_api',
+          placeId: geo.place_id,
+          reasoning: `Google reverse geocoding resolved exact user GPS (${lat}, ${lng}) to ${geo.area_name}.`,
+          rawLocation,
+          userText,
+        });
+      }
+    }
+
+    const pinCity = this._resolveCity(pin.city) || explicitCity || this._nearestCity(lat, lng);
+    const city = pinCity?.city || null;
+    return this._pinResult({
+      pin,
+      lat,
+      lng,
+      areaName: pin.label || (city ? `${city} pinned location` : 'Pinned location'),
+      city,
+      confidence: 0.72,
+      source: context.location_source || 'gps_pin',
+      reasoning: `Using exact ${context.location_source || 'GPS'} coordinates because neither coordinates.json nor Google reverse geocoding returned a neighborhood match.`,
+      rawLocation,
+      userText,
+    });
+  }
+
+  _pinResult({ pin, lat, lng, areaName, city, confidence, source, placeId, reasoning, rawLocation, userText }) {
+    const output = { lat, lng, area_name: areaName, city, source };
+    if (placeId) output.place_id = placeId;
+
+    return {
+      input: { pin, parsed_location: rawLocation || null, user_text: userText || '' },
+      output,
+      reasoning,
+      contextUpdates: {
+        coordinates: { lat, lng },
+        city,
+        resolved_area: areaName,
+        location: areaName,
+        location_confidence: Math.round(confidence * 100) / 100,
+        location_source: source,
+      },
+    };
   }
 
   async _resolveTyped(rawLocation, explicitCity, userText) {
@@ -150,6 +211,49 @@ class LocationResolverAgent extends BaseAgent {
         location_confidence: candidate.confidence,
         location_source: 'local_fuzzy_catalog',
       },
+    };
+  }
+
+  async _reverseGeocode(lat, lng) {
+    const url = `${GEOCODING_ENDPOINT}?latlng=${encodeURIComponent(`${lat},${lng}`)}&components=country:PK&key=${this.apiKey}&language=en`;
+
+    let data;
+    try {
+      data = await withRetry(async () => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Reverse geocoding HTTP ${res.status}`);
+        return res.json();
+      }, { maxAttempts: 3, label: 'ReverseGeocoding' });
+    } catch (err) {
+      console.warn('[LocationResolver] Reverse geocoding failed:', err.message);
+      return null;
+    }
+
+    if (data?.status !== 'OK' || !data.results?.length) return null;
+    const best = data.results.find(result =>
+      result.types?.some(type => ['neighborhood', 'sublocality', 'sublocality_level_1', 'political'].includes(type))
+    ) || data.results[0];
+
+    const areaName = this._extractComponent(best.address_components, [
+      'neighborhood',
+      'sublocality_level_1',
+      'sublocality',
+      'route',
+    ]) || best.formatted_address;
+    const resolvedCity = this._extractComponent(best.address_components, ['locality', 'administrative_area_level_2'])
+      || this._extractComponent(best.address_components, ['administrative_area_level_1'])
+      || this._nearestCity(lat, lng)?.city
+      || null;
+    const preciseType = best.types?.some(type => ['neighborhood', 'sublocality', 'sublocality_level_1'].includes(type));
+
+    return {
+      lat,
+      lng,
+      area_name: areaName,
+      city: resolvedCity,
+      confidence: preciseType ? 0.94 : 0.82,
+      source: 'reverse_geocoding_api',
+      place_id: best.place_id,
     };
   }
 
@@ -251,6 +355,28 @@ class LocationResolverAgent extends BaseAgent {
     const lat = areas.reduce((sum, item) => sum + Number(item.lat || 0), 0) / count;
     const lng = areas.reduce((sum, item) => sum + Number(item.lng || 0), 0) / count;
     return { lat, lng };
+  }
+
+  _nearestArea(lat, lng, city) {
+    const requestedCity = city ? normalizeLocation(city) : '';
+    let best = null;
+    for (const item of getLocationCatalog().filter(entry => !entry.cityOnly && entry.coords)) {
+      if (requestedCity && normalizeLocation(item.city) !== requestedCity) continue;
+      const distance = haversineKm({ lat, lng }, { lat: Number(item.coords.lat), lng: Number(item.coords.lng) });
+      if (distance == null) continue;
+      if (!best || distance < best.distance_km) {
+        best = { city: item.city, area: item.area, coords: item.coords, distance_km: distance };
+      }
+    }
+    return best || (requestedCity ? this._nearestArea(lat, lng, null) : null);
+  }
+
+  _localReverseRadiusKm(city) {
+    const normalized = normalizeLocation(city || '');
+    if (normalized === 'karachi') return 8;
+    if (normalized === 'lahore') return 7;
+    if (normalized === 'islamabad') return 6;
+    return 10;
   }
 
   _nearestCity(lat, lng) {
