@@ -168,12 +168,62 @@ router.post('/chat/message', async (req, res) => {
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ success: false, error: 'message is required' });
     }
+
+    const db = require('../db');
+    let bookingInfo = null;
+
+    if (booking_id) {
+      const mongoBooking = await db.getBookingById(booking_id);
+      const booking = mongoBooking || BookingExecutorAgent.getBooking(booking_id);
+      
+      if (booking && String(booking.status || '').toLowerCase() === 'canceled') {
+        return res.json({
+          success: true,
+          reply: 'The order is cancelled by you so I cant help further more! Sorry',
+          booking_status: 'canceled',
+          execution_logs: [],
+        });
+      }
+      
+      bookingInfo = booking;
+    }
+
+    // Check if message is asking about status or order info
+    const lowerMessage = message.toLowerCase();
+    const isAskingStatus = lowerMessage.includes('status') || lowerMessage.includes('where') || lowerMessage.includes('progress') || lowerMessage.includes('update');
+    const isAskingInfo = lowerMessage.includes('info') || lowerMessage.includes('details') || lowerMessage.includes('booking');
+
+    if ((isAskingStatus || isAskingInfo) && bookingInfo) {
+      const formatBookingDetail = (booking) => {
+        const details = [
+          `📦 Order ID: ${booking._id}`,
+          `👨‍🔧 Provider: ${booking.provider_name}`,
+          `🔧 Service: ${booking.service_type}`,
+          `📍 Location: ${[booking.area, booking.city].filter(Boolean).join(', ')}`,
+          `🗓️ Appointment: ${new Date(booking.booking_start_time).toLocaleString('en-PK')}`,
+          `💰 Quote: ${booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}`,
+          `📊 Status: ${(booking.status || 'unknown').toUpperCase()}`,
+        ];
+        return details.join('\n');
+      };
+
+      const statusText = `Here are the details of your order:\n\n${formatBookingDetail(bookingInfo)}\n\nHow can I help you further?`;
+      return res.json({
+        success: true,
+        reply: statusText,
+        booking_status: bookingInfo.status,
+        execution_logs: [],
+      });
+    }
+
+    // For other messages, run the full conversation pipeline
     const result = await orchestrator.runConversation({
       input: { booking_id, message, user_id, provider },
       options: { emit_trace: true }
     });
     return res.json({ success: true, ...result });
   } catch (error) {
+    console.error('Chat message error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });

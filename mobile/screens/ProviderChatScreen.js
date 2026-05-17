@@ -48,11 +48,39 @@ export default function ProviderChatScreen({ route }) {
   const bookingId = fullResult.booking_id || 'general';
   const scrollRef = useRef(null);
   const { registerScroll } = useTabBarVisibility();
+  const [bookingStatus, setBookingStatus] = useState(null);
+  const [bookingStateLoading, setBookingStateLoading] = useState(true);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Hello! I can coordinate with ${provider.name || 'your provider'} and summarize what needs to happen next.`, time: stamp() },
   ]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+
+  const cancelledMessage = 'The order is cancelled by you so I cant help further more! Sorry';
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadBookingState() {
+      try {
+        const res = await apiClient.get(`/bookings/${bookingId}`);
+        const status = String(res.data?.booking?.status || '').toLowerCase();
+        if (!mounted) return;
+        setBookingStatus(status || null);
+        if (status === 'canceled') {
+          setMessages([
+            { role: 'assistant', content: cancelledMessage, time: stamp() },
+          ]);
+        }
+      } catch (error) {
+        // Keep chat usable if booking state cannot be fetched
+      } finally {
+        if (mounted) setBookingStateLoading(false);
+      }
+    }
+
+    loadBookingState();
+    return () => { mounted = false; };
+  }, [bookingId]);
 
   useEffect(() => {
     apiClient.get(`/chat/${bookingId}`).then(res => {
@@ -66,6 +94,10 @@ export default function ProviderChatScreen({ route }) {
 
   const send = async () => {
     if (!input.trim() || sending) return;
+    if (bookingStatus === 'canceled') {
+      setMessages(prev => [...prev, { role: 'assistant', content: cancelledMessage, time: stamp() }]);
+      return;
+    }
     const content = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content, time: stamp() }]);
@@ -85,15 +117,28 @@ export default function ProviderChatScreen({ route }) {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <LiquidGlass style={styles.providerPanel} contentStyle={styles.providerPanelInner} strong radius={RADII.xl}>
           <View style={styles.avatar}><Ionicons name="person" size={18} color="#FFFFFF" /></View>
-          <View style={styles.providerCopy}><Text style={styles.name}>{provider.name || 'Provider Chat'}</Text><Text style={styles.online}>Online · Asaaniyat relay active</Text></View>
+          <View style={styles.providerCopy}>
+            <Text style={styles.name}>{provider.name || 'Provider Chat'}</Text>
+            <Text style={styles.online}>
+              {bookingStateLoading ? 'Checking booking status…' : bookingStatus === 'canceled' ? 'Booking cancelled' : 'Online · Asaaniyat relay active'}
+            </Text>
+          </View>
         </LiquidGlass>
         <ScrollView ref={scrollRef} contentContainerStyle={styles.messages} onScroll={registerScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
           {messages.map((m, i) => <MessageBubble key={`${m.created_at || m.time || i}-${i}`} message={m} />)}
           {sending ? <TypingIndicator /> : null}
         </ScrollView>
         <LiquidGlass style={styles.composer} contentStyle={styles.composerInner} strong radius={RADII.xl}>
-          <TextInput style={styles.input} placeholder="iMessage your provider relay..." placeholderTextColor={COLORS.textMuted} value={input} onChangeText={setInput} multiline />
-          <TouchableOpacity style={[styles.send, (!input.trim() || sending) && styles.sendDisabled]} onPress={send} disabled={!input.trim() || sending} activeOpacity={0.84}>
+          <TextInput
+            style={styles.input}
+            placeholder={bookingStatus === 'canceled' ? 'Chat disabled for cancelled booking' : 'iMessage your provider relay...'}
+            placeholderTextColor={COLORS.textMuted}
+            value={input}
+            onChangeText={setInput}
+            multiline
+            editable={bookingStatus !== 'canceled'}
+          />
+          <TouchableOpacity style={[styles.send, (!input.trim() || sending || bookingStatus === 'canceled') && styles.sendDisabled]} onPress={send} disabled={!input.trim() || sending || bookingStatus === 'canceled'} activeOpacity={0.84}>
             <Ionicons name="arrow-up" size={19} color="#FFFFFF" />
           </TouchableOpacity>
         </LiquidGlass>

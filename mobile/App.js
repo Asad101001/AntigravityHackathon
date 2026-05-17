@@ -8,7 +8,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 
 import HomeScreen from './screens/HomeScreen';
 import BookingsScreen from './screens/BookingsScreen';
-import StatusScreen from './screens/StatusScreen';
+import OrderStatusScreen from './screens/OrderStatusScreen';
 import ChatScreen from './screens/ChatScreen';
 import IntentConfirmScreen from './screens/IntentConfirmScreen';
 import LoadingScreen from './screens/LoadingScreen';
@@ -35,15 +35,14 @@ const Stack = createNativeStackNavigator();
 const TAB_CONFIG = [
   { name: 'Home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
   { name: 'Bookings', label: 'Bookings', icon: 'calendar-clear-outline', activeIcon: 'calendar' },
-  { name: 'Status', label: 'Status', icon: 'pulse-outline', activeIcon: 'pulse' },
   { name: 'Chat', label: 'Chat', icon: 'chatbubble-ellipses-outline', activeIcon: 'chatbubble-ellipses' },
 ];
 
 const ROUTE_LABELS = {
   Home: 'Home',
   Bookings: 'Bookings',
-  Status: 'Status',
   Chat: 'Chat',
+  OrderStatus: 'Order Status',
   IntentConfirm: 'Confirm Request',
   ProviderResults: 'Providers',
   BookingConfirm: 'Confirm Booking',
@@ -66,10 +65,10 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(0)).current;
   const activeTab = useMemo(() => {
-    if (['Home', 'Bookings', 'Status', 'Chat'].includes(currentRouteName)) return currentRouteName;
+    if (['Home', 'Bookings', 'Chat'].includes(currentRouteName)) return currentRouteName;
     if (currentRouteName === 'ProviderChat') return 'Chat';
-    if (['Confirmation', 'ReviewBooking', 'BookingConfirm'].includes(currentRouteName)) return 'Bookings';
-    if (['Loading', 'IntentConfirm', 'ProviderResults', 'AgentTrace'].includes(currentRouteName)) return 'Status';
+    if (['Confirmation', 'ReviewBooking', 'BookingConfirm', 'OrderStatus'].includes(currentRouteName)) return 'Bookings';
+    if (['Loading', 'IntentConfirm', 'ProviderResults', 'AgentTrace'].includes(currentRouteName)) return 'Home';
     return 'Home';
   }, [currentRouteName]);
 
@@ -168,7 +167,7 @@ function AppNavigator() {
                   <AppHeader
                     navigation={navigation}
                     routeName={ROUTE_LABELS[route.name] || route.name}
-                    canGoBack={!!back && !['Home', 'Bookings', 'Status', 'Chat', 'Loading'].includes(route.name)}
+                    canGoBack={!!back && !['Home', 'Bookings', 'Chat', 'Loading'].includes(route.name)}
                     onProfilePress={() => setSidebarVisible(true)}
                   />
                 </View>
@@ -180,8 +179,8 @@ function AppNavigator() {
             <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false, animation: 'fade' }} />
             <Stack.Screen name="Home" component={HomeScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="Bookings" component={BookingsScreen} options={{ animation: 'fade' }} />
-            <Stack.Screen name="Status" component={StatusScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ animation: 'fade' }} />
+            <Stack.Screen name="OrderStatus" component={OrderStatusScreen} />
             <Stack.Screen name="IntentConfirm" component={IntentConfirmScreen} />
             <Stack.Screen name="Loading" component={LoadingScreen} options={{ gestureEnabled: false, animation: 'fade' }} />
             <Stack.Screen name="ProviderResults" component={ProviderResultsScreen} />

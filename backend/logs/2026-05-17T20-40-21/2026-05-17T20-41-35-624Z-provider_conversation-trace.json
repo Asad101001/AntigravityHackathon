@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T20-40-21",
+  "timestamp": "2026-05-17T20:41:35.624Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1779046929211_c625w7",
+    "message": "when will it arrive?"
+  },
+  "output": {
+    "reply": "I don't have specific information about that right now. Could you clarify?",
+    "provider": "local_fallback",
+    "usage": null,
+    "rag_chunks_used": 0
+  },
+  "durationMs": 581
+}

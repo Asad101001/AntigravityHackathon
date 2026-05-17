@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T19-39-07",
+  "timestamp": "2026-05-17T19:40:42.417Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL056",
+    "ranked_ids": [
+      "EL056",
+      "EL067",
+      "EL166",
+      "EL221",
+      "EL111"
+    ],
+    "reasoning_log": "Based on the given constraints, the overall best electrician for the job is EL056, DHA Clean Electrician Ahmed. This decision is made after considering the trade-off between distance, rating, availability, on-time score, and cancellation risk. EL056 has the highest rating, lowest cancellation risk, and highest on-time score among the available options. Although it is the farthest from the location, its high rating and low cancellation risk make it the best choice.",
+    "multi_factor": {
+      "overall_best_id": "EL056",
+      "most_affordable_id": "EL111",
+      "closest_fastest_id": "EL221",
+      "analysis": {
+        "overall_best_id": "EL056 has the highest rating, lowest cancellation risk, and highest on-time score, making it the best choice for the job.",
+        "most_affordable_id": "EL111 has the lowest base rate, making it the most affordable option. However, its low rating and high cancellation risk make it less desirable.",
+        "closest_fastest_id": "EL221 is the closest to the location and has available slots, making it the fastest option. However, its medium cancellation risk and lower rating make it less desirable than EL056."
+      }
+    }
+  },
+  "durationMs": 776
+}

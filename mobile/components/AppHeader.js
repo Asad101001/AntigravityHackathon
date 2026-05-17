@@ -20,12 +20,26 @@ export default function AppHeader({ navigation, routeName, canGoBack, onProfileP
     navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
 
+  const handleBackPress = () => {
+    if (routeName === 'Confirmed') {
+      resetToHome();
+      return;
+    }
+
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    resetToHome();
+  };
+
   const glowTranslate = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-42, 44] });
 
   return (
     <View style={styles.shell} pointerEvents="box-none">
       {canGoBack ? (
-        <TouchableOpacity style={styles.circleButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
+        <TouchableOpacity style={styles.circleButton} onPress={handleBackPress} activeOpacity={0.82}>
           <Ionicons name="chevron-back" size={21} color={COLORS.primary} />
         </TouchableOpacity>
       ) : (

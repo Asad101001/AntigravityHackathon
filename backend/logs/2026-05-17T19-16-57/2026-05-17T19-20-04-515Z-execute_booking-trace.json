@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T19-16-57",
+  "timestamp": "2026-05-17T19:20:04.515Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "DHA Clean Electrician Ahmed",
+    "time_slot": "2:00 PM"
+  },
+  "output": {
+    "booking_id": "BK_1779045604379",
+    "confirmation_message": "Booking confirmed! DHA Clean Electrician Ahmed arrives 19/05/2026 at 2:00 PM. Contact: 0365-1435545. Booking ID: BK_1779045604379",
+    "scheduled_time": "2026-05-19T09:00:00.000Z",
+    "time_slot": "2:00 PM"
+  },
+  "durationMs": 138
+}

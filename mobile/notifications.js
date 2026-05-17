@@ -1,22 +1,51 @@
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 
 let configured = false;
+let NotificationsModule = null;
+let handlerConfigured = false;
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+function isExpoGo() {
+  return Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
+}
+
+async function getNotificationsModule() {
+  if (Platform.OS === 'web' || isExpoGo()) return null;
+  if (NotificationsModule) return NotificationsModule;
+
+  NotificationsModule = await import('expo-notifications');
+
+  if (!handlerConfigured) {
+    NotificationsModule.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+    handlerConfigured = true;
+  }
+
+  return NotificationsModule;
+}
 
 export async function configureNotifications() {
   if (configured) return true;
 
+  if (Platform.OS === 'web' || isExpoGo()) {
+    configured = false;
+    return false;
+  }
+
   try {
+    const Notifications = await getNotificationsModule();
+    if (!Notifications) {
+      configured = false;
+      return false;
+    }
+
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('asaaniyat-service', {
         name: 'Asaaniyat Service Updates',
@@ -44,6 +73,9 @@ export async function sendLocalNotification(title, body, data = {}) {
   try {
     const allowed = await configureNotifications();
     if (!allowed) return false;
+
+    const Notifications = await getNotificationsModule();
+    if (!Notifications) return false;
 
     await Notifications.scheduleNotificationAsync({
       content: { title, body, data, sound: 'default' },

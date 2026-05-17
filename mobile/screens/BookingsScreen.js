@@ -43,7 +43,7 @@ function getStatusIcon(status) {
   }
 }
 
-export default function BookingsScreen() {
+export default function BookingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
   const { user } = useAuth();
@@ -185,15 +185,24 @@ export default function BookingsScreen() {
               </View>
 
               {/* Action Buttons */}
-              {booking.status?.toLowerCase() !== 'canceled' && booking.status?.toLowerCase() !== 'completed' && (
+              <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => handleCancelBooking(booking._id, booking.status)}
+                  style={styles.viewStatusButton}
+                  onPress={() => navigation.navigate('OrderStatus', { booking })}
                 >
-                  <Ionicons name="trash-outline" size={16} color="#F44336" />
-                  <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+                  <Ionicons name="pulse-outline" size={16} color={COLORS.primary} />
+                  <Text style={styles.viewStatusButtonText}>View Status</Text>
                 </TouchableOpacity>
-              )}
+                {booking.status?.toLowerCase() !== 'canceled' && booking.status?.toLowerCase() !== 'completed' && (
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => handleCancelBooking(booking._id, booking.status)}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#F44336" />
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </LiquidGlass>
           );
         })
@@ -241,6 +250,9 @@ const styles = StyleSheet.create({
   detailCopy: { flex: 1 },
   detailLabel: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   detailValue: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '600', marginTop: 2 },
-  cancelButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, backgroundColor: '#F4433620', marginTop: 4 },
+  buttonRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  viewStatusButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: `${COLORS.primary}20` },
+  viewStatusButtonText: { color: COLORS.primary, fontSize: 13, fontWeight: '700' },
+  cancelButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#F4433620' },
   cancelButtonText: { color: '#F44336', fontSize: 13, fontWeight: '700' },
 });

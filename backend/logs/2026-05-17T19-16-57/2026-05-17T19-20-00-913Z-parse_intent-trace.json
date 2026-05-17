@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T19-16-57",
+  "timestamp": "2026-05-17T19:20:00.914Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician needed at TOMORROW at 2 PM",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "tomorrow",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 1,
+    "language": "english",
+    "reasoning": "User requested an Electrician for tomorrow at 2 PM with no specific location or urgency/price sensitivity mentioned."
+  },
+  "durationMs": 832
+}
