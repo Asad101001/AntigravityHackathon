@@ -33,38 +33,56 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 const Stack = createNativeStackNavigator();
 
 const TAB_CONFIG = [
-  { name: 'Home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
-  { name: 'Bookings', label: 'Bookings', icon: 'calendar-clear-outline', activeIcon: 'calendar' },
-  { name: 'Status', label: 'Status', icon: 'pulse-outline', activeIcon: 'pulse' },
-  { name: 'Chat', label: 'Chat', icon: 'chatbubble-ellipses-outline', activeIcon: 'chatbubble-ellipses' },
+  { name: 'Home',     label: 'Home',     icon: 'home-outline',                 activeIcon: 'home' },
+  { name: 'Bookings', label: 'Bookings', icon: 'calendar-clear-outline',       activeIcon: 'calendar' },
+  { name: 'Status',   label: 'Status',   icon: 'pulse-outline',                activeIcon: 'pulse' },
+  { name: 'Chat',     label: 'Chat',     icon: 'chatbubble-ellipses-outline',  activeIcon: 'chatbubble-ellipses' },
 ];
 
 const ROUTE_LABELS = {
-  Home: 'Home',
-  Bookings: 'Bookings',
-  Status: 'Status',
-  Chat: 'Chat',
-  IntentConfirm: 'Confirm Request',
-  ProviderResults: 'Providers',
-  BookingConfirm: 'Confirm Booking',
-  ReviewBooking: 'Review Booking',
-  ProviderChat: 'Provider Chat',
-  LocationPicker: 'Location',
-  Confirmation: 'Confirmed',
-  AgentTrace: 'Agent Trace',
-  Loading: 'Matching',
+  Home: 'Home', Bookings: 'Bookings', Status: 'Status', Chat: 'Chat',
+  IntentConfirm: 'Confirm Request', ProviderResults: 'Providers',
+  BookingConfirm: 'Confirm Booking', ReviewBooking: 'Review Booking',
+  ProviderChat: 'Provider Chat', LocationPicker: 'Location',
+  Confirmation: 'Confirmed', AgentTrace: 'Agent Trace', Loading: 'Matching',
 };
 
 function getCurrentRouteName(state) {
-  if (!state?.routes?.length) return 'Splash';
+  if (!state?.routes?.length) return 'Home';
   const route = state.routes[state.index ?? 0];
   if (route.state) return getCurrentRouteName(route.state);
   return route.name;
 }
 
+// ── 14.1: Root-level SplashGate — always renders splash first ────────────────
+function SplashGate({ children }) {
+  const [isBooting, setIsBooting] = useState(true);
+  const fadeOut = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      Animated.timing(fadeOut, { toValue: 0, duration: 320, useNativeDriver: true }).start(() => {
+        setIsBooting(false);
+      });
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [fadeOut]);
+
+  if (isBooting) {
+    return (
+      <Animated.View style={[StyleSheet.absoluteFill, styles.splashGate, { opacity: fadeOut }]}>
+        <SplashScreen />
+      </Animated.View>
+    );
+  }
+  return children;
+}
+
+// ── Tab bar ────────────────────────────────────────────────────────────────────
 function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) {
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(0)).current;
+
   const activeTab = useMemo(() => {
     if (['Home', 'Bookings', 'Status', 'Chat'].includes(currentRouteName)) return currentRouteName;
     if (currentRouteName === 'ProviderChat') return 'Chat';
@@ -81,8 +99,6 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
       stiffness: 180,
     }).start();
   }, [translateY, visible]);
-
-  if (currentRouteName === 'Splash') return null;
 
   return (
     <Animated.View
@@ -111,26 +127,40 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
   );
 }
 
+// ── Main navigator (only rendered when user is authenticated) ─────────────────
 function AppNavigator() {
   const { user, logout } = useAuth();
   const navigationRef = useRef(null);
-  const [currentRouteName, setCurrentRouteName] = useState('Splash');
+  const [currentRouteName, setCurrentRouteName] = useState('Home');
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [tabVisible, setTabVisible] = useState(true);
   const idleTimer = useRef(null);
   const lastOffset = useRef(0);
 
-  useEffect(() => {
-    void configureNotifications();
-  }, []);
+  // 14.4: Header animated value (top bar)
+  const headerY = useRef(new Animated.Value(0)).current;
+  // 14.4: Tab bar visibility uses existing spring logic via tabVisible state
 
-  const hideTabBar = useCallback(() => setTabVisible(false), []);
+  useEffect(() => { void configureNotifications(); }, []);
+
+  const hideTabBar = useCallback(() => {
+    setTabVisible(false);
+    // 14.4: Also slide header up
+    Animated.timing(headerY, { toValue: -(Platform.OS === 'ios' ? 120 : 100), duration: 250, useNativeDriver: true }).start();
+  }, [headerY]);
+
   const showTabBar = useCallback(() => {
     setTabVisible(true);
+    // 14.4: Spring header back in
+    Animated.spring(headerY, { toValue: 0, friction: 6, useNativeDriver: true }).start();
     if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setTabVisible(false), 3200);
-  }, []);
+    // 14.4: Three-second idle auto-hide
+    idleTimer.current = setTimeout(() => {
+      setTabVisible(false);
+      Animated.timing(headerY, { toValue: -(Platform.OS === 'ios' ? 120 : 100), duration: 400, useNativeDriver: true }).start();
+    }, 3200);
+  }, [headerY]);
 
   const registerScroll = useCallback((event) => {
     const y = event.nativeEvent.contentOffset.y;
@@ -141,9 +171,7 @@ function AppNavigator() {
 
   useEffect(() => {
     if (currentRouteName !== 'Splash') showTabBar();
-    return () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current);
-    };
+    return () => { if (idleTimer.current) clearTimeout(idleTimer.current); };
   }, [currentRouteName, showTabBar]);
 
   const contextValue = useMemo(() => ({ showTabBar, hideTabBar, registerScroll }), [showTabBar, hideTabBar, registerScroll]);
@@ -158,42 +186,48 @@ function AppNavigator() {
         >
           <StatusBar style="dark" />
           <Stack.Navigator
-            initialRouteName="Splash"
+            initialRouteName="Home"
             screenOptions={({ navigation, route }) => ({
               headerTransparent: true,
               headerShadowVisible: false,
               headerBackVisible: false,
               header: ({ back }) => (
-                <View style={styles.headerFrame} pointerEvents="box-none">
+                // 14.4: Wrap header in animated view so it slides up/down
+                <Animated.View style={[styles.headerFrame, { transform: [{ translateY: headerY }] }]} pointerEvents="box-none">
                   <AppHeader
                     navigation={navigation}
                     routeName={ROUTE_LABELS[route.name] || route.name}
                     canGoBack={!!back && !['Home', 'Bookings', 'Status', 'Chat', 'Loading'].includes(route.name)}
                     onProfilePress={() => setSidebarVisible(true)}
                   />
-                </View>
+                </Animated.View>
               ),
               contentStyle: { backgroundColor: COLORS.bg },
               animation: 'slide_from_right',
             })}
           >
-            <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false, animation: 'fade' }} />
-            <Stack.Screen name="Home" component={HomeScreen} options={{ animation: 'fade' }} />
-            <Stack.Screen name="Bookings" component={BookingsScreen} options={{ animation: 'fade' }} />
-            <Stack.Screen name="Status" component={StatusScreen} options={{ animation: 'fade' }} />
-            <Stack.Screen name="Chat" component={ChatScreen} options={{ animation: 'fade' }} />
-            <Stack.Screen name="IntentConfirm" component={IntentConfirmScreen} />
-            <Stack.Screen name="Loading" component={LoadingScreen} options={{ gestureEnabled: false, animation: 'fade' }} />
+            <Stack.Screen name="Home"           component={HomeScreen}           options={{ animation: 'fade' }} />
+            <Stack.Screen name="Bookings"        component={BookingsScreen}       options={{ animation: 'fade' }} />
+            <Stack.Screen name="Status"          component={StatusScreen}         options={{ animation: 'fade' }} />
+            <Stack.Screen name="Chat"            component={ChatScreen}           options={{ animation: 'fade' }} />
+            <Stack.Screen name="IntentConfirm"   component={IntentConfirmScreen} />
+            <Stack.Screen name="Loading"         component={LoadingScreen}        options={{ gestureEnabled: false, animation: 'fade' }} />
             <Stack.Screen name="ProviderResults" component={ProviderResultsScreen} />
-            <Stack.Screen name="BookingConfirm" component={BookingConfirmScreen} />
-            <Stack.Screen name="ReviewBooking" component={ReviewBookingScreen} />
-            <Stack.Screen name="ProviderChat" component={ProviderChatScreen} />
-            <Stack.Screen name="LocationPicker" component={LocationPickerScreen} />
-            <Stack.Screen name="Confirmation" component={ConfirmationScreen} options={{ gestureEnabled: false }} />
-            <Stack.Screen name="AgentTrace" component={AgentTraceScreen} />
+            <Stack.Screen name="BookingConfirm"  component={BookingConfirmScreen} />
+            <Stack.Screen name="ReviewBooking"   component={ReviewBookingScreen} />
+            <Stack.Screen name="ProviderChat"    component={ProviderChatScreen} />
+            <Stack.Screen name="LocationPicker"  component={LocationPickerScreen} />
+            <Stack.Screen name="Confirmation"    component={ConfirmationScreen}   options={{ gestureEnabled: false }} />
+            <Stack.Screen name="AgentTrace"      component={AgentTraceScreen} />
           </Stack.Navigator>
         </NavigationContainer>
-        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} visible={tabVisible} showTabBar={showTabBar} />
+
+        <LiquidTabBar
+          navigationRef={navigationRef}
+          currentRouteName={currentRouteName}
+          visible={tabVisible}
+          showTabBar={showTabBar}
+        />
         <Sidebar
           visible={sidebarVisible}
           onClose={() => setSidebarVisible(false)}
@@ -208,71 +242,65 @@ function AppNavigator() {
   );
 }
 
-export default function App() {
-  function AuthGate() {
-    const { isLoading, user } = useAuth();
+// ── Auth gate (no splash logic here anymore — handled by SplashGate above) ────
+function AuthGate() {
+  const { isLoading, user } = useAuth();
 
-    if (isLoading) {
-      return (
-        <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center' }]}>
-          <Text style={styles.authGateTitle}>Asaaniyat</Text>
-          <Text style={styles.authGateSubtitle}>Checking secure session…</Text>
-        </View>
-      );
-    }
-
-    if (!user) return <AuthScreen />;
+  if (isLoading) {
     return (
-      <AppContextProvider>
-        <AppNavigator />
-      </AppContextProvider>
+      <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center' }]}>
+        <Text style={styles.authGateTitle}>Asaaniyat</Text>
+        <Text style={styles.authGateSubtitle}>Checking secure session…</Text>
+      </View>
     );
   }
 
+  if (!user) return <AuthScreen />;
+  return (
+    <AppContextProvider>
+      <AppNavigator />
+    </AppContextProvider>
+  );
+}
+
+// ── Root ──────────────────────────────────────────────────────────────────────
+export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AuthGate />
+        {/* 14.1: SplashGate always renders for 2.5s before revealing AuthGate */}
+        <SplashGate>
+          <AuthGate />
+        </SplashGate>
       </AuthProvider>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  appShell: { flex: 1, backgroundColor: COLORS.bg },
+  // 14.1: Splash gate overlay fills the whole screen
+  splashGate: { zIndex: 999, backgroundColor: COLORS.bg },
+
+  appShell:    { flex: 1, backgroundColor: COLORS.bg },
   appShellDim: { backgroundColor: '#EAF8EF' },
+
   headerFrame: {
     height: Platform.OS === 'ios' ? 112 : 98,
     paddingTop: Platform.OS === 'ios' ? 48 : 34,
     backgroundColor: 'transparent',
   },
+
   tabBarWrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 14,
+    position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 14,
   },
-  tabBar: { height: 74 },
-  tabBarInner: {
-    flex: 1,
-    padding: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  tabButton: {
-    flex: 1,
-    height: 56,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
+  tabBar:      { height: 74 },
+  tabBarInner: { flex: 1, padding: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  tabButton:   { flex: 1, height: 56, borderRadius: 23, alignItems: 'center', justifyContent: 'center', gap: 3 },
   tabButtonActive: { backgroundColor: COLORS.primary },
-  tabLabel: { color: COLORS.textSecondary, fontSize: 10, fontWeight: '900' },
-  tabLabelActive: { color: '#FFFFFF' },
-  authGate: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
-  authGateTitle: { color: COLORS.primary, fontSize: 30, fontWeight: '900', letterSpacing: 1 },
+  tabLabel:        { color: COLORS.textSecondary, fontSize: 10, fontWeight: '900' },
+  tabLabelActive:  { color: '#FFFFFF' },
+
+  authGate:         { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
+  authGateTitle:    { color: COLORS.primary, fontSize: 30, fontWeight: '900', letterSpacing: 1 },
   authGateSubtitle: { marginTop: 8, color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
 });

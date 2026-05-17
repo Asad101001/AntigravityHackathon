@@ -1,68 +1,53 @@
 /**
- * Screen 3: LoadingScreen — Agentic AI Narration Edition
- *
- * Each pipeline step now has a rotating queue of sub-messages that tick
- * independently of the API call, giving judges a live window into the
- * AI's reasoning process. Real API call still drives navigation.
+ * LoadingScreen.js — Tasks 14.7 & 14.8
+ * 14.7: All pipeline emojis replaced with Ionicons vector icons.
+ * 14.8: Warp-speed mode — once API resolves, remaining steps complete
+ *       at 120ms/step instead of 900ms, compressing 35s → ~2.5s.
  */
-
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, StyleSheet, SafeAreaView, Animated, Easing
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Animated, Easing } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
 
-// ---------------------------------------------------------------------------
-// Pipeline definition — each step has rotating narration lines that simulate
-// the agent "thinking aloud". The ticker cycles through them while that step
-// is active, so the screen never feels frozen.
-// ---------------------------------------------------------------------------
+// ── 14.7: Pipeline with Ionicons — no emojis ─────────────────────────────────
 const PIPELINE = [
   {
-    id: 1,
-    label: 'Parsing Intent',
-    icon: '🧠',
-    agentName: 'LLMIntentParserAgent',
+    id: 1, label: 'Parsing Intent',
+    icon: 'bulb-outline', iconColor: '#7C3AED', agentName: 'LLMIntentParserAgent',
     narration: [
       'Tokenising your request...',
       'Detecting language mix (Urdu/English)...',
       'Extracting service type & urgency...',
       'Resolving price_sensitivity signal...',
-      'Intent vector locked ✓',
+      'Intent vector locked',
     ],
   },
   {
-    id: 2,
-    label: 'Resolving Location',
-    icon: '📍',
-    agentName: 'LocationResolverAgent',
+    id: 2, label: 'Resolving Location',
+    icon: 'location-outline', iconColor: '#0EA5E9', agentName: 'LocationResolverAgent',
     narration: [
       'Checking typed area against the request...',
-      'Using picked/current coordinates only if text has no area...',
+      'Using picked/current coordinates...',
       'Validating service-area coverage map...',
-      'Location context confirmed ✓',
+      'Location context confirmed',
     ],
   },
   {
-    id: 3,
-    label: 'Discovering Providers',
-    icon: '🔍',
-    agentName: 'ProviderDiscoveryAgent',
+    id: 3, label: 'Discovering Providers',
+    icon: 'search-outline', iconColor: '#10B981', agentName: 'ProviderDiscoveryAgent',
     narration: [
       'Querying verified provider network...',
       'Filtering by specialization match...',
       'Cross-referencing availability windows...',
       'Pulling cancellation_risk scores...',
-      'Candidate pool assembled ✓',
+      'Candidate pool assembled',
     ],
   },
   {
-    id: 4,
-    label: 'Ranking & Reasoning',
-    icon: '📊',
-    agentName: 'LLMRankerAgent',
+    id: 4, label: 'Ranking & Reasoning',
+    icon: 'stats-chart-outline', iconColor: '#F59E0B', agentName: 'LLMRankerAgent',
     narration: [
       'Sending candidate list to LLM...',
       'Weighing distance vs. rating trade-offs...',
@@ -70,86 +55,76 @@ const PIPELINE = [
       'Analysing recent_sentiment for each provider...',
       'Evaluating cancellation_risk outliers...',
       'Generating decision reasoning_log...',
-      'Best match identified ✓',
+      'Best match identified',
     ],
   },
   {
-    id: 5,
-    label: 'Selecting Provider',
-    icon: '🎯',
-    agentName: 'DecisionMakerAgent',
+    id: 5, label: 'Selecting Provider',
+    icon: 'aperture-outline', iconColor: '#EF4444', agentName: 'DecisionMakerAgent',
     narration: [
       'Applying hard constraints...',
       'Checking verification and available slots...',
       'Selecting the safest recommendation...',
-      'Decision explanation ready ✓',
+      'Decision explanation ready',
     ],
   },
   {
-    id: 6,
-    label: 'Dynamic Pricing',
-    icon: '💰',
-    agentName: 'DynamicPricingAgent',
+    id: 6, label: 'Dynamic Pricing',
+    icon: 'cash-outline', iconColor: '#14B8A6', agentName: 'DynamicPricingAgent',
     narration: [
       'Loading provider base_rate_pkr...',
       'Calculating distance surcharge...',
       'Applying urgency multiplier...',
       'Assembling quote_breakdown...',
-      'Quote finalised ✓',
+      'Quote finalised',
     ],
   },
   {
-    id: 7,
-    label: 'Executing Booking',
-    icon: '📋',
-    agentName: 'BookingExecutorAgent',
+    id: 7, label: 'Executing Booking',
+    icon: 'clipboard-outline', iconColor: '#6366F1', agentName: 'BookingExecutorAgent',
     narration: [
       'Reserving provider time slot...',
       'Writing booking record...',
       'Issuing confirmation ID...',
-      'Booking confirmed ✓',
+      'Booking confirmed',
     ],
   },
   {
-    id: 8,
-    label: 'Scheduling Follow-up',
-    icon: '🔔',
-    agentName: 'FollowUpManagerAgent',
+    id: 8, label: 'Scheduling Follow-up',
+    icon: 'notifications-outline', iconColor: '#EC4899', agentName: 'FollowUpManagerAgent',
     narration: [
       'Preparing reminder schedule...',
       'Queueing one-hour service reminder...',
       'Queueing feedback follow-up...',
-      'Follow-up plan confirmed ✓',
+      'Follow-up plan confirmed',
     ],
   },
 ];
 
-// How long each narration sub-message stays visible (ms)
-const NARRATION_TICK_MS = 900;
-// Minimum time we hold on each pipeline step so narration is readable
-const MIN_STEP_MS = NARRATION_TICK_MS * 2;
+// 14.8: Tick rates
+const NARRATION_TICK_MS  = 900;   // normal pace while API is fetching
+const WARP_STEP_MS       = 120;   // warp-speed once API resolves
 
-// ---------------------------------------------------------------------------
 export default function LoadingScreen({ route, navigation }) {
   const { userText, userLocation, locationSource, city } = route.params;
 
-  const [currentStep, setCurrentStep] = useState(0);   // 0-based pipeline index
-  const [narrationIdx, setNarrationIdx] = useState(0); // which sub-message
+  const [currentStep, setCurrentStep] = useState(0);
+  const [narrationIdx, setNarrationIdx] = useState(0);
   const [complete, setComplete] = useState(false);
   const [error, setError] = useState(null);
 
-  // Animations
-  const pulseAnim  = useRef(new Animated.Value(1)).current;
-  const fadeAnim   = useRef(new Animated.Value(1)).current;
+  const pulseAnim    = useRef(new Animated.Value(1)).current;
+  const fadeAnim     = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
-  // Refs so callbacks always see latest values
-  const currentStepRef = useRef(0);
-  const narrationIdxRef = useRef(0);
-  const apiDoneRef = useRef(false);
-  const apiResultRef = useRef(null);
+  const currentStepRef   = useRef(0);
+  const narrationIdxRef  = useRef(0);
+  const apiDoneRef       = useRef(false);
+  const apiResultRef     = useRef(null);
+  const warpModeRef      = useRef(false);  // 14.8: flag for warp mode
+  const tickIntervalRef  = useRef(null);
 
-  // ── Pulse animation on the active icon ──────────────────────────────────
+  // ── Pulse animation ──────────────────────────────────────────────────────
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -161,31 +136,42 @@ export default function LoadingScreen({ route, navigation }) {
 
   // ── Narration ticker ─────────────────────────────────────────────────────
   useEffect(() => {
-    const tick = setInterval(() => {
+    startTicker(NARRATION_TICK_MS);
+    return () => { if (tickIntervalRef.current) clearInterval(tickIntervalRef.current); };
+  }, []);
+
+  const startTicker = (ms) => {
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+    tickIntervalRef.current = setInterval(() => {
       const step = currentStepRef.current;
       if (step >= PIPELINE.length) return;
 
       const maxNarration = PIPELINE[step].narration.length;
       const nextIdx = narrationIdxRef.current + 1;
 
-      if (nextIdx < maxNarration) {
-        // Still more lines for this step
+      if (nextIdx < maxNarration && !warpModeRef.current) {
+        // Still narrating this step (only in normal mode)
         narrationIdxRef.current = nextIdx;
-        // Fade transition
         Animated.sequence([
-          Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-          Animated.timing(fadeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+          Animated.timing(fadeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+          Animated.timing(fadeAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
         ]).start();
         setNarrationIdx(nextIdx);
-      } else if (apiDoneRef.current) {
-        // API finished and we've shown all narration — advance step
+      } else if (apiDoneRef.current || warpModeRef.current) {
+        // 14.8: API is done — advance step immediately
         advanceStep();
       }
       // else: hold on last narration line until API resolves
-    }, NARRATION_TICK_MS);
+    }, ms);
+  };
 
-    return () => clearInterval(tick);
-  }, []);
+  // 14.8: Activate warp-speed mode when API resolves
+  const activateWarpSpeed = () => {
+    if (warpModeRef.current) return;
+    warpModeRef.current = true;
+    // Restart ticker at 120ms for rapid completion
+    startTicker(WARP_STEP_MS);
+  };
 
   const advanceStep = () => {
     const next = currentStepRef.current + 1;
@@ -194,30 +180,24 @@ export default function LoadingScreen({ route, navigation }) {
     setCurrentStep(next);
     setNarrationIdx(0);
 
-    // Animate progress bar
     Animated.timing(progressAnim, {
       toValue: next / PIPELINE.length,
-      duration: 400,
+      duration: warpModeRef.current ? 80 : 400,
       useNativeDriver: false,
     }).start();
 
     if (next >= PIPELINE.length) {
-      // All steps done — navigate
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
       setComplete(true);
       setTimeout(() => resolveNavigation(apiResultRef.current), 600);
     }
   };
 
   // ── API call ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    void callAPI();
-  }, []);
+  useEffect(() => { void callAPI(); }, []);
 
   const callAPI = async () => {
     try {
-      // Never mutate the typed request with device-derived city text here.
-      // The backend parser should decide whether the user specified a location;
-      // GPS/map coordinates are sent separately and only used when text has no location.
       const response = await apiClient.post(
         '/service-request',
         {
@@ -232,6 +212,7 @@ export default function LoadingScreen({ route, navigation }) {
 
       apiResultRef.current = response.data;
       apiDoneRef.current   = true;
+
       if (response.data?.success) {
         void sendLocalNotification(
           'Provider match found',
@@ -239,10 +220,10 @@ export default function LoadingScreen({ route, navigation }) {
           { booking_id: response.data.booking_id || null, event: 'provider_match' }
         );
       }
-      // The narration ticker will now advance steps as they finish
 
+      // 14.8: Immediately enter warp-speed mode — burns through remaining steps in ~120ms each
+      activateWarpSpeed();
     } catch (err) {
-      console.error('API Error:', err);
       const backendMessage = err.response?.data?.message || err.response?.data?.error;
       const errorMessage = backendMessage || (
         err.message === 'Network Error'
@@ -264,61 +245,58 @@ export default function LoadingScreen({ route, navigation }) {
     }
   };
 
-  // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Ionicons name="alert-circle-outline" size={48} color={COLORS.danger} style={{ marginBottom: 16 }} />
           <Text style={styles.errorTitle}>Something went wrong</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retryButton} onPress={() => navigation.goBack()}>
-            ← Go Back & Try Again
-          </Text>
+          <Text style={styles.retryButton} onPress={() => navigation.goBack()}>← Go Back & Try Again</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // ── Derived display values ───────────────────────────────────────────────
   const activeStep    = PIPELINE[Math.min(currentStep, PIPELINE.length - 1)];
-  const narrationLine = complete
-    ? 'All agents completed ✓'
-    : activeStep.narration[Math.min(narrationIdx, activeStep.narration.length - 1)];
+  const narrationLine = complete ? 'All agents completed' : activeStep.narration[Math.min(narrationIdx, activeStep.narration.length - 1)];
+  const progressPercent = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 
-  const progressPercent = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
 
-        {/* ── Active agent badge ─────────────────────────────────────────── */}
+        {/* Active agent badge */}
         <View style={styles.agentBadge}>
           <Text style={styles.agentBadgeLabel}>ACTIVE AGENT</Text>
           <Text style={styles.agentBadgeName}>
-            {complete ? '✅  All Agents Done' : activeStep.agentName}
+            {complete ? 'All Agents Done' : activeStep.agentName}
           </Text>
+          {/* 14.8: Warp indicator */}
+          {warpModeRef.current && !complete && (
+            <View style={styles.warpChip}>
+              <Ionicons name="flash" size={10} color="#FFFFFF" />
+              <Text style={styles.warpChipText}>WARP</Text>
+            </View>
+          )}
         </View>
 
-        {/* ── Pulsing icon ───────────────────────────────────────────────── */}
-        <Animated.View style={[styles.iconWrapper, { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.activeIcon}>{complete ? '✅' : activeStep.icon}</Text>
+        {/* Pulsing icon — 14.7: Ionicons */}
+        <Animated.View style={[styles.iconWrapper, { transform: [{ scale: pulseAnim }], borderColor: complete ? '#16A34A' : (activeStep.iconColor || COLORS.primary) }]}>
+          {complete
+            ? <Ionicons name="checkmark-circle" size={40} color="#16A34A" />
+            : <Ionicons name={activeStep.icon} size={36} color={activeStep.iconColor || COLORS.primary} />
+          }
         </Animated.View>
 
-        <Text style={styles.title}>
-          {complete ? 'Match Found!' : activeStep.label}
-        </Text>
+        <Text style={styles.title}>{complete ? 'Match Found!' : activeStep.label}</Text>
 
-        {/* ── Narration line ─────────────────────────────────────────────── */}
+        {/* Narration */}
         <Animated.View style={[styles.narrationBox, { opacity: fadeAnim }]}>
           <Text style={styles.narrationText}>{narrationLine}</Text>
         </Animated.View>
 
-        {/* ── Pipeline steps list ────────────────────────────────────────── */}
+        {/* Pipeline steps — 14.7: Ionicons in each row */}
         <View style={styles.stepsContainer}>
           {PIPELINE.map((step, index) => {
             const isDone    = index < currentStep;
@@ -328,205 +306,86 @@ export default function LoadingScreen({ route, navigation }) {
             return (
               <View
                 key={step.id}
-                style={[
-                  styles.stepRow,
-                  isActive  && styles.stepRowActive,
-                  isDone    && styles.stepRowDone,
-                  isPending && styles.stepRowPending,
-                ]}
+                style={[styles.stepRow, isActive && styles.stepRowActive, isDone && styles.stepRowDone, isPending && styles.stepRowPending]}
               >
-                {/* Status dot */}
-                <View style={[
-                  styles.stepDot,
-                  isDone   && styles.stepDotDone,
-                  isActive && styles.stepDotActive,
-                ]}>
-                  <Text style={[styles.stepDotText, isDone && { color: '#fff' }]}>
-                    {isDone ? '✓' : step.id}
-                  </Text>
+                {/* 14.7: Step icon circle with Ionicons */}
+                <View style={[styles.stepDot, isDone && styles.stepDotDone, isActive && { borderColor: step.iconColor, borderWidth: 2 }]}>
+                  {isDone
+                    ? <Ionicons name="checkmark" size={13} color="#FFFFFF" />
+                    : <Ionicons name={step.icon} size={12} color={isActive ? step.iconColor : COLORS.textMuted} />
+                  }
                 </View>
 
-                {/* Label */}
-                <Text style={[
-                  styles.stepLabel,
-                  isDone    && styles.stepLabelDone,
-                  isActive  && styles.stepLabelActive,
-                  isPending && styles.stepLabelPending,
-                ]}>
-                  {step.icon}  {step.label}
+                <Text style={[styles.stepLabel, isDone && styles.stepLabelDone, isActive && styles.stepLabelActive, isPending && styles.stepLabelPending]}>
+                  {step.label}
                 </Text>
 
-                {/* Agent chip (only active) */}
                 {isActive && (
-                  <View style={styles.agentChip}>
-                    <Text style={styles.agentChipText}>running</Text>
+                  <View style={[styles.agentChip, { backgroundColor: step.iconColor + '33' }]}>
+                    <Text style={[styles.agentChipText, { color: step.iconColor }]}>running</Text>
                   </View>
                 )}
-                {isDone && <Text style={styles.doneCheck}>✅</Text>}
+                {isDone && <Ionicons name="checkmark-circle" size={16} color="#16A34A" />}
               </View>
             );
           })}
         </View>
 
-        {/* ── Progress bar ───────────────────────────────────────────────── */}
+        {/* Progress bar */}
         <View style={styles.progressBg}>
           <Animated.View style={[styles.progressFill, { width: progressPercent }]} />
         </View>
         <Text style={styles.progressLabel}>
           {complete
             ? 'Pipeline complete'
-            : `Agent ${currentStep + 1} of ${PIPELINE.length} · ${activeStep.agentName}`}
+            : `Agent ${currentStep + 1} of ${PIPELINE.length} · ${activeStep.agentName}${warpModeRef.current ? ' · warp-speed' : ''}`}
         </Text>
-
       </View>
     </SafeAreaView>
   );
 }
 
-// ---------------------------------------------------------------------------
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  content: { flex: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 24, alignItems: 'center', justifyContent: 'center' },
 
-  // Agent badge
-  agentBadge: {
-    backgroundColor: COLORS.primaryGlow || COLORS.primary + '22',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  agentBadgeLabel: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  agentBadgeName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginTop: 2,
-  },
+  agentBadge: { backgroundColor: COLORS.primaryGlow || COLORS.primary + '22', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 6, alignItems: 'center', marginBottom: 24, gap: 4 },
+  agentBadgeLabel: { fontSize: 9, fontWeight: '900', color: COLORS.primary, letterSpacing: 2, textTransform: 'uppercase' },
+  agentBadgeName:  { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
 
-  // Pulsing icon
-  iconWrapper: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  activeIcon: { fontSize: 34 },
+  // 14.8: Warp chip indicator
+  warpChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: COLORS.primary, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+  warpChipText: { fontSize: 9, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
 
-  title: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-  },
+  iconWrapper: { width: 72, height: 72, borderRadius: 36, backgroundColor: COLORS.bgCard || '#FFFFFF', borderWidth: 2, borderColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
 
-  // Narration box
-  narrationBox: {
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderRadius: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginBottom: 28,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: COLORS.border || '#2a2f3e',
-    minHeight: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  narrationText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.accent || COLORS.primary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
+  title: { fontSize: 22, fontWeight: '900', color: COLORS.textPrimary, marginBottom: 12 },
 
-  // Steps
+  narrationBox: { backgroundColor: COLORS.bgCard, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 10, marginBottom: 28, width: '100%', borderWidth: 1, borderColor: COLORS.border, minHeight: 40, justifyContent: 'center', alignItems: 'center' },
+  narrationText: { fontSize: 13, fontWeight: '600', color: COLORS.accent || COLORS.primary, textAlign: 'center', fontStyle: 'italic' },
+
   stepsContainer: { width: '100%', marginBottom: 24 },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginBottom: 3,
-  },
+  stepRow:        { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 10, borderRadius: 10, marginBottom: 3 },
   stepRowActive:  { backgroundColor: COLORS.primaryGlow || COLORS.primary + '18' },
   stepRowDone:    { opacity: 0.65 },
   stepRowPending: { opacity: 0.35 },
 
-  stepDot: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderWidth: 1.5,
-    borderColor: COLORS.border || '#2a2f3e',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  stepDotDone:   { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  stepDotActive: { borderColor: COLORS.primary, borderWidth: 2 },
-  stepDotText:   { fontSize: 10, fontWeight: '800', color: COLORS.textSecondary },
+  stepDot: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.bgCard || '#FFFFFF', borderWidth: 1.5, borderColor: COLORS.border, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  stepDotDone: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
 
   stepLabel:        { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
   stepLabelActive:  { color: COLORS.textPrimary, fontWeight: '700' },
   stepLabelDone:    { color: COLORS.textSecondary },
-  stepLabelPending: { color: COLORS.textMuted || COLORS.textSecondary },
+  stepLabelPending: { color: COLORS.textMuted },
 
-  agentChip: {
-    backgroundColor: COLORS.primary + '33',
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  agentChipText: { fontSize: 9, fontWeight: '800', color: COLORS.primary, textTransform: 'uppercase' },
-  doneCheck: { fontSize: 13 },
+  agentChip:     { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+  agentChipText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
 
-  // Progress
-  progressBg: {
-    width: '100%',
-    height: 5,
-    backgroundColor: COLORS.border || '#2a2f3e',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 3,
-  },
-  progressLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-    textAlign: 'center',
-  },
+  progressBg:   { width: '100%', height: 5, backgroundColor: COLORS.border, borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: COLORS.primary, borderRadius: 3 },
+  progressLabel:{ fontSize: 11, color: COLORS.textSecondary, marginTop: 8, textAlign: 'center' },
 
-  // Error
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  errorIcon:  { fontSize: 48, marginBottom: 16 },
   errorTitle: { fontSize: 20, fontWeight: '700', color: COLORS.danger, marginBottom: 12 },
   errorText:  { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
   retryButton:{ fontSize: 16, fontWeight: '600', color: COLORS.primary, padding: 12 },
