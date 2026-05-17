@@ -1,0 +1,199 @@
+{
+  "run_id": "2026-05-17T15-11-06",
+  "timestamp": "2026-05-17T15:16:40.153Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859847889541065,
+      "lng": 67.07362358409206
+    },
+    "service_type": "Carpenter"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2ab2",
+        "id": "CP235",
+        "name": "PECHS Fix Carpenter Usman",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8706,
+        "lng": 67.0589,
+        "distance_km": 3.81,
+        "rating": 4.5,
+        "reviews_count": 196,
+        "available_slots": [
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0384-2853046",
+        "response_time_min": 11,
+        "verified": true,
+        "specialization": [
+          "door_repair",
+          "kitchen_cabinets",
+          "polishing"
+        ],
+        "base_rate_pkr": 2386,
+        "on_time_score": 71,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid carpenter option for PECHS; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 1.91,
+        "distance_text": "3.8 km",
+        "duration_text": "11 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a7b",
+        "id": "CP180",
+        "name": "PECHS City Carpenter Waqar",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8794,
+        "lng": 67.0578,
+        "distance_km": 4.89,
+        "rating": 4.1,
+        "reviews_count": 108,
+        "available_slots": [
+          "08:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0329-2417501",
+        "response_time_min": 12,
+        "verified": true,
+        "specialization": [
+          "custom_furniture",
+          "wardrobe",
+          "furniture_repair"
+        ],
+        "base_rate_pkr": 1852,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid carpenter option for PECHS; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.7,
+        "distance_text": "4.9 km",
+        "duration_text": "12 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a5a",
+        "id": "CP147",
+        "name": "Bahadurabad Ustad Carpenter Nadeem",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Bahadurabad",
+        "lat": 24.8827,
+        "lng": 67.069,
+        "distance_km": 5.08,
+        "rating": 4.4,
+        "reviews_count": 126,
+        "available_slots": [
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0376-2156174",
+        "response_time_min": 14,
+        "verified": true,
+        "specialization": [
+          "kitchen_cabinets",
+          "polishing",
+          "door_repair"
+        ],
+        "base_rate_pkr": 2132,
+        "on_time_score": 97,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Bahadurabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.58,
+        "distance_text": "5.1 km",
+        "duration_text": "14 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a23",
+        "id": "CP092",
+        "name": "DHA City Carpenter Rizwan",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8017,
+        "lng": 67.07,
+        "distance_km": 11.99,
+        "rating": 4.9,
+        "reviews_count": 38,
+        "available_slots": [
+          "08:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0321-1720629",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "wardrobe",
+          "furniture_repair",
+          "custom_furniture"
+        ],
+        "base_rate_pkr": 1598,
+        "on_time_score": 92,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.48,
+        "distance_text": "12.0 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ae9",
+        "id": "CP290",
+        "name": "Defence Rescue Carpenter Tariq",
+        "service": "Carpenter",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8017,
+        "lng": 67.07,
+        "distance_km": 11.99,
+        "rating": 3.1,
+        "reviews_count": 107,
+        "available_slots": [
+          "11:00",
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0359-3288591",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "wardrobe",
+          "furniture_repair",
+          "custom_furniture"
+        ],
+        "base_rate_pkr": 1419,
+        "on_time_score": 74,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid carpenter option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.48,
+        "distance_text": "12.0 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 4541
+}

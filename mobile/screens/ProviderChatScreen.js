@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
 import { API_URL } from '../config';
 import { COLORS, RADII } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
+import apiClient from '../lib/apiClient';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -55,7 +55,7 @@ export default function ProviderChatScreen({ route }) {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API_URL}/chat/${bookingId}`).then(res => {
+    apiClient.get(`/chat/${bookingId}`).then(res => {
       if (res.data?.messages?.length) setMessages(res.data.messages.map(m => ({ ...m, time: m.created_at || stamp() })));
     }).catch(() => {});
   }, [bookingId]);
@@ -71,7 +71,7 @@ export default function ProviderChatScreen({ route }) {
     setMessages(prev => [...prev, { role: 'user', content, time: stamp() }]);
     setSending(true);
     try {
-      const res = await axios.post(`${API_URL}/chat/message`, { booking_id: bookingId, message: content, provider }, { timeout: 20000 });
+      const res = await apiClient.post('/chat/message', { booking_id: bookingId, message: content, provider }, { timeout: 20000 });
       setMessages(prev => [...prev, { role: 'assistant', content: res.data.reply || 'I will coordinate this for you.', time: stamp() }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'I could not reach the chat agent right now, but your booking is still confirmed.', time: stamp() }]);

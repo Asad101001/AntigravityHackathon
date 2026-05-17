@@ -16,8 +16,8 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
   ScrollView, Share, ActivityIndicator, Animated
 } from 'react-native';
-import axios from 'axios';
 import { COLORS, API_URL } from '../config';
+import apiClient from '../lib/apiClient';
 
 // ---------------------------------------------------------------------------
 // Agent metadata map
@@ -79,7 +79,7 @@ export default function AgentTraceScreen({ route }) {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/logs`);
+      const response = await apiClient.get('/logs');
       const traces   = Array.isArray(response.data) ? response.data : [];
       const latestWorkflow = traces.find(t => Array.isArray(t.execution_logs));
 

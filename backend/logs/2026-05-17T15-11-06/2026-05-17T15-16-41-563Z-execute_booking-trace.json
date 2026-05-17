@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T15-11-06",
+  "timestamp": "2026-05-17T15:16:41.563Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "PECHS City Carpenter Waqar",
+    "time_slot": "08:00"
+  },
+  "output": {
+    "booking_id": "BK_1779031001560",
+    "confirmation_message": "Booking confirmed! PECHS City Carpenter Waqar arrives today at 08:00. Contact: 0329-2417501. Booking ID: BK_1779031001560",
+    "scheduled_time": "2026-05-17T03:00:00.000Z",
+    "time_slot": "08:00"
+  },
+  "durationMs": 2
+}

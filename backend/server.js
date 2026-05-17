@@ -10,6 +10,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { sanitizeInput } = require('./middleware/sanitize');
+const authRoutes = require('./routes/authRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
@@ -43,6 +44,7 @@ app.use('/api/', limiter);
 app.use(sanitizeInput);
 
 // ─── Routes ──────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
 app.use('/api', serviceRoutes);
 
 

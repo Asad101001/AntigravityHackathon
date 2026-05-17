@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:51:21.464Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1779029390312",
+    "message": "how are you"
+  },
+  "output": {
+    "reply": "I don't have specific information about that right now. Could you clarify?",
+    "provider": "local_fallback",
+    "usage": null,
+    "rag_chunks_used": 0
+  },
+  "durationMs": 440
+}

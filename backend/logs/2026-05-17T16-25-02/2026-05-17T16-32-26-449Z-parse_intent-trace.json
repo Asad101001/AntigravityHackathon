@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T16-25-02",
+  "timestamp": "2026-05-17T16:32:26.450Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician needed in Karachi tomrrow at 2 pm",
+  "output": {
+    "service_type": "Electrician",
+    "location": "Karachi",
+    "time_preference": "tomorrow",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "User requested an electrician in Karachi for tomorrow at 2 pm. Location cache recognized \"Karachi\" as city-level only; resolver will prefer GPS for neighborhood precision when available."
+  },
+  "durationMs": 681
+}

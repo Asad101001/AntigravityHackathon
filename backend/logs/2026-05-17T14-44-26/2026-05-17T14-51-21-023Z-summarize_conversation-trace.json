@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:51:21.023Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1779029390312",
+    "messages": 2
+  },
+  "output": {
+    "summary": "user: hey can you tell me when are you going to arrive\nassistant: I don't have specific information about that right now. Could you clarify?"
+  },
+  "durationMs": 223
+}

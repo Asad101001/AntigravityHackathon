@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:49:50.305Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "After analyzing the candidate providers, we selected Defence Works Plumber Usman (PL123) as the overall best option due to his excellent rating, good response time, and low cancellation risk. He also offers competitive pricing and has a strong local reputation in Defence, Karachi. Although Saddar Metro Plumber Zahid (PL013) has a slightly higher rating, Defence Works Plumber Usman's overall score is higher due to his better response time and lower cancellation risk.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL013",
+      "analysis": {
+        "overall_best_id": "Defence Works Plumber Usman (PL123) is the overall best option due to his excellent rating, good response time, and low cancellation risk.",
+        "most_affordable_id": "DHA Works Plumber Maryam (PL277) is the most affordable option with a base rate of 760 PKR.",
+        "closest_fastest_id": "Saddar Metro Plumber Zahid (PL013) is the closest/fastest option with a distance of 8.03 km and a response time of 20 minutes."
+      }
+    }
+  },
+  "durationMs": 824
+}

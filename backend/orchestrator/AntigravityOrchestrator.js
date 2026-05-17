@@ -124,6 +124,8 @@ class AntigravityOrchestrator {
       duration_ms:  totalDuration,
       output: {
         booking_id:           context.booking_id || null,
+        scheduled_time:       context.booking?.scheduled_time || null,
+        time_slot:            context.booking?.time_slot || null,
         provider:             context.selected_provider
           ? this._serializeProvider(context.selected_provider, context.booking?.time_slot || null)
           : null,

@@ -9,6 +9,67 @@ const BaseAgent = require('./BaseAgent');
 // In-memory booking store (demo mode — replaces Firestore)
 const bookingStore = new Map();
 
+function parseExplicitAppointment(userText = '', timePref = '', appointmentText = '') {
+  const sourceText = `${appointmentText || ''} ${timePref || ''} ${userText || ''}`.trim();
+  if (!sourceText) return null;
+
+  const text = sourceText.toLowerCase();
+  const now = new Date();
+  const scheduledDate = new Date(now);
+
+  if (/\btomorrow\b/.test(text)) {
+    scheduledDate.setDate(scheduledDate.getDate() + 1);
+  }
+
+  if (/\bday after tomorrow\b/.test(text)) {
+    scheduledDate.setDate(scheduledDate.getDate() + 2);
+  }
+
+  const dateKeywords = [
+    ['today', 0],
+    ['tonight', 0],
+    ['tomorrow', 1],
+    ['weekend', null],
+  ];
+
+  for (const [keyword, offset] of dateKeywords) {
+    if (text.includes(keyword) && Number.isInteger(offset)) {
+      scheduledDate.setDate(now.getDate() + offset);
+      break;
+    }
+  }
+
+  const timeMatch = sourceText.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+  if (!timeMatch) {
+    return null;
+  }
+
+  let hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2] || '0');
+  const period = timeMatch[3].toUpperCase();
+
+  if (period === 'PM' && hours < 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+
+  scheduledDate.setHours(hours, minutes, 0, 0);
+
+  const slotLabel = `${((hours + 11) % 12) + 1}:${String(minutes).padStart(2, '0')} ${hours >= 12 ? 'PM' : 'AM'}`;
+  return {
+    slotLabel,
+    scheduledDate,
+  };
+}
+
+function formatSlotFromHourString(hourString) {
+  const [hourPart, minutePart = '00'] = String(hourString || '').split(':');
+  const hours24 = Number(hourPart);
+  if (!Number.isFinite(hours24)) return null;
+  const minutes = Number(minutePart);
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  const hours12 = ((hours24 + 11) % 12) + 1;
+  return `${hours12}:${String(minutes).padStart(2, '0')} ${period}`;
+}
+
 class BookingExecutorAgent extends BaseAgent {
   constructor() {
     super('execute_booking', 6);
@@ -18,6 +79,11 @@ class BookingExecutorAgent extends BaseAgent {
     const provider = context.selected_provider;
     const userId = context.user_id || 'anonymous';
     const timePref = context.time_preference;
+    const explicitAppointment = parseExplicitAppointment(
+      context.user_text || '',
+      timePref || '',
+      context.requested_datetime_text || context.appointment_time_text || ''
+    );
 
     if (!provider) {
       return {
@@ -32,17 +98,22 @@ class BookingExecutorAgent extends BaseAgent {
     const slots = provider.available_slots || [];
     let selectedSlot = null;
 
-    if (timePref && timePref.includes('morning')) {
+    if (explicitAppointment?.slotLabel) {
+      selectedSlot = explicitAppointment.slotLabel;
+    }
+
+    if (!selectedSlot && timePref && timePref.includes('morning')) {
       selectedSlot = slots.find(s => parseInt(s) >= 8 && parseInt(s) <= 12);
-    } else if (timePref && timePref.includes('afternoon')) {
+    } else if (!selectedSlot && timePref && timePref.includes('afternoon')) {
       selectedSlot = slots.find(s => parseInt(s) >= 12 && parseInt(s) <= 17);
-    } else if (timePref && timePref.includes('evening')) {
+    } else if (!selectedSlot && timePref && timePref.includes('evening')) {
       selectedSlot = slots.find(s => parseInt(s) >= 17 && parseInt(s) <= 21);
     }
 
     // Fallback: first available slot
     if (!selectedSlot && slots.length > 0) {
-      selectedSlot = slots[0];
+      const fallbackSlot = formatSlotFromHourString(slots[0]) || slots[0];
+      selectedSlot = fallbackSlot;
     }
 
     if (!selectedSlot) {
@@ -59,12 +130,24 @@ class BookingExecutorAgent extends BaseAgent {
     const now = new Date();
     
     // Calculate scheduled date
-    let scheduledDate = new Date(now);
-    if (timePref && timePref.includes('tomorrow')) {
-      scheduledDate.setDate(scheduledDate.getDate() + 1);
+    let scheduledDate = explicitAppointment?.scheduledDate ? new Date(explicitAppointment.scheduledDate) : new Date(now);
+    if (!explicitAppointment?.scheduledDate) {
+      if (timePref && timePref.includes('tomorrow')) {
+        scheduledDate.setDate(scheduledDate.getDate() + 1);
+      }
+      const slotMatch = String(selectedSlot || '').match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+      if (slotMatch) {
+        let hours = Number(slotMatch[1]);
+        const minutes = Number(slotMatch[2] || '0');
+        const period = (slotMatch[3] || '').toUpperCase();
+        if (period === 'PM' && hours < 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        scheduledDate.setHours(hours, minutes, 0, 0);
+      } else if (/^\d{2}:\d{2}$/.test(String(selectedSlot || ''))) {
+        const [hours, minutes] = String(selectedSlot).split(':').map(Number);
+        scheduledDate.setHours(hours, minutes, 0, 0);
+      }
     }
-    const [hours] = selectedSlot.split(':').map(Number);
-    scheduledDate.setHours(hours, 0, 0, 0);
 
     const booking = {
       booking_id: bookingId,
@@ -104,7 +187,7 @@ class BookingExecutorAgent extends BaseAgent {
       };
     }
 
-    const confirmationMsg = `Booking confirmed! ${provider.name} arrives ${timePref && timePref.includes('tomorrow') ? 'tomorrow' : 'today'} at ${selectedSlot}. ` +
+    const confirmationMsg = `Booking confirmed! ${provider.name} arrives ${scheduledDate.toLocaleDateString('en-PK')} at ${selectedSlot}. ` +
       `Contact: ${provider.phone}. Booking ID: ${bookingId}`;
 
     return {

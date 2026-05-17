@@ -17,8 +17,8 @@ import {
   ScrollView, ActivityIndicator, Modal, Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
 import { COLORS, API_URL } from '../config';
+import apiClient from '../lib/apiClient';
 
 // ---------------------------------------------------------------------------
 export default function BookingConfirmScreen({ route, navigation }) {
@@ -42,8 +42,8 @@ export default function BookingConfirmScreen({ route, navigation }) {
     setChaosModalOpen(true);
 
     try {
-      const response = await axios.post(
-        `${API_URL}/chaos/simulate`,
+      const response = await apiClient.post(
+        '/chaos/simulate',
         {
           provider_id_to_cancel: provider.id || provider.provider_id || null,
           providers: [fullResult?.provider, ...(fullResult?.alternatives || [])].filter(Boolean),

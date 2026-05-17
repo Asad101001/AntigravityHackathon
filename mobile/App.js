@@ -20,6 +20,7 @@ import ReviewBookingScreen from './screens/ReviewBookingScreen';
 import ProviderChatScreen from './screens/ProviderChatScreen';
 import LocationPickerScreen from './screens/LocationPickerScreen';
 import SplashScreen from './screens/SplashScreen';
+import AuthScreen from './screens/AuthScreen';
 import AppHeader from './components/AppHeader';
 import Sidebar from './components/Sidebar';
 import LiquidGlass from './components/LiquidGlass';
@@ -27,6 +28,7 @@ import { COLORS } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
 import { configureNotifications } from './notifications';
 import { AppContextProvider } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -110,6 +112,7 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
 }
 
 function AppNavigator() {
+  const { user, logout } = useAuth();
   const navigationRef = useRef(null);
   const [currentRouteName, setCurrentRouteName] = useState('Splash');
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -197,6 +200,8 @@ function AppNavigator() {
           darkMode={darkMode}
           onToggleTheme={setDarkMode}
           onNavigateTrace={() => navigationRef.current?.navigate('AgentTrace')}
+          currentUser={user}
+          onLogout={logout}
         />
       </Pressable>
     </TabBarVisibilityContext.Provider>
@@ -204,11 +209,31 @@ function AppNavigator() {
 }
 
 export default function App() {
-  return (
-    <SafeAreaProvider>
+  function AuthGate() {
+    const { isLoading, user } = useAuth();
+
+    if (isLoading) {
+      return (
+        <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center' }]}>
+          <Text style={styles.authGateTitle}>Asaaniyat</Text>
+          <Text style={styles.authGateSubtitle}>Checking secure session…</Text>
+        </View>
+      );
+    }
+
+    if (!user) return <AuthScreen />;
+    return (
       <AppContextProvider>
         <AppNavigator />
       </AppContextProvider>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
@@ -247,4 +272,7 @@ const styles = StyleSheet.create({
   tabButtonActive: { backgroundColor: COLORS.primary },
   tabLabel: { color: COLORS.textSecondary, fontSize: 10, fontWeight: '900' },
   tabLabelActive: { color: '#FFFFFF' },
+  authGate: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
+  authGateTitle: { color: COLORS.primary, fontSize: 30, fontWeight: '900', letterSpacing: 1 },
+  authGateSubtitle: { marginTop: 8, color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
 });

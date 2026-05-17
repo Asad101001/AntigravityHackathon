@@ -10,8 +10,7 @@
  */
 
 const BaseAgent = require('./BaseAgent');
-const providers = require('../data/providers.json');
-const coordinatesByCity = require('../data/coordinates.json');
+const db = require('../db');
 const { withRetry } = require('../utils/retryHelper');
 
 const DISTANCE_MATRIX_ENDPOINT = 'https://maps.googleapis.com/maps/api/distancematrix/json';
@@ -29,6 +28,8 @@ class ProviderDiscovererAgent extends BaseAgent {
 
   async execute(context) {
     const { coordinates, service_type } = context;
+    const providers = await this._getProviders();
+    this.coordinatesByCity = await this._getCoordinatesByCity();
 
     if (!coordinates?.lat || !coordinates?.lng) {
       return {
@@ -132,8 +133,7 @@ class ProviderDiscovererAgent extends BaseAgent {
   _withResolvedCoordinates(provider) {
     if (provider.lat != null && provider.lng != null) return provider;
 
-    const cityKey = this._findCoordinateCityKey(provider.city);
-    const cityCoordinates = cityKey ? coordinatesByCity[cityKey] : null;
+    const cityCoordinates = this._resolveCityCoordinates(provider.city);
     const areaCoordinates = cityCoordinates ? this._findAreaCoordinates(cityCoordinates, provider.area) : null;
 
     if (!areaCoordinates) return provider;
@@ -147,6 +147,7 @@ class ProviderDiscovererAgent extends BaseAgent {
   }
 
   _findCoordinateCityKey(city) {
+    const coordinatesByCity = this.coordinatesByCity || {};
     const normalizedCity = this._normalizeAreaKey(city);
     return Object.keys(coordinatesByCity).find(key => this._normalizeAreaKey(key) === normalizedCity);
   }
@@ -183,6 +184,30 @@ class ProviderDiscovererAgent extends BaseAgent {
       response_time_min: Math.max(5, Math.round(provider.haversine_km * 2.5)),
       distance_source: 'haversine_estimate',
     };
+  }
+
+  async _getProviders() {
+    try {
+      return await db.getProvidersCatalog(1000);
+    } catch (err) {
+      console.warn('[ProviderDiscoverer] Falling back to empty provider catalog:', err.message);
+      return [];
+    }
+  }
+
+  async _getCoordinatesByCity() {
+    try {
+      return await db.getCoordinatesByCity();
+    } catch (err) {
+      console.warn('[ProviderDiscoverer] Falling back to empty coordinate catalog:', err.message);
+      return {};
+    }
+  }
+
+  _resolveCityCoordinates(city) {
+    const coordinatesByCity = this.coordinatesByCity || {};
+    const cityKey = this._findCoordinateCityKey(city);
+    return cityKey ? coordinatesByCity[cityKey] : null;
   }
 
   // ── Distance Matrix API ───────────────────────────────────────────────

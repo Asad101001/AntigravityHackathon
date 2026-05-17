@@ -89,10 +89,10 @@ class LLMIntentParserAgent extends BaseAgent {
     if (!text) return { location: null, source: 'none', reasoning: '' };
 
     const selectedCity = context.city || context.explicit_city || context.selected_city || null;
-    const local = findLocationCandidate(text, {
+    const local = (await findLocationCandidate(text, {
       minConfidence: 0.52,
       city: selectedCity,
-    }) || findLocationCandidate(text, { minConfidence: 0.58 });
+    })) || (await findLocationCandidate(text, { minConfidence: 0.58 }));
 
     if (local && !local.cityOnly) {
       return {

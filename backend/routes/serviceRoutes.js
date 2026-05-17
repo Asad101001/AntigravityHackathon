@@ -9,10 +9,13 @@ const router = express.Router();
 const AntigravityOrchestrator = require('../orchestrator/AntigravityOrchestrator');
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
+const requireAuth = require('../middleware/requireAuth');
 
 const orchestrator = new AntigravityOrchestrator({
   apiKey: process.env.ANTIGRAVITY_KEY || 'demo-key'
 });
+
+router.use(requireAuth);
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/service-request
@@ -303,6 +306,149 @@ router.get('/logs', (req, res) => {
     res.json(logs);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// BOOKING MANAGEMENT ENDPOINTS
+// ═══════════════════════════════════════════════════════════════
+
+// POST /api/bookings
+// Create a new booking (with duplicate prevention)
+router.post('/bookings', async (req, res) => {
+  try {
+    const db = require('../db');
+    const { sub: user_id } = req.auth;
+    const { provider_id, provider_name, service_type, location, city, area, booking_start_time, quote_pkr, status, raw_data } = req.body;
+
+    // Validate required fields
+    if (!provider_id || !provider_name || !service_type) {
+      return res.status(400).json({ success: false, error: 'provider_id, provider_name, and service_type are required' });
+    }
+
+    // Check for duplicate booking (same provider, same time, active status)
+    if (booking_start_time) {
+      const duplicate = await db.checkDuplicateBooking(user_id, provider_id, booking_start_time);
+      if (duplicate) {
+        return res.status(409).json({
+          success: false,
+          error: 'duplicate_booking',
+          message: `You already have a ${duplicate.status} booking with this provider at this time`,
+          existing_booking: duplicate
+        });
+      }
+    }
+
+    // Create the booking
+    const booking = await db.createBooking({
+      user_id,
+      provider_id,
+      provider_name,
+      service_type,
+      location,
+      city,
+      area,
+      booking_start_time,
+      quote_pkr,
+      status: status || 'confirmed',
+      raw_data
+    });
+
+    return res.status(201).json({ success: true, booking });
+  } catch (error) {
+    console.error('Booking creation error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create booking', message: error.message });
+  }
+});
+
+// GET /api/bookings
+// Get all bookings for the current user
+router.get('/bookings', async (req, res) => {
+  try {
+    const db = require('../db');
+    const { sub: user_id } = req.auth;
+
+    const bookings = await db.getUserBookings(user_id);
+    return res.json({ success: true, bookings, count: bookings.length });
+  } catch (error) {
+    console.error('Booking retrieval error:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve bookings', message: error.message });
+  }
+});
+
+// GET /api/bookings/:booking_id
+// Get a specific booking
+router.get('/bookings/:booking_id', async (req, res) => {
+  try {
+    const db = require('../db');
+    const booking = await db.getBookingById(req.params.booking_id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    // Verify user owns this booking
+    if (booking.user_id !== req.auth.sub) {
+      return res.status(403).json({ success: false, error: 'Unauthorized' });
+    }
+
+    return res.json({ success: true, booking });
+  } catch (error) {
+    console.error('Booking retrieval error:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve booking', message: error.message });
+  }
+});
+
+// PUT /api/bookings/:booking_id
+// Update booking status
+router.put('/bookings/:booking_id', async (req, res) => {
+  try {
+    const db = require('../db');
+    const { status } = req.body;
+
+    if (!status || !['confirmed', 'canceled', 'Operating', 'Completed'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid status. Must be: confirmed, canceled, Operating, or Completed' });
+    }
+
+    const booking = await db.getBookingById(req.params.booking_id);
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    // Verify user owns this booking
+    if (booking.user_id !== req.auth.sub) {
+      return res.status(403).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const updatedBooking = await db.updateBookingStatus(req.params.booking_id, status);
+    return res.json({ success: true, booking: updatedBooking });
+  } catch (error) {
+    console.error('Booking update error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update booking', message: error.message });
+  }
+});
+
+// DELETE /api/bookings/:booking_id
+// Cancel a booking
+router.delete('/bookings/:booking_id', async (req, res) => {
+  try {
+    const db = require('../db');
+    const booking = await db.getBookingById(req.params.booking_id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    // Verify user owns this booking
+    if (booking.user_id !== req.auth.sub) {
+      return res.status(403).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const cancelledBooking = await db.cancelBooking(req.params.booking_id);
+    return res.json({ success: true, message: 'Booking cancelled', booking: cancelledBooking });
+  } catch (error) {
+    console.error('Booking cancellation error:', error);
+    res.status(500).json({ success: false, error: 'Failed to cancel booking', message: error.message });
   }
 });
 

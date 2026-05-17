@@ -20,7 +20,7 @@ function SidebarRow({ icon, label, helper, onPress, right }) {
   );
 }
 
-export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, onToggleTheme }) {
+export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, onToggleTheme, currentUser, onLogout }) {
   const insets = useSafeAreaInsets();
   const translateX = useRef(new Animated.Value(340)).current;
   const fade = useRef(new Animated.Value(0)).current;
@@ -46,8 +46,8 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
             <View style={styles.profileBlock}>
               <View style={styles.profileAvatar}><Text style={styles.profileInitial}>A</Text></View>
               <View style={styles.profileCopy}>
-                <Text style={styles.profileName}>Asaaniyat User</Text>
-                <Text style={styles.profileMeta}>Liquid Glass control center</Text>
+                <Text style={styles.profileName}>{currentUser?.displayName || 'Asaaniyat User'}</Text>
+                <Text style={styles.profileMeta}>{currentUser?.email || 'Liquid Glass control center'}</Text>
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
                 <Ionicons name="close" size={18} color={COLORS.textPrimary} />
@@ -69,6 +69,15 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
               <SidebarRow icon="logo-github" label="GitHub Repo Link" helper="Open repository" onPress={openRepo} />
               <SidebarRow icon="star-outline" label="Rate Our App" helper="Share your feedback" onPress={openRate} />
               <SidebarRow icon="git-branch-outline" label="Agent Traces" helper="View orchestrator decisions" onPress={() => { onClose?.(); onNavigateTrace?.(); }} />
+            </View>
+
+            <View style={styles.section}>
+              <SidebarRow
+                icon="log-out-outline"
+                label="Log out"
+                helper="End this secure session"
+                onPress={async () => { await onLogout?.(); onClose?.(); }}
+              />
             </View>
           </LiquidGlass>
         </Animated.View>

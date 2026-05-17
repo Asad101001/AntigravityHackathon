@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:49:47.612Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859844710569583,
+      "lng": 67.07362178591247,
+      "label": "Current location"
+    },
+    "parsed_location": "PECHS Karachi",
+    "user_text": "Plumber needed in PECHS BLOCK 6 at 2 pm"
+  },
+  "output": {
+    "lat": 24.859844710569583,
+    "lng": 67.07362178591247,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 5
+}

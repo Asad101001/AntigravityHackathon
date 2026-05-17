@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T15-08-40",
+  "timestamp": "2026-05-17T15:09:56.782Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL298",
+    "ranked_ids": [
+      "EL298",
+      "EL188",
+      "EL210",
+      "EL265",
+      "EL243"
+    ],
+    "reasoning_log": "After analyzing the candidate electricians in Islamabad, we selected EL298 as the overall best option due to its excellent rating, low cancellation risk, and high on-time score. EL188 was a close second, but EL298's slightly lower distance and higher available slots tipped the balance in its favor. The other options, while still qualified, fell short in one or more areas.",
+    "multi_factor": {
+      "overall_best_id": "EL298",
+      "most_affordable_id": "EL210",
+      "closest_fastest_id": "EL298",
+      "analysis": {
+        "overall_best_id": "EL298 was chosen for its excellent rating (4.5), low cancellation risk, and high on-time score (98%), making it the best trade-off of quality and reliability.",
+        "most_affordable_id": "EL210 was selected as the most affordable option with a base rate of 1382 PKR, which is the lowest among the verified and available providers.",
+        "closest_fastest_id": "EL298 was chosen as the closest and fastest option with a distance of 1.25 km and available slots, making it the most convenient choice for the service."
+      }
+    }
+  },
+  "durationMs": 872
+}

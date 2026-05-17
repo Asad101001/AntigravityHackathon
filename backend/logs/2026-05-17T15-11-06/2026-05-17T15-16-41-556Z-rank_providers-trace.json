@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T15-11-06",
+  "timestamp": "2026-05-17T15:16:41.556Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "CP180",
+    "ranked_ids": [
+      "CP180",
+      "CP147",
+      "CP235",
+      "CP092",
+      "CP290"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best carpenter for the job in Tariq Road Karachi is CP180, as it offers a balanced trade-off of distance, rating, availability, on-time score, and cancellation risk. The most affordable option is CP290, but it has a lower rating and higher cancellation risk. The closest/fastest option is CP092, but it is not the overall best due to its lower rating and higher base rate.",
+    "multi_factor": {
+      "overall_best_id": "CP180",
+      "most_affordable_id": "CP290",
+      "closest_fastest_id": "CP092",
+      "analysis": {
+        "overall_best": "CP180 offers a balanced trade-off of distance (4.89 km), rating (4.1), availability (5 available slots), on-time score (84), and cancellation risk (medium).",
+        "most_affordable": "CP290 has the lowest base rate (1419 PKR) but has a lower rating (3.1) and higher cancellation risk (medium).",
+        "closest_fastest": "CP092 is the closest/fastest option (11.99 km) but has a lower rating (4.9) and higher base rate (1598 PKR)."
+      }
+    }
+  },
+  "durationMs": 1402
+}

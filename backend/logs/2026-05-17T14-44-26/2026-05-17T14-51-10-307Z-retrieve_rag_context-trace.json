@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:51:10.307Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "hey can you tell me when are you going to arrive provider: Defence Works Plumber Usman type: Plumber"
+  },
+  "output": {
+    "chunk_count": 0,
+    "chunks": []
+  },
+  "durationMs": 215
+}

@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-17T15-11-06",
+  "timestamp": "2026-05-17T15:17:42.235Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859847889541065,
+      "lng": 67.07362358409206,
+      "label": "Current location"
+    },
+    "parsed_location": "Karachi",
+    "user_text": "Electrician needed in Karachi"
+  },
+  "output": {
+    "lat": 24.859847889541065,
+    "lng": 67.07362358409206,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 1
+}

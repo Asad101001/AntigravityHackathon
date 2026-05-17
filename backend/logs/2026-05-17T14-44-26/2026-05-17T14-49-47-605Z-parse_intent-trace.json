@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T14-44-26",
+  "timestamp": "2026-05-17T14:49:47.605Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber needed in PECHS BLOCK 6 at 2 pm",
+  "output": {
+    "service_type": "Plumber",
+    "location": "PECHS Karachi",
+    "time_preference": "today_now",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "User requested a Plumber in PECHS BLOCK 6 at 2 pm, indicating a standard booking request. Location cache normalized \"PECHS BLOCK 6\" to \"PECHS Karachi\" before resolver execution."
+  },
+  "durationMs": 926
+}

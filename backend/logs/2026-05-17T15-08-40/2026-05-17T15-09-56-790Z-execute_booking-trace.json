@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T15-08-40",
+  "timestamp": "2026-05-17T15:09:56.790Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "G-10 Prime Electrician Kiran",
+    "time_slot": "08:00"
+  },
+  "output": {
+    "booking_id": "BK_1779030596790",
+    "confirmation_message": "Booking confirmed! G-10 Prime Electrician Kiran arrives tomorrow at 08:00. Contact: 0367-3351943. Booking ID: BK_1779030596790",
+    "scheduled_time": "2026-05-18T03:00:00.000Z",
+    "time_slot": "08:00"
+  },
+  "durationMs": 1
+}

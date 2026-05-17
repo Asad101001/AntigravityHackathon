@@ -1,122 +1,29 @@
-const sqlite3 = require('sqlite3').verbose();
-const { open } = require('sqlite');
 const fs = require('fs');
 const path = require('path');
-const coordinatesByCity = require('./data/coordinates.json');
+const { MongoClient } = require('mongodb');
 
-let dbPromise;
+const coordinatesByCityPath = path.join(__dirname, 'data', 'coordinates.json');
+const providersPath = path.join(__dirname, 'data', 'providers.json');
+const keywordsPath = path.join(__dirname, 'data', 'keywords.json');
 
-async function setupDatabase() {
-  if (!dbPromise) {
-    dbPromise = open({
-      filename: path.join(__dirname, 'asaaniyat.sqlite'),
-      driver: sqlite3.Database
-    }).then(async (db) => {
-      // Create Providers Table
-      await db.exec(`
-        CREATE TABLE IF NOT EXISTS providers (
-          id TEXT PRIMARY KEY,
-          name TEXT,
-          service TEXT,
-          city TEXT,
-          area TEXT,
-          distance_km REAL,
-          rating REAL,
-          reviews_count INTEGER,
-          available_slots TEXT,
-          phone TEXT,
-          response_time_min INTEGER,
-          verified INTEGER,
-          lat REAL,
-          lng REAL
-        );
-      `);
+const COLLECTIONS = {
+  coordinates: 'coordinates_catalog',
+  keywords: 'keywords_catalog',
+  providers: 'providers',
+  users: 'users',
+  chatMessages: 'chat_messages',
+  ragChunks: 'rag_chunks',
+  bookings: 'bookings',
+};
 
-      // Create Keywords Table
-      await db.exec(`
-        CREATE TABLE IF NOT EXISTS keywords (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          intent TEXT,
-          keyword TEXT
-        );
-      `);
+let clientPromise;
+let cachedDb;
+let cachedCoordinatesByCity = null;
+let cachedKeywords = null;
 
-      await db.exec(`
-        CREATE TABLE IF NOT EXISTS chat_messages (
-          id TEXT PRIMARY KEY,
-          booking_id TEXT,
-          role TEXT,
-          content TEXT,
-          token_count INTEGER,
-          created_at TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS rag_chunks (
-          id TEXT PRIMARY KEY,
-          source TEXT,
-          content TEXT,
-          tokens TEXT,
-          metadata TEXT,
-          created_at TEXT
-        );
-      `);
-
-      // Check if providers are empty
-      const count = await db.get('SELECT COUNT(*) as count FROM providers');
-      if (count.count === 0) {
-        console.log('Seeding SQLite database with mock data...');
-        // Read JSON files and seed
-        const providersPath = path.join(__dirname, 'data', 'providers.json');
-        const keywordsPath = path.join(__dirname, 'data', 'keywords.json');
-        
-        if (fs.existsSync(providersPath)) {
-          const providers = JSON.parse(fs.readFileSync(providersPath, 'utf8'));
-          const stmt = await db.prepare(`
-            INSERT INTO providers (id, name, service, city, area, distance_km, rating, reviews_count, available_slots, phone, response_time_min, verified, lat, lng)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `);
-          
-          for (const p of providers) {
-            const resolvedCoords = resolveProviderCoordinates(p);
-            const lat = resolvedCoords.lat;
-            const lng = resolvedCoords.lng;
-
-            await stmt.run(
-              p.id, p.name, p.service, p.city, p.area, p.distance_km, p.rating, 
-              p.reviews_count, JSON.stringify(p.available_slots), p.phone, 
-              p.response_time_min, p.verified ? 1 : 0, lat, lng
-            );
-          }
-          await stmt.finalize();
-        }
-
-        if (fs.existsSync(keywordsPath)) {
-          const intents = JSON.parse(fs.readFileSync(keywordsPath, 'utf8'));
-          const stmt = await db.prepare('INSERT INTO keywords (intent, keyword) VALUES (?, ?)');
-          for (const [serviceKey, serviceData] of Object.entries(intents.services || {})) {
-            for (const kw of serviceData.keywords || []) {
-              await stmt.run(serviceKey, kw);
-            }
-          }
-          for (const [timeKey, timeData] of Object.entries(intents.time_expressions || {})) {
-            for (const kw of timeData.keywords || []) {
-              await stmt.run(timeKey, kw);
-            }
-          }
-          for (const kw of intents.need_indicators || []) await stmt.run('need_indicator', kw);
-          for (const kw of intents.urgency_indicators || []) await stmt.run('urgency_indicator', kw);
-          await stmt.finalize();
-        }
-        
-        console.log('Database seeding complete.');
-      }
-
-      return db;
-    });
-  }
-  return dbPromise;
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
 }
-
 
 function normalizeAreaKey(value) {
   return String(value || '')
@@ -127,12 +34,14 @@ function normalizeAreaKey(value) {
     .trim();
 }
 
-function resolveProviderCoordinates(provider) {
+function resolveProviderCoordinates(provider, coordinatesByCity) {
   if (Number.isFinite(Number(provider.lat)) && Number.isFinite(Number(provider.lng))) {
     return { lat: Number(provider.lat), lng: Number(provider.lng) };
   }
 
-  const cityKey = Object.keys(coordinatesByCity).find(key => normalizeAreaKey(key) === normalizeAreaKey(provider.city));
+  const cityKey = Object.keys(coordinatesByCity || {}).find(
+    key => normalizeAreaKey(key) === normalizeAreaKey(provider.city)
+  );
   const cityCoordinates = cityKey ? coordinatesByCity[cityKey] : null;
   if (!cityCoordinates) return { lat: null, lng: null };
 
@@ -146,36 +55,256 @@ function resolveProviderCoordinates(provider) {
   return { lat: coords?.lat ?? null, lng: coords?.lng ?? null };
 }
 
-function hydrateProvider(r) {
+function buildLocationCatalog(coordinatesByCity = {}) {
+  const catalog = [];
+  for (const [city, areas] of Object.entries(coordinatesByCity)) {
+    const cityTitle = city.charAt(0).toUpperCase() + city.slice(1);
+    const areaValues = Object.values(areas || {});
+    const centroid = areaValues.length
+      ? {
+          lat: areaValues.reduce((sum, item) => sum + Number(item.lat || 0), 0) / areaValues.length,
+          lng: areaValues.reduce((sum, item) => sum + Number(item.lng || 0), 0) / areaValues.length,
+          area_name: `${cityTitle} city center`
+        }
+      : null;
+
+    catalog.push({
+      city: cityTitle,
+      area: cityTitle,
+      canonical: cityTitle,
+      coords: centroid,
+      searchText: cityTitle,
+      normalized: normalizeAreaKey(cityTitle),
+      cityOnly: true
+    });
+
+    for (const [area, coords] of Object.entries(areas || {})) {
+      const areaName = coords.area_name || `${area} ${cityTitle}`;
+      const searchVariants = [area, areaName, `${area} ${cityTitle}`];
+      for (const variant of searchVariants) {
+        catalog.push({
+          city: cityTitle,
+          area,
+          canonical: area,
+          coords,
+          searchText: variant,
+          normalized: normalizeAreaKey(variant),
+          cityOnly: false
+        });
+      }
+    }
+  }
+  return catalog;
+}
+
+function hydrateProvider(provider) {
   return {
-    ...r,
-    verified: r.verified === 1 || r.verified === true,
-    available_slots: Array.isArray(r.available_slots) ? r.available_slots : JSON.parse(r.available_slots || '[]')
+    ...provider,
+    verified: provider.verified === 1 || provider.verified === true,
+    available_slots: Array.isArray(provider.available_slots)
+      ? provider.available_slots
+      : JSON.parse(provider.available_slots || '[]')
   };
 }
 
-// Helper to get providers matching criteria
+async function connectMongo() {
+  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+  const dbName = process.env.MONGODB_DB_NAME || 'asaaniyat';
+  const client = new MongoClient(uri, {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+  });
+
+  await client.connect();
+  const db = client.db(dbName);
+  await ensureIndexes(db);
+  await seedCollections(db);
+  await refreshCaches(db);
+  return { client, db };
+}
+
+async function ensureIndexes(db) {
+  await Promise.all([
+    db.collection(COLLECTIONS.providers).createIndex({ service: 1, city: 1, area: 1 }),
+    db.collection(COLLECTIONS.users).createIndex({ emailLower: 1 }, { unique: true }),
+    db.collection(COLLECTIONS.chatMessages).createIndex({ booking_id: 1, created_at: 1 }),
+    db.collection(COLLECTIONS.ragChunks).createIndex({ created_at: -1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }, { unique: true, sparse: true }),
+    db.collection(COLLECTIONS.bookings).createIndex({ status: 1 }),
+  ]);
+}
+
+async function seedCollections(db) {
+  const coordinatesCollection = db.collection(COLLECTIONS.coordinates);
+  const keywordsCollection = db.collection(COLLECTIONS.keywords);
+  const providersCollection = db.collection(COLLECTIONS.providers);
+
+  const [coordinatesCount, keywordsCount, providersCount] = await Promise.all([
+    coordinatesCollection.estimatedDocumentCount(),
+    keywordsCollection.estimatedDocumentCount(),
+    providersCollection.estimatedDocumentCount(),
+  ]);
+
+  if (coordinatesCount === 0 && fs.existsSync(coordinatesByCityPath)) {
+    const coordinates = JSON.parse(fs.readFileSync(coordinatesByCityPath, 'utf8'));
+    await coordinatesCollection.insertOne({
+      _id: 'coordinates_catalog',
+      data: coordinates,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  if (keywordsCount === 0 && fs.existsSync(keywordsPath)) {
+    const keywords = JSON.parse(fs.readFileSync(keywordsPath, 'utf8'));
+    await keywordsCollection.insertOne({
+      _id: 'keywords_catalog',
+      data: keywords,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  if (providersCount === 0 && fs.existsSync(providersPath)) {
+    const coordinates = fs.existsSync(coordinatesByCityPath)
+      ? JSON.parse(fs.readFileSync(coordinatesByCityPath, 'utf8'))
+      : {};
+    const providers = JSON.parse(fs.readFileSync(providersPath, 'utf8'));
+    const docs = providers.map(provider => {
+      const resolvedCoords = resolveProviderCoordinates(provider, coordinates);
+      return {
+        ...provider,
+        lat: resolvedCoords.lat,
+        lng: resolvedCoords.lng,
+        verified: Boolean(provider.verified),
+        available_slots: Array.isArray(provider.available_slots) ? provider.available_slots : [],
+        created_at: new Date().toISOString(),
+      };
+    });
+    if (docs.length) await providersCollection.insertMany(docs);
+  }
+}
+
+async function refreshCaches(db) {
+  const [coordinatesDoc, keywordsDoc] = await Promise.all([
+    db.collection(COLLECTIONS.coordinates).findOne({ _id: 'coordinates_catalog' }),
+    db.collection(COLLECTIONS.keywords).findOne({ _id: 'keywords_catalog' }),
+  ]);
+  cachedCoordinatesByCity = coordinatesDoc?.data || {};
+  cachedKeywords = keywordsDoc?.data || {};
+}
+
+async function setupDatabase() {
+  if (cachedDb) return cachedDb;
+
+  if (!clientPromise) {
+    clientPromise = connectMongo().catch(err => {
+      clientPromise = null;
+      throw err;
+    });
+  }
+
+  const { db } = await clientPromise;
+  cachedDb = db;
+  return cachedDb;
+}
+
+async function getCoordinatesByCity() {
+  await setupDatabase();
+  return clone(cachedCoordinatesByCity || {});
+}
+
+async function getKeywordsCatalog() {
+  await setupDatabase();
+  return clone(cachedKeywords || {});
+}
+
+async function getLocationCatalog() {
+  const coordinates = await getCoordinatesByCity();
+  return buildLocationCatalog(coordinates);
+}
+
+async function getProvidersCatalog(limit = 1000) {
+  const db = await setupDatabase();
+  const providers = await db.collection(COLLECTIONS.providers)
+    .find({})
+    .sort({ rating: -1, distance_km: 1 })
+    .limit(limit)
+    .toArray();
+  return providers.map(hydrateProvider);
+}
+
+async function findUserByEmail(email) {
+  if (!email) return null;
+  const db = await setupDatabase();
+  return db.collection(COLLECTIONS.users).findOne({ emailLower: String(email).trim().toLowerCase() });
+}
+
+async function findUserById(userId) {
+  if (!userId) return null;
+  const db = await setupDatabase();
+  return db.collection(COLLECTIONS.users).findOne({ _id: String(userId) });
+}
+
+async function createUser({ email, passwordHash, displayName, city }) {
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  const user = {
+    _id: `USR_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    email: String(email).trim(),
+    emailLower: String(email).trim().toLowerCase(),
+    displayName: displayName || String(email).split('@')[0],
+    city: String(city || '').trim() || null,
+    passwordHash,
+    createdAt: now,
+    updatedAt: now,
+    lastLoginAt: null,
+    loginCount: 0,
+  };
+  await db.collection(COLLECTIONS.users).insertOne(user);
+  return user;
+}
+
+async function recordUserLogin(userId) {
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  await db.collection(COLLECTIONS.users).updateOne(
+    { _id: String(userId) },
+    { $set: { lastLoginAt: now, updatedAt: now }, $inc: { loginCount: 1 } }
+  );
+}
+
 async function findProviders(service, location) {
   const db = await setupDatabase();
-  let query = 'SELECT * FROM providers WHERE service LIKE ?';
-  let params = [`%${service}%`];
-  
+  const query = service
+    ? { service: { $regex: escapeRegExp(service), $options: 'i' } }
+    : {};
+
   if (location) {
-      query += ' AND (city LIKE ? OR area LIKE ?)';
-      params.push(`%${location}%`, `%${location}%`);
+    query.$or = [
+      { city: { $regex: escapeRegExp(location), $options: 'i' } },
+      { area: { $regex: escapeRegExp(location), $options: 'i' } },
+    ];
   }
-  
-  query += ' ORDER BY rating DESC, distance_km ASC LIMIT 10';
-  const results = await db.all(query, params);
+
+  const results = await db.collection(COLLECTIONS.providers)
+    .find(query)
+    .sort({ rating: -1, distance_km: 1 })
+    .limit(10)
+    .toArray();
+
   return results.map(hydrateProvider);
 }
 
 async function findProvidersByService(service) {
   const db = await setupDatabase();
-  const results = await db.all(
-    'SELECT * FROM providers WHERE service LIKE ? ORDER BY rating DESC, distance_km ASC LIMIT 50',
-    [`%${service}%`]
-  );
+  const results = await db.collection(COLLECTIONS.providers)
+    .find({ service: { $regex: escapeRegExp(service || ''), $options: 'i' } })
+    .sort({ rating: -1, distance_km: 1 })
+    .limit(50)
+    .toArray();
+
   return results.map(hydrateProvider);
 }
 
@@ -183,50 +312,148 @@ async function saveChatMessage({ booking_id, role, content, token_count = 0 }) {
   const db = await setupDatabase();
   const id = `MSG_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const created_at = new Date().toISOString();
-  await db.run(
-    'INSERT INTO chat_messages (id, booking_id, role, content, token_count, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, booking_id, role, content, token_count, created_at]
-  );
-  return { id, booking_id, role, content, token_count, created_at };
+  const record = { id, booking_id, role, content, token_count, created_at };
+  await db.collection(COLLECTIONS.chatMessages).insertOne(record);
+  return record;
 }
 
 async function getChatMessages(booking_id, limit = 40) {
   const db = await setupDatabase();
-  return db.all(
-    'SELECT * FROM chat_messages WHERE booking_id = ? ORDER BY created_at ASC LIMIT ?',
-    [booking_id, limit]
-  );
+  return db.collection(COLLECTIONS.chatMessages)
+    .find({ booking_id })
+    .sort({ created_at: 1 })
+    .limit(limit)
+    .toArray();
 }
 
 async function saveRagChunk({ source, content, tokens = [], metadata = {} }) {
   const db = await setupDatabase();
   const id = `RAG_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const created_at = new Date().toISOString();
-  await db.run(
-    'INSERT INTO rag_chunks (id, source, content, tokens, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, source || 'manual', content, JSON.stringify(tokens), JSON.stringify(metadata), created_at]
-  );
-  return { id, source, content, tokens, metadata, created_at };
+  const record = {
+    id,
+    source: source || 'manual',
+    content,
+    tokens: Array.isArray(tokens) ? tokens : [],
+    metadata,
+    created_at,
+  };
+  await db.collection(COLLECTIONS.ragChunks).insertOne(record);
+  return record;
 }
 
 async function getRagChunks(limit = 200) {
   const db = await setupDatabase();
-  const rows = await db.all('SELECT * FROM rag_chunks ORDER BY created_at DESC LIMIT ?', [limit]);
-  return rows.map(row => ({
-    ...row,
-    tokens: JSON.parse(row.tokens || '[]'),
-    metadata: JSON.parse(row.metadata || '{}')
-  }));
+  return db.collection(COLLECTIONS.ragChunks)
+    .find({})
+    .sort({ created_at: -1 })
+    .limit(limit)
+    .toArray();
+}
+
+async function createBooking({ user_id, provider_id, provider_name, service_type, location, city, area, booking_start_time, quote_pkr, status = 'confirmed', raw_data = {} }) {
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  const booking = {
+    _id: `BK_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    user_id: String(user_id),
+    provider_id: String(provider_id),
+    provider_name: String(provider_name || ''),
+    service_type: String(service_type || ''),
+    location: String(location || ''),
+    city: String(city || ''),
+    area: String(area || ''),
+    booking_start_time: booking_start_time ? new Date(booking_start_time).toISOString() : null,
+    quote_pkr: typeof quote_pkr === 'number' ? quote_pkr : null,
+    status: String(status),
+    raw_data: raw_data || {},
+    created_at: now,
+    updated_at: now,
+  };
+  await db.collection(COLLECTIONS.bookings).insertOne(booking);
+  return booking;
+}
+
+async function getUserBookings(user_id) {
+  if (!user_id) return [];
+  const db = await setupDatabase();
+  return db.collection(COLLECTIONS.bookings)
+    .find({ user_id: String(user_id) })
+    .sort({ created_at: -1 })
+    .toArray();
+}
+
+async function getBookingById(booking_id) {
+  if (!booking_id) return null;
+  const db = await setupDatabase();
+  return db.collection(COLLECTIONS.bookings).findOne({ _id: String(booking_id) });
+}
+
+async function updateBookingStatus(booking_id, new_status) {
+  if (!booking_id) return null;
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  const result = await db.collection(COLLECTIONS.bookings).findOneAndUpdate(
+    { _id: String(booking_id) },
+    { $set: { status: String(new_status), updated_at: now } },
+    { returnDocument: 'after' }
+  );
+  return result?.value || result || null;
+}
+
+async function checkDuplicateBooking(user_id, provider_id, booking_start_time) {
+  if (!user_id || !provider_id || !booking_start_time) return null;
+  const db = await setupDatabase();
+  const startTime = new Date(booking_start_time).toISOString();
+  return db.collection(COLLECTIONS.bookings).findOne({
+    user_id: String(user_id),
+    provider_id: String(provider_id),
+    booking_start_time: startTime,
+    status: { $in: ['confirmed', 'Operating'] },
+  });
+}
+
+async function cancelBooking(booking_id) {
+  return updateBookingStatus(booking_id, 'canceled');
+}
+
+async function getAllBookings(limit = 1000, skip = 0) {
+  const db = await setupDatabase();
+  return db.collection(COLLECTIONS.bookings)
+    .find({})
+    .sort({ created_at: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+}
+
+function escapeRegExp(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 module.exports = {
   setupDatabase,
+  getCoordinatesByCity,
+  getKeywordsCatalog,
+  getLocationCatalog,
+  getProvidersCatalog,
+  findUserByEmail,
+  findUserById,
+  createUser,
+  recordUserLogin,
   findProviders,
   findProvidersByService,
   saveChatMessage,
   getChatMessages,
   saveRagChunk,
-  getRagChunks
+  getRagChunks,
+  createBooking,
+  getUserBookings,
+  getBookingById,
+  updateBookingStatus,
+  checkDuplicateBooking,
+  cancelBooking,
+  getAllBookings,
 };
 
 

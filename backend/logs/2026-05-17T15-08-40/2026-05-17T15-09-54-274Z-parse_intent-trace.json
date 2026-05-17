@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T15-08-40",
+  "timestamp": "2026-05-17T15:09:54.274Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician chahiye G-11 mein kal subah",
+  "output": {
+    "service_type": "Electrician",
+    "location": "G-11 Islamabad",
+    "time_preference": "tomorrow",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "roman_urdu",
+    "reasoning": "User requested an electrician for tomorrow morning in G-11 Location cache normalized \"G-11\" to \"G-11 Islamabad\" before resolver execution."
+  },
+  "durationMs": 640
+}

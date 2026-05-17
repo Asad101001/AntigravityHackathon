@@ -1,7 +1,7 @@
 'use strict';
 
 const BaseAgent = require('./BaseAgent');
-const coordinatesByCity = require('../data/coordinates.json');
+const db = require('../db');
 const {
   findLocationCandidate,
   getLocationCatalog,
@@ -34,6 +34,7 @@ class LocationResolverAgent extends BaseAgent {
   }
 
   async _resolve(context) {
+    this.coordinatesByCity = await this._getCoordinatesByCity();
     const explicitCity = this._resolveCity(context.city || context.explicit_city || context.selected_city);
     const rawLocation = this._usableParsedLocation(context.location);
     const userText = String(context.user_text || '');
@@ -67,7 +68,7 @@ class LocationResolverAgent extends BaseAgent {
       return this._reject({ lat, lng }, 'Coordinates outside Pakistan bounding box');
     }
 
-    const localArea = this._nearestArea(lat, lng, explicitCity?.city);
+    const localArea = await this._nearestArea(lat, lng, explicitCity?.city);
     if (localArea && localArea.distance_km <= this._localReverseRadiusKm(localArea.city)) {
       return this._pinResult({
         pin,
@@ -91,7 +92,7 @@ class LocationResolverAgent extends BaseAgent {
           lat,
           lng,
           areaName: geo.area_name,
-          city: geo.city || explicitCity?.city || this._nearestCity(lat, lng)?.city || null,
+          city: geo.city || explicitCity?.city || (await this._nearestCity(lat, lng))?.city || null,
           confidence: geo.confidence,
           source: 'reverse_geocoding_api',
           placeId: geo.place_id,
@@ -102,7 +103,7 @@ class LocationResolverAgent extends BaseAgent {
       }
     }
 
-    const pinCity = this._resolveCity(pin.city) || explicitCity || this._nearestCity(lat, lng);
+    const pinCity = this._resolveCity(pin.city) || explicitCity || (await this._nearestCity(lat, lng));
     const city = pinCity?.city || null;
     return this._pinResult({
       pin,
@@ -138,12 +139,12 @@ class LocationResolverAgent extends BaseAgent {
   }
 
   async _resolveTyped(rawLocation, explicitCity, userText) {
-    const local = this._fromLocalCache(rawLocation, explicitCity?.city);
+    const local = await this._fromLocalCache(rawLocation, explicitCity?.city);
     if (local) return local;
 
     const textCity = this._extractCityFromText(`${rawLocation} ${userText}`);
     if (textCity && !explicitCity) {
-      const cityScoped = this._fromLocalCache(rawLocation, textCity.city);
+      const cityScoped = await this._fromLocalCache(rawLocation, textCity.city);
       if (cityScoped) return cityScoped;
     }
 
@@ -178,8 +179,8 @@ class LocationResolverAgent extends BaseAgent {
     };
   }
 
-  _fromLocalCache(rawLocation, city) {
-    const candidate = findLocationCandidate(rawLocation, {
+  async _fromLocalCache(rawLocation, city) {
+    const candidate = await findLocationCandidate(rawLocation, {
       minConfidence: 0.52,
       city,
     });
@@ -242,7 +243,7 @@ class LocationResolverAgent extends BaseAgent {
     ]) || best.formatted_address;
     const resolvedCity = this._extractComponent(best.address_components, ['locality', 'administrative_area_level_2'])
       || this._extractComponent(best.address_components, ['administrative_area_level_1'])
-      || this._nearestCity(lat, lng)?.city
+      || (await this._nearestCity(lat, lng))?.city
       || null;
     const preciseType = best.types?.some(type => ['neighborhood', 'sublocality', 'sublocality_level_1'].includes(type));
 
@@ -283,7 +284,7 @@ class LocationResolverAgent extends BaseAgent {
     const resolvedCity = this._extractComponent(best.address_components, ['locality', 'administrative_area_level_2'])
       || this._extractComponent(best.address_components, ['administrative_area_level_1'])
       || city
-      || this._nearestCity(lat, lng)?.city
+      || (await this._nearestCity(lat, lng))?.city
       || null;
     const resultType = best.types?.[0] || '';
     const confidence = resultType.includes('sublocality') || resultType.includes('neighborhood')
@@ -308,6 +309,7 @@ class LocationResolverAgent extends BaseAgent {
     if (!text) return null;
     const normalized = normalizeLocation(text);
     let best = null;
+    const coordinatesByCity = this.coordinatesByCity || {};
 
     for (const city of Object.keys(coordinatesByCity)) {
       const score = similarity(normalized, city);
@@ -320,6 +322,7 @@ class LocationResolverAgent extends BaseAgent {
   _extractCityFromText(text) {
     const normalized = normalizeLocation(text);
     let best = null;
+    const coordinatesByCity = this.coordinatesByCity || {};
 
     for (const city of Object.keys(coordinatesByCity)) {
       const score = similarity(normalized, city);
@@ -349,6 +352,7 @@ class LocationResolverAgent extends BaseAgent {
   }
 
   _cityCenter(cityName) {
+    const coordinatesByCity = this.coordinatesByCity || {};
     const cityKey = this._resolveCity(cityName)?.key || this._resolveCity(DEFAULT_CITY)?.key || Object.keys(coordinatesByCity)[0];
     const areas = Object.values(coordinatesByCity[cityKey] || {});
     const count = areas.length || 1;
@@ -357,10 +361,11 @@ class LocationResolverAgent extends BaseAgent {
     return { lat, lng };
   }
 
-  _nearestArea(lat, lng, city) {
+  async _nearestArea(lat, lng, city) {
     const requestedCity = city ? normalizeLocation(city) : '';
     let best = null;
-    for (const item of getLocationCatalog().filter(entry => !entry.cityOnly && entry.coords)) {
+    const locationCatalog = await this._getLocationCatalog();
+    for (const item of locationCatalog.filter(entry => !entry.cityOnly && entry.coords)) {
       if (requestedCity && normalizeLocation(item.city) !== requestedCity) continue;
       const distance = haversineKm({ lat, lng }, { lat: Number(item.coords.lat), lng: Number(item.coords.lng) });
       if (distance == null) continue;
@@ -368,7 +373,7 @@ class LocationResolverAgent extends BaseAgent {
         best = { city: item.city, area: item.area, coords: item.coords, distance_km: distance };
       }
     }
-    return best || (requestedCity ? this._nearestArea(lat, lng, null) : null);
+    return best || (requestedCity ? await this._nearestArea(lat, lng, null) : null);
   }
 
   _localReverseRadiusKm(city) {
@@ -379,9 +384,10 @@ class LocationResolverAgent extends BaseAgent {
     return 10;
   }
 
-  _nearestCity(lat, lng) {
+  async _nearestCity(lat, lng) {
     let best = null;
-    for (const item of getLocationCatalog().filter(entry => entry.cityOnly && entry.coords)) {
+    const locationCatalog = await this._getLocationCatalog();
+    for (const item of locationCatalog.filter(entry => entry.cityOnly && entry.coords)) {
       const dLat = lat - item.coords.lat;
       const dLng = lng - item.coords.lng;
       const distance = Math.sqrt(dLat * dLat + dLng * dLng);
@@ -391,6 +397,7 @@ class LocationResolverAgent extends BaseAgent {
   }
 
   _defaultFallback(context, reason) {
+    const coordinatesByCity = this.coordinatesByCity || {};
     const fallbackCity = this._resolveCity(DEFAULT_CITY)?.city || Object.keys(coordinatesByCity)[0];
     const result = this._cityResult(fallbackCity, 'default_city_fallback', reason);
     result.input = context.location || '';
@@ -439,6 +446,24 @@ class LocationResolverAgent extends BaseAgent {
       reasoning: reason,
       contextUpdates: { coordinates: null, city: null, resolved_area: null },
     };
+  }
+
+  async _getCoordinatesByCity() {
+    try {
+      return await db.getCoordinatesByCity();
+    } catch (err) {
+      console.warn('[LocationResolver] Falling back to empty coordinate catalog:', err.message);
+      return {};
+    }
+  }
+
+  async _getLocationCatalog() {
+    try {
+      return await db.getLocationCatalog();
+    } catch (err) {
+      console.warn('[LocationResolver] Falling back to empty location catalog:', err.message);
+      return [];
+    }
   }
 }
 

@@ -1,0 +1,15 @@
+{
+  "run_id": "2026-05-17T15-08-40",
+  "timestamp": "2026-05-17T15:09:54.284Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": "Islamabad",
+  "output": {
+    "lat": 33.696633333333324,
+    "lng": 73.02639444444445,
+    "city": "Islamabad",
+    "area_name": "Islamabad",
+    "source": "local_city_match"
+  },
+  "durationMs": 9
+}

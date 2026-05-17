@@ -10,8 +10,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, Animated, Easing
 } from 'react-native';
-import axios from 'axios';
 import { COLORS, API_URL } from '../config';
+import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
 
 // ---------------------------------------------------------------------------
@@ -218,8 +218,8 @@ export default function LoadingScreen({ route, navigation }) {
       // Never mutate the typed request with device-derived city text here.
       // The backend parser should decide whether the user specified a location;
       // GPS/map coordinates are sent separately and only used when text has no location.
-      const response = await axios.post(
-        `${API_URL}/service-request`,
+      const response = await apiClient.post(
+        '/service-request',
         {
           user_text: userText,
           user_id: `user_${Date.now()}`,
