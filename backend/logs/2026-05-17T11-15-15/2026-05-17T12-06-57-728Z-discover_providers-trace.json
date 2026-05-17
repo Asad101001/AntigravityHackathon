@@ -1,0 +1,185 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T12:06:57.728Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.892277777777778,
+      "lng": 67.10496666666666
+    },
+    "service_type": "Electrician"
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "EL254",
+        "name": "Gulshan Home Electrician Danish",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9227,
+        "lng": 67.092,
+        "distance_km": 7.92,
+        "rating": 4.9,
+        "reviews_count": 191,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0323-3003507",
+        "response_time_min": 16,
+        "verified": true,
+        "specialization": [
+          "fault_finding",
+          "UPS",
+          "ceiling_fans"
+        ],
+        "base_rate_pkr": 1108,
+        "on_time_score": 94,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "haversine_km": 3.63,
+        "distance_text": "7.9 km",
+        "duration_text": "16 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "EL221",
+        "name": "Tariq Road Home Electrician Maryam",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Tariq Road",
+        "lat": 24.8732,
+        "lng": 67.064,
+        "distance_km": 7.13,
+        "rating": 3.8,
+        "reviews_count": 209,
+        "available_slots": [
+          "08:00",
+          "10:00"
+        ],
+        "phone": "0370-2742180",
+        "response_time_min": 16,
+        "verified": false,
+        "specialization": [
+          "inverter_installation",
+          "wiring",
+          "distribution_boards"
+        ],
+        "base_rate_pkr": 1789,
+        "on_time_score": 81,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Solid electrician option for Tariq Road; arrival windows can shift in traffic.",
+        "haversine_km": 4.65,
+        "distance_text": "7.1 km",
+        "duration_text": "16 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "EL199",
+        "name": "Gulshan Pros Electrician Farhan",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9216,
+        "lng": 67.0909,
+        "distance_km": 8.42,
+        "rating": 4.5,
+        "reviews_count": 103,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0348-2567962",
+        "response_time_min": 17,
+        "verified": true,
+        "specialization": [
+          "wiring",
+          "distribution_boards",
+          "inverter_installation"
+        ],
+        "base_rate_pkr": 975,
+        "on_time_score": 89,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "haversine_km": 3.56,
+        "distance_text": "8.4 km",
+        "duration_text": "17 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "EL034",
+        "name": "Gulistan-e-Johar City Electrician Kamran",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulistan-e-Johar",
+        "lat": 24.9229,
+        "lng": 67.1309,
+        "distance_km": 8.04,
+        "rating": 3.8,
+        "reviews_count": 193,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0343-1261327",
+        "response_time_min": 17,
+        "verified": true,
+        "specialization": [
+          "UPS",
+          "ceiling_fans",
+          "fault_finding"
+        ],
+        "base_rate_pkr": 1527,
+        "on_time_score": 74,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid electrician option for Gulistan-e-Johar; arrival windows can shift in traffic.",
+        "haversine_km": 4.29,
+        "distance_text": "8.0 km",
+        "duration_text": "17 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "EL144",
+        "name": "Gulshan Rapid Electrician Hassan",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9304,
+        "lng": 67.0898,
+        "distance_km": 13.32,
+        "rating": 4.1,
+        "reviews_count": 192,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0373-2132417",
+        "response_time_min": 25,
+        "verified": true,
+        "specialization": [
+          "ceiling_fans",
+          "fault_finding",
+          "UPS"
+        ],
+        "base_rate_pkr": 1793,
+        "on_time_score": 80,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid electrician option for Gulshan; arrival windows can shift in traffic.",
+        "haversine_km": 4.51,
+        "distance_text": "13.3 km",
+        "duration_text": "25 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 492
+}

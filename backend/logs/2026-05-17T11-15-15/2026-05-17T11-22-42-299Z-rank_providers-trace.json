@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:22:42.299Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL199",
+    "ranked_ids": [
+      "EL199",
+      "EL254",
+      "EL144",
+      "EL221",
+      "EL034"
+    ],
+    "reasoning_log": "After analyzing the candidate electricians in Karachi, we selected EL199 (Farhan) as the overall best option due to its balanced score across various factors. EL199 has a high rating, low cancellation risk, and a reasonable base rate. Although EL254 (Danish) has a higher rating, its base rate is significantly higher, making EL199 a more cost-effective choice. EL144 (Hassan) and EL221 (Maryam) have lower ratings and higher base rates, while EL034 (Kamran) has a lower rating and a higher base rate.",
+    "multi_factor": {
+      "overall_best_id": "EL199",
+      "most_affordable_id": "EL144",
+      "closest_fastest_id": "EL221",
+      "analysis": {
+        "overall_best_id": "EL199 has a balanced score across various factors, including a high rating, low cancellation risk, and a reasonable base rate.",
+        "most_affordable_id": "EL144 has the lowest base rate among the verified and available providers.",
+        "closest_fastest_id": "EL221 has the smallest distance and available slots, making it the closest and fastest option."
+      }
+    }
+  },
+  "durationMs": 742
+}

@@ -1,0 +1,61 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:18:15.579Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5
+  },
+  "output": {
+    "selected_provider": {
+      "id": "PL035",
+      "name": "Federal B Area Metro Plumber Nadeem",
+      "service": "Plumber",
+      "city": "Karachi",
+      "area": "Federal B Area",
+      "lat": 24.9277,
+      "lng": 67.0611,
+      "distance_km": 9.84,
+      "rating": 4.6,
+      "reviews_count": 53,
+      "available_slots": [
+        "09:00",
+        "11:00",
+        "14:00",
+        "16:00"
+      ],
+      "phone": "0344-1269246",
+      "response_time_min": 20,
+      "verified": true,
+      "specialization": [
+        "bathroom_fitting",
+        "leak_repair",
+        "pipe_fitting"
+      ],
+      "base_rate_pkr": 1316,
+      "on_time_score": 79,
+      "cancellation_risk": "medium",
+      "recent_sentiment": "Verified documents are on file. Solid plumber option for Federal B Area; arrival windows can shift in traffic.",
+      "haversine_km": 5.92,
+      "distance_text": "9.8 km",
+      "duration_text": "20 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9199999999999999,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 2
+}

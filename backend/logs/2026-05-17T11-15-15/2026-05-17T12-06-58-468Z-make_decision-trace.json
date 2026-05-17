@@ -1,0 +1,61 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T12:06:58.469Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5
+  },
+  "output": {
+    "selected_provider": {
+      "id": "EL199",
+      "name": "Gulshan Pros Electrician Farhan",
+      "service": "Electrician",
+      "city": "Karachi",
+      "area": "Gulshan",
+      "lat": 24.9216,
+      "lng": 67.0909,
+      "distance_km": 8.42,
+      "rating": 4.5,
+      "reviews_count": 103,
+      "available_slots": [
+        "08:00",
+        "10:00",
+        "12:00",
+        "15:00"
+      ],
+      "phone": "0348-2567962",
+      "response_time_min": 17,
+      "verified": true,
+      "specialization": [
+        "wiring",
+        "distribution_boards",
+        "inverter_installation"
+      ],
+      "base_rate_pkr": 975,
+      "on_time_score": 89,
+      "cancellation_risk": "low",
+      "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+      "haversine_km": 3.56,
+      "distance_text": "8.4 km",
+      "duration_text": "17 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 0
+}

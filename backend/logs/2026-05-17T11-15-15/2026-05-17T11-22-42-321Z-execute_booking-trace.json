@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:22:42.321Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Gulshan Pros Electrician Farhan",
+    "time_slot": "08:00"
+  },
+  "output": {
+    "booking_id": "BK_1779016962319",
+    "confirmation_message": "Booking confirmed! Gulshan Pros Electrician Farhan arrives today at 08:00. Contact: 0348-2567962. Booking ID: BK_1779016962319",
+    "scheduled_time": "2026-05-17T03:00:00.000Z",
+    "time_slot": "08:00"
+  },
+  "durationMs": 1
+}

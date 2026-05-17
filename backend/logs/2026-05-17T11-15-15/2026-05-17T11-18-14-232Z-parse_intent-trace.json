@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:18:14.233Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber needed in Karachi",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Karachi",
+    "time_preference": null,
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "User requested a Plumber in Karachi, no specific time or urgency mentioned"
+  },
+  "durationMs": 489
+}

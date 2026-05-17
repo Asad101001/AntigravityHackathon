@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T12:06:56.546Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician needed in Karachi",
+  "output": {
+    "service_type": "Electrician",
+    "location": "Karachi",
+    "time_preference": null,
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "User requested an electrician in Karachi, no urgency or price preference mentioned"
+  },
+  "durationMs": 313
+}

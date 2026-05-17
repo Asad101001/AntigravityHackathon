@@ -1,0 +1,186 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:18:14.908Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.892277777777778,
+      "lng": 67.10496666666666
+    },
+    "service_type": "Plumber"
+  },
+  "output": {
+    "providers": [
+      {
+        "id": "PL255",
+        "name": "Gulshan Express Plumber Farhan",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9238,
+        "lng": 67.0931,
+        "distance_km": 8.7,
+        "rating": 3.8,
+        "reviews_count": 51,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0324-3011426",
+        "response_time_min": 18,
+        "verified": true,
+        "specialization": [
+          "pipe_fitting",
+          "bathroom_fitting",
+          "leak_repair"
+        ],
+        "base_rate_pkr": 897,
+        "on_time_score": 75,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Gulshan; arrival windows can shift in traffic.",
+        "haversine_km": 3.7,
+        "distance_text": "8.7 km",
+        "duration_text": "18 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "PL145",
+        "name": "Gulistan-e-Johar Pros Plumber Imran",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Gulistan-e-Johar",
+        "lat": 24.9163,
+        "lng": 67.1342,
+        "distance_km": 7.97,
+        "rating": 3.1,
+        "reviews_count": 52,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0374-2140336",
+        "response_time_min": 18,
+        "verified": true,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 1582,
+        "on_time_score": 69,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Gulistan-e-Johar; arrival windows can shift in traffic.",
+        "haversine_km": 3.98,
+        "distance_text": "8.0 km",
+        "duration_text": "18 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "PL035",
+        "name": "Federal B Area Metro Plumber Nadeem",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Federal B Area",
+        "lat": 24.9277,
+        "lng": 67.0611,
+        "distance_km": 9.84,
+        "rating": 4.6,
+        "reviews_count": 53,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0344-1269246",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "bathroom_fitting",
+          "leak_repair",
+          "pipe_fitting"
+        ],
+        "base_rate_pkr": 1316,
+        "on_time_score": 79,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Federal B Area; arrival windows can shift in traffic.",
+        "haversine_km": 5.92,
+        "distance_text": "9.8 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "PL090",
+        "name": "Nazimabad Care Plumber Kamran",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Nazimabad",
+        "lat": 24.919,
+        "lng": 67.0289,
+        "distance_km": 10.35,
+        "rating": 4.1,
+        "reviews_count": 141,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00"
+        ],
+        "phone": "0319-1704791",
+        "response_time_min": 21,
+        "verified": true,
+        "specialization": [
+          "motor_pump",
+          "drain_cleaning",
+          "water_tank"
+        ],
+        "base_rate_pkr": 1449,
+        "on_time_score": 82,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Nazimabad; arrival windows can shift in traffic.",
+        "haversine_km": 8.23,
+        "distance_text": "10.3 km",
+        "duration_text": "21 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "id": "PL200",
+        "name": "Scheme 33 Clean Plumber Hassan",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Scheme 33",
+        "lat": 24.9505,
+        "lng": 67.1629,
+        "distance_km": 15.32,
+        "rating": 4.9,
+        "reviews_count": 140,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0349-2575881",
+        "response_time_min": 35,
+        "verified": true,
+        "specialization": [
+          "drain_cleaning",
+          "water_tank",
+          "motor_pump"
+        ],
+        "base_rate_pkr": 764,
+        "on_time_score": 72,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Scheme 33; arrival windows can shift in traffic.",
+        "haversine_km": 8.72,
+        "distance_text": "15.3 km",
+        "duration_text": "35 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 626
+}

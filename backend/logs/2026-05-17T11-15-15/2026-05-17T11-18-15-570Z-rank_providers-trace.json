@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-17T11-15-15",
+  "timestamp": "2026-05-17T11:18:15.570Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL035",
+    "ranked_ids": [
+      "PL035",
+      "PL255",
+      "PL200",
+      "PL090",
+      "PL145"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best plumber is PL035, Federal B Area Metro Plumber Nadeem, due to its high rating, good on-time score, and medium cancellation risk. The most affordable option is PL200, Scheme 33 Clean Plumber Hassan, with a base rate of 764 PKR. The closest/fastest option is PL145, Gulistan-e-Johar Pros Plumber Imran, with a distance of 7.97 km.",
+    "multi_factor": {
+      "overall_best_id": "PL035",
+      "most_affordable_id": "PL200",
+      "closest_fastest_id": "PL145",
+      "analysis": {
+        "overall_best": "PL035 has the highest rating (4.6) and on-time score (79), making it the best overall choice.",
+        "most_affordable": "PL200 has the lowest base rate (764 PKR) and is verified, making it the most affordable option.",
+        "closest_fastest": "PL145 has the smallest distance (7.97 km) and is available, making it the closest/fastest option."
+      }
+    }
+  },
+  "durationMs": 622
+}
