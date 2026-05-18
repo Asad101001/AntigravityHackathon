@@ -26,30 +26,26 @@ export default function AppHeader({ navigation, routeName, canGoBack, onProfileP
 
   return (
     <View style={styles.shell} pointerEvents="box-none">
-      {/* Left side: Back Button or clean Spacer */}
+      {/* Left side: Back Button or Profile Avatar trigger */}
       {canGoBack ? (
         <TouchableOpacity style={styles.circleButton} onPress={handleBackPress} activeOpacity={0.82}>
           <Ionicons name="chevron-back" size={20} color={COLORS.primary} />
         </TouchableOpacity>
       ) : (
-        <View style={styles.circleSpacer} />
+        <TouchableOpacity style={styles.avatarButton} onPress={onProfilePress} activeOpacity={0.84}>
+          <Text style={styles.avatarLetter}>A</Text>
+          <View style={styles.onlineDot} />
+        </TouchableOpacity>
       )}
 
-      {/* Center: Extremely simplified logo with gray subtext marker */}
+      {/* Center: Simplified logo with subtext marker */}
       <TouchableOpacity onPress={resetToHome} activeOpacity={0.9} style={styles.logoContainer}>
         <Text style={styles.logoText}>Asaaniyat</Text>
         <Text style={styles.subtextMarker}>{displaySubtext}</Text>
       </TouchableOpacity>
 
-      {/* Right side: Profile Trigger Button on the right or clean Spacer */}
-      {!canGoBack ? (
-        <TouchableOpacity style={styles.avatarButton} onPress={onProfilePress} activeOpacity={0.84}>
-          <Text style={styles.avatarLetter}>A</Text>
-          <View style={styles.onlineDot} />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.circleSpacer} />
-      )}
+      {/* Right side: Balanced clean Spacer */}
+      <View style={styles.circleSpacer} />
     </View>
   );
 }
@@ -65,7 +61,7 @@ const styles = StyleSheet.create({
   circleButton: {
     width: 38,
     height: 38,
-    borderRadius: 10, // less rounded, matching new design language
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.72)',
@@ -97,7 +93,7 @@ const styles = StyleSheet.create({
   avatarButton: {
     width: 38,
     height: 38,
-    borderRadius: 19, // Keep avatar fully circular for mockup aesthetics
+    borderRadius: 19, // Keep avatar fully circular
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,

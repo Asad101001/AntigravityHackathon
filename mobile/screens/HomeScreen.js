@@ -70,7 +70,7 @@ export default function HomeScreen({ route, navigation }) {
           distanceInterval: 10,
         });
 
-        let label = 'DHA Phase 6, Karachi';
+        let label = `${selectedCity}, Pakistan`;
         try {
           const geo = await Location.reverseGeocodeAsync({
             latitude:  loc.coords.latitude,
@@ -102,9 +102,10 @@ export default function HomeScreen({ route, navigation }) {
     }
   }, [route.params?.pickedLocation]);
 
+  // Bug Fix: Dynamic fallback based on selectedCity instead of hardcoded 'DHA Phase 6, Karachi'
   const locationLabel = gpsLoading
     ? 'Detecting location…'
-    : pickedLocation?.label || 'DHA Phase 6, Karachi';
+    : pickedLocation?.label || `${selectedCity}, Pakistan`;
 
   const handleSend = () => {
     const userText = text.trim();
@@ -225,7 +226,7 @@ export default function HomeScreen({ route, navigation }) {
               ))}
             </View>
 
-            {/* Dynamic Pagination Dots (now supporting 3 pages!) */}
+            {/* Dynamic Pagination Dots */}
             <View style={styles.paginationContainer}>
               {SERVICES_PAGES.map((_, index) => (
                 <TouchableOpacity
@@ -241,7 +242,12 @@ export default function HomeScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Summer Cooling Promo card */}
+          {/* ── Banners & Promotions ── */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Banners & Promotions</Text>
+          </View>
+
+          {/* Promo Card 1: Summer Cooling Promo */}
           <LiquidGlass style={styles.promoPanel} contentStyle={styles.promoContent} strong radius={RADII.md}>
             <View style={styles.promoLeft}>
               <Text style={styles.promoKicker}>Summer Cooling Promo</Text>
@@ -254,6 +260,38 @@ export default function HomeScreen({ route, navigation }) {
             </View>
             <View style={styles.promoRight} pointerEvents="none">
               <Ionicons name="snow" size={88} color="rgba(14,143,70,0.08)" style={styles.snowflakeWatermark} />
+            </View>
+          </LiquidGlass>
+
+          {/* Promo Card 2: Home Makeover Promo */}
+          <LiquidGlass style={styles.promoPanel} contentStyle={[styles.promoContent, styles.promoDarkBackground]} strong radius={RADII.md}>
+            <View style={styles.promoLeft}>
+              <Text style={[styles.promoKicker, styles.promoDarkKicker]}>Home Makeover Deal</Text>
+              <Text style={[styles.promoText, styles.promoDarkText]}>
+                Save 15% on professional painting & carpentry. Perfect dynamic styling for your living room.
+              </Text>
+              <TouchableOpacity style={[styles.promoButton, styles.promoDarkButton]} activeOpacity={0.84} onPress={() => prefill('Painter')}>
+                <Text style={styles.promoDarkButtonText}>Explore Deal</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.promoRight} pointerEvents="none">
+              <Ionicons name="brush" size={88} color="rgba(255,255,255,0.05)" style={styles.snowflakeWatermark} />
+            </View>
+          </LiquidGlass>
+
+          {/* Promo Card 3: Quick Fix Friday */}
+          <LiquidGlass style={styles.promoPanel} contentStyle={[styles.promoContent, styles.promoGoldBackground]} strong radius={RADII.md}>
+            <View style={styles.promoLeft}>
+              <Text style={[styles.promoKicker, styles.promoGoldKicker]}>Express Home Spa</Text>
+              <Text style={styles.promoText}>
+                Book deep house cleaning & sanitization and get a free disinfection upgrade. Limited availability!
+              </Text>
+              <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('Cleaning')}>
+                <Text style={styles.promoButtonText}>Claim Now</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.promoRight} pointerEvents="none">
+              <Ionicons name="sparkles" size={88} color="rgba(14,143,70,0.06)" style={styles.snowflakeWatermark} />
             </View>
           </LiquidGlass>
 
@@ -273,12 +311,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 42,
-    borderRadius: RADII.sm, // reduced roundedness
+    borderRadius: RADII.sm,
     paddingHorizontal: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.06)',
-    marginTop: 18, // Shifted down for beautiful vertical spacing
+    marginTop: 18,
     marginBottom: 18,
     zIndex: 10,
     ...SHADOWS.card,
@@ -304,7 +342,7 @@ const styles = StyleSheet.create({
     left: -6,
     width: 110,
     backgroundColor: '#FFFFFF',
-    borderRadius: RADII.xs, // reduced roundedness
+    borderRadius: RADII.xs,
     padding: 4,
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
@@ -351,17 +389,17 @@ const styles = StyleSheet.create({
 
   // Focus centerpiece search input box
   requestBoxFocus: {
-    minHeight: 64, // Increased height to make it the clear focal centerpiece
-    borderRadius: RADII.md, // reduced roundedness
+    minHeight: 64,
+    borderRadius: RADII.md,
     paddingLeft: 16,
     paddingRight: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5, // Thicker premium highlight border
+    borderWidth: 1.5,
     borderColor: 'rgba(14,143,70,0.26)',
     marginBottom: 26,
-    shadowColor: COLORS.primary, // Soft primary green glow shadow
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.14,
     shadowRadius: 14,
@@ -380,7 +418,7 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 46,
     height: 46,
-    borderRadius: RADII.sm, // matching sharp/modern visual design
+    borderRadius: RADII.sm,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -391,6 +429,7 @@ const styles = StyleSheet.create({
 
   // Section Header styles
   sectionHeader: {
+    marginTop: 10,
     marginBottom: 12,
   },
   sectionTitle: {
@@ -413,7 +452,7 @@ const styles = StyleSheet.create({
   serviceCard: {
     width: '48%',
     aspectRatio: 1.22,
-    borderRadius: RADII.md, // reduced roundedness
+    borderRadius: RADII.md,
     padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -425,7 +464,7 @@ const styles = StyleSheet.create({
   serviceIconContainer: {
     width: 48,
     height: 48,
-    borderRadius: RADII.sm, // Soft square container instead of circular bubble
+    borderRadius: RADII.sm,
     backgroundColor: '#EAF8EF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -460,7 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(14,143,70,0.18)',
   },
   paginationDotActive: {
-    width: 14, // Pill dot active indicator
+    width: 14,
     height: 6,
     borderRadius: 3,
     backgroundColor: COLORS.primary,
@@ -469,6 +508,7 @@ const styles = StyleSheet.create({
   // Promo Card styles
   promoPanel: {
     marginTop: 6,
+    marginBottom: 14,
   },
   promoContent: {
     padding: 16,
@@ -476,8 +516,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF8EF',
     borderWidth: 1.5,
     borderColor: 'rgba(14,143,70,0.14)',
-    borderRadius: RADII.md, // reduced roundedness
+    borderRadius: RADII.md,
     overflow: 'hidden',
+    ...SHADOWS.card,
+  },
+  promoDarkBackground: {
+    backgroundColor: '#0B2A18', // Deep forest/black tone for elegant visual contrast
+    borderColor: 'rgba(14,143,70,0.36)',
+  },
+  promoGoldBackground: {
+    backgroundColor: '#F5FBF7',
+    borderWidth: 1.5,
+    borderColor: 'rgba(217,119,6,0.22)', // subtle warm gold accent
   },
   promoLeft: {
     flex: 2,
@@ -489,6 +539,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginBottom: 4,
   },
+  promoDarkKicker: {
+    color: '#34D399', // Mint green highlight
+  },
+  promoGoldKicker: {
+    color: '#D97706', // warm amber highlight
+  },
   promoText: {
     color: COLORS.textSecondary,
     fontSize: 11,
@@ -496,12 +552,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 10,
   },
+  promoDarkText: {
+    color: '#A7F3D0',
+  },
   promoButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: RADII.xs, // matching sharp/modern roundedness
+    borderRadius: RADII.xs,
     paddingHorizontal: 12,
     paddingVertical: 6,
     alignSelf: 'flex-start',
+  },
+  promoDarkButton: {
+    backgroundColor: '#34D399',
+  },
+  promoDarkButtonText: {
+    color: '#0B2A18',
+    fontSize: 11,
+    fontWeight: '900',
   },
   promoButtonText: {
     color: '#FFFFFF',
