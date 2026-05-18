@@ -30,6 +30,12 @@ const SERVICES_PAGES = [
     { id: 'cleaning', label: 'Cleaning', icon: 'sparkles', urdu: 'گھر کی صفائی' },
     { id: 'handyman', label: 'Handyman', icon: 'construct', urdu: 'عام مرمت' },
     { id: 'mechanic', label: 'Mechanic', icon: 'car', urdu: 'گاڑی کی سروس' },
+  ],
+  [
+    { id: 'pest', label: 'Pest Control', icon: 'bug', urdu: 'پیسٹ کنٹرول' },
+    { id: 'appliance', label: 'Appliance Repair', icon: 'tv', urdu: 'آلات کی مرمت' },
+    { id: 'sanitization', label: 'Home Sanitization', icon: 'shield-checkmark', urdu: 'سینیٹائزیشن' },
+    { id: 'gardening', label: 'Gardening', icon: 'leaf', urdu: 'باغبانی' },
   ]
 ];
 
@@ -121,10 +127,12 @@ export default function HomeScreen({ route, navigation }) {
         <ScrollView
           contentContainerStyle={[
             styles.content,
-            { paddingTop: insets.top + 78, paddingBottom: insets.bottom + 112 },
+            { paddingTop: insets.top + 98, paddingBottom: insets.bottom + 140 },
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bounces={true}
+          overScrollMode="never"
           onScroll={registerScroll}
           scrollEventThrottle={16}
         >
@@ -137,7 +145,7 @@ export default function HomeScreen({ route, navigation }) {
                 activeOpacity={0.84}
               >
                 <Text style={styles.selectedCityText}>{selectedCity}</Text>
-                <Ionicons name="chevron-down" size={14} color={COLORS.primary} style={{ marginLeft: 4 }} />
+                <Ionicons name="chevron-down" size={13} color={COLORS.primary} style={{ marginLeft: 3 }} />
               </TouchableOpacity>
               
               {cityOpen && (
@@ -165,19 +173,19 @@ export default function HomeScreen({ route, navigation }) {
               onPress={() => navigation.navigate('LocationPicker', { pickedLocation })}
               activeOpacity={0.84}
             >
-              <Ionicons name="location" size={15} color={COLORS.primary} style={{ marginRight: 6 }} />
+              <Ionicons name="location" size={14} color={COLORS.primary} style={{ marginRight: 5 }} />
               <Text style={styles.fetchedLocationText} numberOfLines={1}>
                 {locationLabel}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Search centerpiece request field */}
-          <View style={styles.requestBox}>
-            <Ionicons name="search" size={20} color={COLORS.primary} style={styles.searchIcon} />
+          {/* Centerpiece text input field - Primary Visual Focus */}
+          <View style={styles.requestBoxFocus}>
+            <Ionicons name="search" size={21} color={COLORS.primary} style={styles.searchIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Describe your service need."
+              placeholder="What service do you need today?"
               placeholderTextColor={COLORS.textMuted}
               value={text}
               onChangeText={setText}
@@ -209,7 +217,7 @@ export default function HomeScreen({ route, navigation }) {
                   activeOpacity={0.86}
                 >
                   <View style={styles.serviceIconContainer}>
-                    <Ionicons name={service.icon} size={28} color={COLORS.primary} />
+                    <Ionicons name={service.icon} size={24} color={COLORS.primary} />
                   </View>
                   <Text style={styles.serviceLabel}>{service.label}</Text>
                   <Text style={styles.serviceUrdu}>{service.urdu}</Text>
@@ -217,7 +225,7 @@ export default function HomeScreen({ route, navigation }) {
               ))}
             </View>
 
-            {/* Pagination Dots */}
+            {/* Dynamic Pagination Dots (now supporting 3 pages!) */}
             <View style={styles.paginationContainer}>
               {SERVICES_PAGES.map((_, index) => (
                 <TouchableOpacity
@@ -234,7 +242,7 @@ export default function HomeScreen({ route, navigation }) {
           </View>
 
           {/* Summer Cooling Promo card */}
-          <LiquidGlass style={styles.promoPanel} contentStyle={styles.promoContent} strong radius={22}>
+          <LiquidGlass style={styles.promoPanel} contentStyle={styles.promoContent} strong radius={RADII.md}>
             <View style={styles.promoLeft}>
               <Text style={styles.promoKicker}>Summer Cooling Promo</Text>
               <Text style={styles.promoText}>
@@ -264,59 +272,60 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 46,
-    borderRadius: 23,
-    paddingHorizontal: 14,
+    minHeight: 42,
+    borderRadius: RADII.sm, // reduced roundedness
+    paddingHorizontal: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.06)',
-    marginBottom: 20,
+    marginTop: 18, // Shifted down for beautiful vertical spacing
+    marginBottom: 18,
     zIndex: 10,
     ...SHADOWS.card,
   },
   cityDropdownWrapper: {
     position: 'relative',
-    minWidth: 84,
+    minWidth: 80,
   },
   cityDropdownTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingRight: 6,
+    paddingRight: 4,
   },
   selectedCityText: {
     color: COLORS.primary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
   },
   cityOverlayMenu: {
     position: 'absolute',
-    top: 32,
-    left: -8,
-    width: 120,
+    top: 30,
+    left: -6,
+    width: 110,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: RADII.xs, // reduced roundedness
     padding: 4,
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
     zIndex: 99,
     shadowColor: '#0E8F46',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cityOverlayOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: RADII.xs,
   },
   cityOverlayOptionActive: {
     backgroundColor: '#EAF8EF',
   },
   cityOverlayText: {
     color: COLORS.textPrimary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
   cityOverlayTextActive: {
@@ -325,8 +334,8 @@ const styles = StyleSheet.create({
   },
   pillarLine: {
     width: 1.5,
-    height: 18,
-    backgroundColor: 'rgba(14,143,70,0.14)',
+    height: 16,
+    backgroundColor: 'rgba(14,143,70,0.12)',
     marginHorizontal: 8,
   },
   fetchedLocationCol: {
@@ -336,38 +345,42 @@ const styles = StyleSheet.create({
   },
   fetchedLocationText: {
     color: COLORS.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
   },
 
-  // Input Box styles
-  requestBox: {
-    minHeight: 56,
-    borderRadius: 28,
+  // Focus centerpiece search input box
+  requestBoxFocus: {
+    minHeight: 64, // Increased height to make it the clear focal centerpiece
+    borderRadius: RADII.md, // reduced roundedness
     paddingLeft: 16,
-    paddingRight: 6,
+    paddingRight: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.06)',
+    borderWidth: 1.5, // Thicker premium highlight border
+    borderColor: 'rgba(14,143,70,0.26)',
     marginBottom: 26,
-    ...SHADOWS.card,
+    shadowColor: COLORS.primary, // Soft primary green glow shadow
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    elevation: 5,
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: 8,
   },
   input: {
     flex: 1,
-    height: 48,
+    height: 52,
     color: COLORS.textPrimary,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: RADII.sm, // matching sharp/modern visual design
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -378,18 +391,18 @@ const styles = StyleSheet.create({
 
   // Section Header styles
   sectionHeader: {
-    marginBottom: 14,
+    marginBottom: 12,
   },
   sectionTitle: {
     color: COLORS.textPrimary,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '900',
     letterSpacing: -0.2,
   },
 
   // Carousel & Grid styles
   carouselContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   grid2x2: {
     flexDirection: 'row',
@@ -399,9 +412,9 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     width: '48%',
-    aspectRatio: 1.15,
-    borderRadius: 22,
-    padding: 14,
+    aspectRatio: 1.22,
+    borderRadius: RADII.md, // reduced roundedness
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
@@ -410,25 +423,25 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   serviceIconContainer: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 48,
+    height: 48,
+    borderRadius: RADII.sm, // Soft square container instead of circular bubble
     backgroundColor: '#EAF8EF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   serviceLabel: {
     color: COLORS.primary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
     textAlign: 'center',
   },
   serviceUrdu: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: 1,
     textAlign: 'center',
   },
 
@@ -437,19 +450,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 14,
+    marginTop: 12,
     gap: 6,
   },
   paginationDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: 'rgba(14,143,70,0.18)',
   },
   paginationDotActive: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
+    width: 14, // Pill dot active indicator
+    height: 6,
+    borderRadius: 3,
     backgroundColor: COLORS.primary,
   },
 
@@ -462,8 +475,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#EAF8EF',
     borderWidth: 1.5,
-    borderColor: 'rgba(14,143,70,0.18)',
-    borderRadius: 22,
+    borderColor: 'rgba(14,143,70,0.14)',
+    borderRadius: RADII.md, // reduced roundedness
     overflow: 'hidden',
   },
   promoLeft: {
@@ -472,27 +485,27 @@ const styles = StyleSheet.create({
   },
   promoKicker: {
     color: COLORS.primary,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   promoText: {
     color: COLORS.textSecondary,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 16,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   promoButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    borderRadius: RADII.xs, // matching sharp/modern roundedness
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     alignSelf: 'flex-start',
   },
   promoButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
   },
   promoRight: {
@@ -504,7 +517,7 @@ const styles = StyleSheet.create({
   snowflakeWatermark: {
     position: 'absolute',
     right: -10,
-    bottom: -18,
+    bottom: -16,
     opacity: 0.8,
   },
 });
