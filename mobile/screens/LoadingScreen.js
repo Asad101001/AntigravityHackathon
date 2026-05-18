@@ -1,135 +1,117 @@
-/**
- * Screen 3: LoadingScreen — Agentic AI Narration Edition
- *
- * Each pipeline step now has a rotating queue of sub-messages that tick
- * independently of the API call, giving judges a live window into the
- * AI's reasoning process. Real API call still drives navigation.
- */
-
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, Animated, Easing
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Animated,
+  Easing,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
-import { COLORS, API_URL } from '../config';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SHADOWS, RADII } from '../theme';
+import { API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
+import LiquidGlass from '../components/LiquidGlass';
 
-// ---------------------------------------------------------------------------
-// Pipeline definition — each step has rotating narration lines that simulate
-// the agent "thinking aloud". The ticker cycles through them while that step
-// is active, so the screen never feels frozen.
-// ---------------------------------------------------------------------------
+// Pipeline definition — each step has rotating narration lines that simulate the agent "thinking aloud"
 const PIPELINE = [
   {
     id: 1,
     label: 'Parsing Intent',
-    icon: '🧠',
+    icon: 'brain',
     agentName: 'LLMIntentParserAgent',
     narration: [
-      'Tokenising your request...',
-      'Detecting language mix (Urdu/English)...',
-      'Extracting service type & urgency...',
-      'Resolving price_sensitivity signal...',
+      'Tokenising request...',
+      'Detecting language mix...',
+      'Extracting service & urgency...',
       'Intent vector locked ✓',
     ],
   },
   {
     id: 2,
     label: 'Resolving Location',
-    icon: '📍',
+    icon: 'location',
     agentName: 'LocationResolverAgent',
     narration: [
-      'Checking typed area against the request...',
-      'Using picked/current coordinates only if text has no area...',
-      'Validating service-area coverage map...',
+      'Checking area tags...',
+      'Matching service-area map...',
       'Location context confirmed ✓',
     ],
   },
   {
     id: 3,
     label: 'Discovering Providers',
-    icon: '🔍',
+    icon: 'search',
     agentName: 'ProviderDiscoveryAgent',
     narration: [
-      'Querying verified provider network...',
-      'Filtering by specialization match...',
-      'Cross-referencing availability windows...',
-      'Pulling cancellation_risk scores...',
+      'Querying verified network...',
+      'Filtering availability slots...',
       'Candidate pool assembled ✓',
     ],
   },
   {
     id: 4,
     label: 'Ranking & Reasoning',
-    icon: '📊',
+    icon: 'bar-chart',
     agentName: 'LLMRankerAgent',
     narration: [
-      'Sending candidate list to LLM...',
-      'Weighing distance vs. rating trade-offs...',
-      'Factoring urgency_level into score...',
-      'Analysing recent_sentiment for each provider...',
-      'Evaluating cancellation_risk outliers...',
-      'Generating decision reasoning_log...',
+      'Weighing distance & ratings...',
+      'Factoring urgency scoring...',
       'Best match identified ✓',
     ],
   },
   {
     id: 5,
     label: 'Selecting Provider',
-    icon: '🎯',
+    icon: 'checkmark-done-circle',
     agentName: 'DecisionMakerAgent',
     narration: [
       'Applying hard constraints...',
-      'Checking verification and available slots...',
-      'Selecting the safest recommendation...',
-      'Decision explanation ready ✓',
+      'Selecting top recommendation...',
+      'Decision ready ✓',
     ],
   },
   {
     id: 6,
     label: 'Dynamic Pricing',
-    icon: '💰',
+    icon: 'cash',
     agentName: 'DynamicPricingAgent',
     narration: [
-      'Loading provider base_rate_pkr...',
-      'Calculating distance surcharge...',
-      'Applying urgency multiplier...',
-      'Assembling quote_breakdown...',
+      'Calculating surcharges...',
+      'Assembling quote breakdown...',
       'Quote finalised ✓',
     ],
   },
   {
     id: 7,
     label: 'Executing Booking',
-    icon: '📋',
+    icon: 'document-text',
     agentName: 'BookingExecutorAgent',
     narration: [
-      'Reserving provider time slot...',
-      'Writing booking record...',
-      'Issuing confirmation ID...',
+      'Reserving provider slot...',
+      'Writing booking ledger...',
       'Booking confirmed ✓',
     ],
   },
   {
     id: 8,
     label: 'Scheduling Follow-up',
-    icon: '🔔',
+    icon: 'notifications',
     agentName: 'FollowUpManagerAgent',
     narration: [
-      'Preparing reminder schedule...',
-      'Queueing one-hour service reminder...',
-      'Queueing feedback follow-up...',
-      'Follow-up plan confirmed ✓',
+      'Preparing reminders...',
+      'Queueing alerts...',
+      'Follow-up active ✓',
     ],
   },
 ];
 
-// How long each narration sub-message stays visible (ms)
-const NARRATION_TICK_MS = 900;
-// Minimum time we hold on each pipeline step so narration is readable
-const MIN_STEP_MS = NARRATION_TICK_MS * 2;
+// Speed Up Simulation: Narrations update very rapidly (200ms per tick) to feel blazing fast
+const NARRATION_TICK_MS = 200;
 
-// ---------------------------------------------------------------------------
 export default function LoadingScreen({ route, navigation }) {
   const { userText, userLocation, locationSource, city } = route.params;
 
@@ -139,9 +121,9 @@ export default function LoadingScreen({ route, navigation }) {
   const [error, setError] = useState(null);
 
   // Animations
-  const pulseAnim  = useRef(new Animated.Value(1)).current;
-  const fadeAnim   = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   // Refs so callbacks always see latest values
   const currentStepRef = useRef(0);
@@ -149,17 +131,25 @@ export default function LoadingScreen({ route, navigation }) {
   const apiDoneRef = useRef(false);
   const apiResultRef = useRef(null);
 
-  // ── Pulse animation on the active icon ──────────────────────────────────
+  // Bouncing dots animation
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.18, duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1,    duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(bounceAnim, { toValue: 1, duration: 400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(bounceAnim, { toValue: 0, duration: 400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+
+    // Pulse active icon scale
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, { toValue: 1.08, duration: 800, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       ])
     ).start();
   }, []);
 
-  // ── Narration ticker ─────────────────────────────────────────────────────
+  // Narration ticker - super fast cycles for blazing-fast feedback feel
   useEffect(() => {
     const tick = setInterval(() => {
       const step = currentStepRef.current;
@@ -169,19 +159,16 @@ export default function LoadingScreen({ route, navigation }) {
       const nextIdx = narrationIdxRef.current + 1;
 
       if (nextIdx < maxNarration) {
-        // Still more lines for this step
         narrationIdxRef.current = nextIdx;
-        // Fade transition
-        Animated.sequence([
-          Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-          Animated.timing(fadeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-        ]).start();
         setNarrationIdx(nextIdx);
       } else if (apiDoneRef.current) {
-        // API finished and we've shown all narration — advance step
+        // If API is already finished, advance to the next step immediately
         advanceStep();
+      } else {
+        // If API is not done, keep looping the narration so it remains alive
+        narrationIdxRef.current = 0;
+        setNarrationIdx(0);
       }
-      // else: hold on last narration line until API resolves
     }, NARRATION_TICK_MS);
 
     return () => clearInterval(tick);
@@ -197,27 +184,23 @@ export default function LoadingScreen({ route, navigation }) {
     // Animate progress bar
     Animated.timing(progressAnim, {
       toValue: next / PIPELINE.length,
-      duration: 400,
+      duration: 150,
       useNativeDriver: false,
     }).start();
 
     if (next >= PIPELINE.length) {
-      // All steps done — navigate
       setComplete(true);
-      setTimeout(() => resolveNavigation(apiResultRef.current), 600);
+      setTimeout(() => resolveNavigation(apiResultRef.current), 300);
     }
   };
 
-  // ── API call ─────────────────────────────────────────────────────────────
+  // Trigger rapid updates once API resolves
   useEffect(() => {
     void callAPI();
   }, []);
 
   const callAPI = async () => {
     try {
-      // Never mutate the typed request with device-derived city text here.
-      // The backend parser should decide whether the user specified a location;
-      // GPS/map coordinates are sent separately and only used when text has no location.
       const response = await apiClient.post(
         '/service-request',
         {
@@ -227,11 +210,12 @@ export default function LoadingScreen({ route, navigation }) {
           user_location: userLocation || null,
           location_source: userLocation ? (locationSource || 'map') : 'typed',
         },
-        { timeout: 20000 }
+        { timeout: 25000 }
       );
 
       apiResultRef.current = response.data;
       apiDoneRef.current   = true;
+
       if (response.data?.success) {
         void sendLocalNotification(
           'Provider match found',
@@ -239,14 +223,22 @@ export default function LoadingScreen({ route, navigation }) {
           { booking_id: response.data.booking_id || null, event: 'provider_match' }
         );
       }
-      // The narration ticker will now advance steps as they finish
+
+      // Fast-forward simulated steps since backend result is immediately ready
+      const fastInterval = setInterval(() => {
+        if (currentStepRef.current >= PIPELINE.length) {
+          clearInterval(fastInterval);
+        } else {
+          advanceStep();
+        }
+      }, 180); // zip through rapidly
 
     } catch (err) {
       console.error('API Error:', err);
       const backendMessage = err.response?.data?.message || err.response?.data?.error;
       const errorMessage = backendMessage || (
         err.message === 'Network Error'
-          ? `Cannot connect to server at ${API_URL}. Check that the backend is running and reachable.`
+          ? `Cannot connect to server at ${API_URL}. Check that the backend is running.`
           : `Error: ${err.message}`
       );
       setError(errorMessage);
@@ -264,25 +256,23 @@ export default function LoadingScreen({ route, navigation }) {
     }
   };
 
-  // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+      <SafeAreaView style={styles.errorContainer}>
+        <View style={styles.errorBox}>
+          <Ionicons name="warning" size={48} color={COLORS.danger} style={{ marginBottom: 16 }} />
           <Text style={styles.errorTitle}>Something went wrong</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retryButton} onPress={() => navigation.goBack()}>
-            ← Go Back & Try Again
-          </Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+            <Text style={styles.retryButtonText}>← Go Back & Try Again</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  // ── Derived display values ───────────────────────────────────────────────
-  const activeStep    = PIPELINE[Math.min(currentStep, PIPELINE.length - 1)];
-  const narrationLine = complete
+  const activeStep = PIPELINE[Math.min(currentStep, PIPELINE.length - 1)];
+  const currentNarration = complete
     ? 'All agents completed ✓'
     : activeStep.narration[Math.min(narrationIdx, activeStep.narration.length - 1)];
 
@@ -291,224 +281,208 @@ export default function LoadingScreen({ route, navigation }) {
     outputRange: ['0%', '100%'],
   });
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // Animate dots bouncing scale
+  const dotScale1 = bounceAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.4] });
+  const dotScale2 = bounceAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.4, 1] });
+  const dotScale3 = bounceAnim.interpolate({ inputRange: [0, 1], outputRange: [1.4, 1] });
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Soft Premium Background Tones */}
+      <View style={styles.ambientTop} />
+      <View style={styles.ambientBottom} />
+
       <View style={styles.content}>
+        {/* Floating AI Agent Execution Card */}
+        <View style={styles.card}>
+          
+          {/* Top Brain/Gear Square Container */}
+          <Animated.View style={[styles.iconContainer, { transform: [{ scale: scaleAnim }] }]}>
+            <Ionicons name="brain" size={32} color={COLORS.primary} />
+          </Animated.View>
 
-        {/* ── Active agent badge ─────────────────────────────────────────── */}
-        <View style={styles.agentBadge}>
-          <Text style={styles.agentBadgeLabel}>ACTIVE AGENT</Text>
-          <Text style={styles.agentBadgeName}>
-            {complete ? '✅  All Agents Done' : activeStep.agentName}
-          </Text>
-        </View>
+          {/* Heading */}
+          <Text style={styles.cardHeading}>Understanding your request...</Text>
 
-        {/* ── Pulsing icon ───────────────────────────────────────────────── */}
-        <Animated.View style={[styles.iconWrapper, { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.activeIcon}>{complete ? '✅' : activeStep.icon}</Text>
-        </Animated.View>
+          {/* Animating Bouncing Dots */}
+          <View style={styles.dotsContainer}>
+            <Animated.View style={[styles.dot, { transform: [{ scale: dotScale1 }] }]} />
+            <Animated.View style={[styles.dot, { transform: [{ scale: dotScale2 }] }]} />
+            <Animated.View style={[styles.dot, { transform: [{ scale: dotScale3 }] }]} />
+          </View>
 
-        <Text style={styles.title}>
-          {complete ? 'Match Found!' : activeStep.label}
-        </Text>
+          {/* Sleek Horizontal Progress Bar */}
+          <View style={styles.progressBarWrapper}>
+            <View style={styles.progressTrack}>
+              <Animated.View style={[styles.progressFill, { width: progressPercent }]} />
+            </View>
+          </View>
 
-        {/* ── Narration line ─────────────────────────────────────────────── */}
-        <Animated.View style={[styles.narrationBox, { opacity: fadeAnim }]}>
-          <Text style={styles.narrationText}>{narrationLine}</Text>
-        </Animated.View>
+          {/* Rotational Narration subtext */}
+          <View style={styles.narrationBox}>
+            <Text style={styles.narrationText}>{currentNarration}</Text>
+          </View>
 
-        {/* ── Pipeline steps list ────────────────────────────────────────── */}
-        <View style={styles.stepsContainer}>
-          {PIPELINE.map((step, index) => {
-            const isDone    = index < currentStep;
-            const isActive  = index === currentStep && !complete;
-            const isPending = index > currentStep;
+          {/* Checklist of Pipeline Steps */}
+          <ScrollView style={styles.checklistScroll} showsVerticalScrollIndicator={false} bounces={true}>
+            {PIPELINE.map((step, index) => {
+              const isDone = index < currentStep;
+              const isActive = index === currentStep && !complete;
+              const isPending = index > currentStep;
 
-            return (
-              <View
-                key={step.id}
-                style={[
-                  styles.stepRow,
-                  isActive  && styles.stepRowActive,
-                  isDone    && styles.stepRowDone,
-                  isPending && styles.stepRowPending,
-                ]}
-              >
-                {/* Status dot */}
-                <View style={[
-                  styles.stepDot,
-                  isDone   && styles.stepDotDone,
-                  isActive && styles.stepDotActive,
-                ]}>
-                  <Text style={[styles.stepDotText, isDone && { color: '#fff' }]}>
-                    {isDone ? '✓' : step.id}
+              return (
+                <View
+                  key={step.id}
+                  style={[
+                    styles.checkRow,
+                    isActive && styles.checkRowActive,
+                    isDone && styles.checkRowDone,
+                  ]}
+                >
+                  <Ionicons
+                    name={isDone ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={20}
+                    color={
+                      isDone
+                        ? COLORS.primary
+                        : isActive
+                        ? 'rgba(14,143,70,0.6)'
+                        : 'rgba(14,143,70,0.18)'
+                    }
+                    style={styles.checkIcon}
+                  />
+                  <Text
+                    style={[
+                      styles.checkLabel,
+                      isDone && styles.checkLabelDone,
+                      isActive && styles.checkLabelActive,
+                      isPending && styles.checkLabelPending,
+                    ]}
+                  >
+                    {step.label}
                   </Text>
+
+                  {isActive && (
+                    <View style={styles.runningBadge}>
+                      <Text style={styles.runningBadgeText}>active</Text>
+                    </View>
+                  )}
                 </View>
+              );
+            })}
+          </ScrollView>
 
-                {/* Label */}
-                <Text style={[
-                  styles.stepLabel,
-                  isDone    && styles.stepLabelDone,
-                  isActive  && styles.stepLabelActive,
-                  isPending && styles.stepLabelPending,
-                ]}>
-                  {step.icon}  {step.label}
-                </Text>
+          {/* Card Footer Info */}
+          <View style={styles.cardFooter}>
+            <Text style={styles.cardFooterText}>
+              {complete
+                ? 'Request verified successfully ✓'
+                : `Agent ${Math.min(currentStep + 1, PIPELINE.length)} of ${PIPELINE.length} · ${activeStep.agentName}`}
+            </Text>
+          </View>
 
-                {/* Agent chip (only active) */}
-                {isActive && (
-                  <View style={styles.agentChip}>
-                    <Text style={styles.agentChipText}>running</Text>
-                  </View>
-                )}
-                {isDone && <Text style={styles.doneCheck}>✅</Text>}
-              </View>
-            );
-          })}
         </View>
-
-        {/* ── Progress bar ───────────────────────────────────────────────── */}
-        <View style={styles.progressBg}>
-          <Animated.View style={[styles.progressFill, { width: progressPercent }]} />
-        </View>
-        <Text style={styles.progressLabel}>
-          {complete
-            ? 'Pipeline complete'
-            : `Agent ${currentStep + 1} of ${PIPELINE.length} · ${activeStep.agentName}`}
-        </Text>
-
       </View>
     </SafeAreaView>
   );
 }
 
-// ---------------------------------------------------------------------------
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FCFA', // Soft off-white mint
+  },
+  // Ambient gradients
+  ambientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '42%',
+    backgroundColor: '#EFF6FF', // Soft ice blue
+    opacity: 0.7,
+  },
+  ambientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '35%',
+    backgroundColor: '#EAF8EF', // Soft mint tint
+    opacity: 0.6,
+  },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Agent badge
-  agentBadge: {
-    backgroundColor: COLORS.primaryGlow || COLORS.primary + '22',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  agentBadgeLabel: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  agentBadgeName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginTop: 2,
-  },
-
-  // Pulsing icon
-  iconWrapper: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  activeIcon: { fontSize: 34 },
-
-  title: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: COLORS.textPrimary,
-    marginBottom: 12,
   },
 
-  // Narration box
-  narrationBox: {
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderRadius: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginBottom: 28,
+  // Premium floating card
+  card: {
     width: '100%',
-    borderWidth: 1,
-    borderColor: COLORS.border || '#2a2f3e',
-    minHeight: 40,
-    justifyContent: 'center',
+    maxHeight: '84%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24, // Matches modern styling guidelines
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     alignItems: 'center',
-  },
-  narrationText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.accent || COLORS.primary,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
+    elevation: 8,
   },
 
-  // Steps
-  stepsContainer: { width: '100%', marginBottom: 24 },
-  stepRow: {
+  // Icon container at the top
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    backgroundColor: '#EAF8EF', // soft green backdrop
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+  },
+
+  // Typography
+  cardHeading: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0B2A18', // forest black/dark green contrast color
+    textAlign: 'center',
+  },
+
+  // Dots
+  dotsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginBottom: 3,
-  },
-  stepRowActive:  { backgroundColor: COLORS.primaryGlow || COLORS.primary + '18' },
-  stepRowDone:    { opacity: 0.65 },
-  stepRowPending: { opacity: 0.35 },
-
-  stepDot: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.bgCard || '#1a1f2e',
-    borderWidth: 1.5,
-    borderColor: COLORS.border || '#2a2f3e',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
+    marginTop: 8,
+    marginBottom: 20,
+    gap: 6,
   },
-  stepDotDone:   { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  stepDotActive: { borderColor: COLORS.primary, borderWidth: 2 },
-  stepDotText:   { fontSize: 10, fontWeight: '800', color: COLORS.textSecondary },
-
-  stepLabel:        { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
-  stepLabelActive:  { color: COLORS.textPrimary, fontWeight: '700' },
-  stepLabelDone:    { color: COLORS.textSecondary },
-  stepLabelPending: { color: COLORS.textMuted || COLORS.textSecondary },
-
-  agentChip: {
-    backgroundColor: COLORS.primary + '33',
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
   },
-  agentChipText: { fontSize: 9, fontWeight: '800', color: COLORS.primary, textTransform: 'uppercase' },
-  doneCheck: { fontSize: 13 },
 
-  // Progress
-  progressBg: {
+  // Horizontal progress bar
+  progressBarWrapper: {
     width: '100%',
-    height: 5,
-    backgroundColor: COLORS.border || '#2a2f3e',
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  progressTrack: {
+    width: '100%',
+    height: 6,
+    backgroundColor: 'rgba(14,143,70,0.08)',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -517,17 +491,129 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderRadius: 3,
   },
-  progressLabel: {
-    fontSize: 11,
+
+  // Rotating Narration Text box
+  narrationBox: {
+    minHeight: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  narrationText: {
+    fontSize: 12,
+    fontWeight: '800',
     color: COLORS.textSecondary,
-    marginTop: 8,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
 
-  // Error
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  errorIcon:  { fontSize: 48, marginBottom: 16 },
-  errorTitle: { fontSize: 20, fontWeight: '700', color: COLORS.danger, marginBottom: 12 },
-  errorText:  { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
-  retryButton:{ fontSize: 16, fontWeight: '600', color: COLORS.primary, padding: 12 },
+  // Checklist
+  checklistScroll: {
+    width: '100%',
+    flex: 1,
+    marginBottom: 14,
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 4,
+    backgroundColor: 'transparent',
+  },
+  checkRowActive: {
+    backgroundColor: '#EAF8EF', // active row highlight
+  },
+  checkRowDone: {
+    opacity: 0.9,
+  },
+  checkIcon: {
+    marginRight: 12,
+  },
+  checkLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  checkLabelActive: {
+    color: '#0B2A18',
+    fontWeight: '900',
+  },
+  checkLabelDone: {
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+  checkLabelPending: {
+    color: 'rgba(81,100,90,0.46)',
+  },
+  runningBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  runningBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+
+  // Footer
+  cardFooter: {
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(14,143,70,0.06)',
+    paddingTop: 12,
+    alignItems: 'center',
+  },
+  cardFooterText: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    fontWeight: '700',
+  },
+
+  // Error States
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#F9FCFA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(220,38,38,0.12)',
+    ...SHADOWS.card,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.danger,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: RADII.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
 });

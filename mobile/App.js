@@ -89,7 +89,7 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
       pointerEvents="box-none"
     >
       <Pressable onPress={showTabBar}>
-        <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={30}>
+        <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={16}>
           {TAB_CONFIG.map(tab => {
             const active = activeTab === tab.name;
             return (
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     height: 56,
-    borderRadius: 23,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,

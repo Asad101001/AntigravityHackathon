@@ -40,14 +40,14 @@ export const lightTheme = {
     textSecondary: '#51645A',
     textMuted: '#8EA095',
     textInverse: PALETTE.white,
-    border: 'rgba(14,143,70,0.16)',
-    borderStrong: 'rgba(14,143,70,0.26)',
-    borderLight: 'rgba(255,255,255,0.86)',
+    border: 'rgba(14,143,70,0.12)',
+    borderStrong: 'rgba(14,143,70,0.22)',
+    borderLight: 'rgba(255,255,255,0.92)',
     chip: PALETTE.mint100,
     scoreHigh: PALETTE.green600,
     scoreMid: PALETTE.amber,
     scoreLow: PALETTE.red,
-    shadow: 'rgba(14, 143, 70, 0.20)',
+    shadow: 'rgba(14, 143, 70, 0.16)',
     glassHighlight: 'rgba(255,255,255,0.95)',
     glassSheen: 'rgba(255,255,255,0.36)',
   },
@@ -72,12 +72,13 @@ export const darkTheme = {
 
 export const COLORS = lightTheme.colors;
 
+// Reduced roundedness across the system to be modern, clean and sharp
 export const RADII = {
-  xs: 10,
-  sm: 14,
-  md: 20,
-  lg: 28,
-  xl: 34,
+  xs: 6,
+  sm: 10,
+  md: 12,
+  lg: 14,
+  xl: 16,
   pill: 999,
 };
 
@@ -92,35 +93,62 @@ export const SPACING = {
 };
 
 export const FONTS = {
-  regular: { fontSize: 14, color: COLORS.textPrimary },
-  bold: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
-  heading: { fontSize: 22, fontWeight: '900', color: COLORS.textPrimary },
-  subheading: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary },
-  caption: { fontSize: 12, color: COLORS.textSecondary },
-  mono: { fontSize: 12, fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), color: COLORS.textSecondary },
+  regular: {
+    fontSize: 14,
+    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
+    color: COLORS.textPrimary,
+  },
+  bold: {
+    fontSize: 14,
+    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  heading: {
+    fontSize: 22,
+    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+  },
+  subheading: {
+    fontSize: 16,
+    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+  },
+  caption: {
+    fontSize: 12,
+    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
+    color: COLORS.textSecondary,
+  },
+  mono: {
+    fontSize: 12,
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    color: COLORS.textSecondary,
+  },
 };
 
 export const SHADOWS = {
   glass: {
     shadowColor: PALETTE.green600,
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.16,
-    shadowRadius: 34,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
   },
   card: {
     shadowColor: PALETTE.green600,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
   },
   floating: {
     shadowColor: '#08351D',
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.20,
-    shadowRadius: 28,
-    elevation: 16,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.16,
+    shadowRadius: 22,
+    elevation: 12,
   },
 };
 
