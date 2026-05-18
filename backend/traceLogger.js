@@ -2,6 +2,12 @@
 
 const fs = require('fs');
 const path = require('path');
+let terminalRenderer = null;
+try {
+  terminalRenderer = require('./utils/terminalRenderer');
+} catch (err) {
+  // optional - renderer may not exist in some branches
+}
 
 const BACKEND_DIR = __dirname;
 const LOGS_ROOT = path.join(BACKEND_DIR, 'logs');
@@ -36,6 +42,15 @@ function logAgentTrace(agentName, action, input, output, durationMs) {
   try {
     fs.writeFileSync(filepath, JSON.stringify(payload, null, 2), 'utf8');
     console.log(`[TRACE] ${agentName} -> ${path.relative(process.cwd(), filepath)}`);
+    // also print a concise human-friendly terminal line when renderer available
+    try {
+      if (terminalRenderer && typeof terminalRenderer.renderAgentLine === 'function') {
+        terminalRenderer.renderAgentLine({ agentName, action, input, output, durationMs, tracePath: filepath });
+      }
+    } catch (err) {
+      // swallow renderer errors to avoid breaking tracing
+      console.warn('[TRACE] terminalRenderer failed:', err.message);
+    }
     return filepath;
   } catch (err) {
     console.error(`[TRACE] Failed to write trace for "${agentName}":`, err.message);

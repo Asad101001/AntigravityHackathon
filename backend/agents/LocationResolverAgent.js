@@ -51,6 +51,16 @@ class LocationResolverAgent extends BaseAgent {
     const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
     if (pinResolution) return pinResolution;
 
+    // If client didn't provide `user_location` but session contains a last-known location,
+    // prefer that before falling back to city center. This prevents defaulting to city center
+    // when a device location is available in session state.
+    const sessionPin = context.session?.lastKnownLocation;
+    if (!pinResolution && !rawLocation && sessionPin && sessionPin.lat != null && sessionPin.lng != null) {
+      const fakeContext = Object.assign({}, context, { user_location: sessionPin, location_source: 'session_last_known' });
+      const sessionResolution = await this._resolvePinnedCoordinates(fakeContext, explicitCity, rawLocation, userText);
+      if (sessionResolution) return sessionResolution;
+    }
+
     if (rawLocation) {
       return this._resolveTyped(rawLocation, explicitCity, userText);
     }

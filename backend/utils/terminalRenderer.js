@@ -1,34 +1,73 @@
-// Lightweight terminal renderer for human-friendly workflow output
-function padRight(s, n){ s = String(s); return s + ' '.repeat(Math.max(0, n - s.length)); }
+'use strict';
 
-function renderAgentLine(index, name, summary, ms){
-  const label = `▶ Agent ${index}: ${name}`;
-  console.log(`${padRight(label, 36)} — ${summary} — ${ms}ms`);
+const os = require('os');
+
+function pad(str, len = 30) {
+  str = String(str || '');
+  if (str.length >= len) return str.slice(0, len - 3) + '...';
+  return str + ' '.repeat(len - str.length);
 }
 
-function renderProviderChart(providers){
-  if(!providers || providers.length === 0) return;
-  // take top 5
-  const top = providers.slice(0,5);
-  const scores = top.map(p => p.score || 0);
-  const max = Math.max(...scores, 1);
-  console.log('\nTop providers:');
-  top.forEach(p => {
-    const pct = Math.round(((p.score||0)/max) * 10);
-    const bar = '▇'.repeat(pct || 1);
-    console.log(` ${padRight(p.name || p.id || 'unknown',20)} ${bar} ${Math.round((p.score||0)*100)/100}`);
+function sparkline(values = []) {
+  const ticks = '▁▂▃▄▅▆▇█';
+  if (!values.length) return '';
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  return values.map(v => ticks[Math.floor(((v - min) / range) * (ticks.length - 1))]).join('');
+}
+
+function renderProviderChart(providers) {
+  if (!Array.isArray(providers) || !providers.length) return '';
+  const top = providers.slice(0, 8);
+  const scores = top.map(p => Number(p.score || p.rating || 0));
+  const labels = top.map(p => (p.name || p.id || '').slice(0, 12));
+  const bars = labels.map((lab, i) => {
+    const pct = Math.round(scores[i] * 100);
+    const bar = '▇'.repeat(Math.max(1, Math.round((pct / 10))));
+    return `${lab.padEnd(12)} ${bar} ${pct}%`;
   });
-  console.log('');
+  return bars.join(os.EOL);
 }
 
-function renderWorkflowSummary(workflowId, chosen, durationMs, tracePath){
-  console.log('\n═══════════════════════════════════════════════════════');
-  console.log(`Workflow ${workflowId} completed — chosen: ${chosen?.name || chosen?.id || 'none'} (${chosen?.id||''})`);
-  console.log(`Duration: ${durationMs}ms | trace: ${tracePath || 'logs/'}\n`);
+function renderAgentLine({ agentName, action, input, output, durationMs, tracePath }) {
+  const name = `${agentName}`.padEnd(20);
+  const time = `${durationMs}ms`.padStart(8);
+  let summary = '';
+  try {
+    if (action === 'discover_providers' && output && Array.isArray(output.providers)) {
+      summary = `${output.providers.length} providers found`;
+    } else if (action === 'rank_providers' && output && Array.isArray(output.ranked)) {
+      summary = `${output.ranked.length} ranked (top: ${output.ranked[0]?.name || output.ranked[0]?.id || 'n/a'})`;
+    } else if (action === 'execute_booking' && output && output.booking_id) {
+      summary = `booking ${output.booking_id}`;
+    } else if (action === 'resolve_location' && output && output.area_name) {
+      summary = `${output.area_name}${output.city ? ', ' + output.city : ''}`;
+    } else if (typeof output === 'string') {
+      summary = output.slice(0, 60);
+    } else if (output && output.message) {
+      summary = String(output.message).slice(0, 60);
+    } else {
+      summary = '';
+    }
+  } catch (err) {
+    summary = '';
+  }
+
+  console.log(`▶ ${name} — ${pad(summary, 40)} — ${time}  [trace: ${tracePath ? tracePath.replace(process.cwd() + '/', '') : 'n/a'}]`);
+
+  // If ranking output includes provider scores, print a small chart
+  try {
+    const providers = output?.ranked || output?.providers || output?.candidates;
+    if (Array.isArray(providers) && providers.length) {
+      const chart = renderProviderChart(providers);
+      if (chart) {
+        console.log(chart);
+      }
+    }
+  } catch (err) {
+    // ignore
+  }
 }
 
-module.exports = {
-  renderAgentLine,
-  renderProviderChart,
-  renderWorkflowSummary
-};
+module.exports = { renderAgentLine, sparkline };

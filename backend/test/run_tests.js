@@ -1,14 +1,23 @@
+'use strict';
 const path = require('path');
-const tests = [
-  './test_locationResolver.js',
-  './test_terminalRenderer.js'
-];
+const fs = require('fs');
 
-(async function(){
-  console.log('Running backend tests...');
-  for(const t of tests){
-    console.log('\n--- ' + t + ' ---');
-    await require(path.join(__dirname, t));
+console.log('Running backend tests...');
+
+const testsDir = path.join(__dirname);
+const files = fs.readdirSync(testsDir).filter(f => f.startsWith('test_') && f.endsWith('.js'));
+let passed = 0, failed = 0;
+for (const file of files) {
+  try {
+    console.log(`- ${file}`);
+    require(path.join(testsDir, file));
+    console.log('  ✓ OK');
+    passed++;
+  } catch (err) {
+    console.error('  ✗ FAIL', err.stack || err.message);
+    failed++;
   }
-  console.log('\nAll tests completed.');
-})();
+}
+
+console.log(`\nResults: ${passed} passed, ${failed} failed`);
+if (failed > 0) process.exit(1);
