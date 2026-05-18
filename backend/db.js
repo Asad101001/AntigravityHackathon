@@ -123,6 +123,70 @@ async function connectMongo() {
   return { client, db };
 }
 
+// Lightweight in-memory fallback DB when Mongo is unreachable (local dev)
+function createInMemoryDb() {
+  const store = {};
+  const loadData = (name) => {
+    try {
+      if (name === COLLECTIONS.coordinates && fs.existsSync(coordinatesByCityPath)) {
+        return [{ _id: 'coordinates_catalog', data: JSON.parse(fs.readFileSync(coordinatesByCityPath, 'utf8')) }];
+      }
+      if (name === COLLECTIONS.keywords && fs.existsSync(keywordsPath)) {
+        return [{ _id: 'keywords_catalog', data: JSON.parse(fs.readFileSync(keywordsPath, 'utf8')) }];
+      }
+      if (name === COLLECTIONS.providers && fs.existsSync(providersPath)) {
+        const providers = JSON.parse(fs.readFileSync(providersPath, 'utf8'));
+        return providers.map((p, i) => ({ _id: p.id || `P_${i}`, ...p }));
+      }
+      return [];
+    } catch (err) {
+      return [];
+    }
+  };
+
+  return {
+    collection: (name) => {
+      if (!store[name]) store[name] = loadData(name);
+      return {
+        createIndex: async () => true,
+        estimatedDocumentCount: async () => store[name].length,
+        insertOne: async (doc) => { store[name].push(doc); return { insertedId: doc._id || null }; },
+        insertMany: async (docs) => { store[name].push(...docs); return { insertedCount: docs.length }; },
+        findOne: async (query) => store[name].find(item => {
+          if (!query || Object.keys(query).length === 0) return true;
+          return Object.keys(query).every(k => String(item[k]) === String(query[k]));
+        }) || null,
+        find: function (query = {}) {
+          const arr = store[name].filter(item => {
+            if (!query || Object.keys(query).length === 0) return true;
+            return Object.keys(query).every(k => {
+              if (query[k] && query[k].$regex) return new RegExp(query[k].$regex, query[k].$options || '').test(item[k] || '');
+              return String(item[k] || '') === String(query[k]);
+            });
+          });
+          return {
+            sort: function () { return { limit: (n) => ({ toArray: async () => arr.slice(0, n || arr.length) }) }; },
+            toArray: async () => arr,
+            limit: function (n) { return { toArray: async () => arr.slice(0, n) }; }
+          };
+        },
+        updateOne: async (filter, update) => {
+          const idx = store[name].findIndex(item => Object.keys(filter).every(k => String(item[k]) === String(filter[k])));
+          if (idx === -1) return { matchedCount: 0, modifiedCount: 0 };
+          store[name][idx] = { ...store[name][idx], ...(update.$set || {}) };
+          return { matchedCount: 1, modifiedCount: 1 };
+        },
+        findOneAndUpdate: async (filter, update, opts) => {
+          const idx = store[name].findIndex(item => Object.keys(filter).every(k => String(item[k]) === String(filter[k])));
+          if (idx === -1) return { value: null };
+          store[name][idx] = { ...store[name][idx], ...(update.$set || {}) };
+          return { value: store[name][idx] };
+        }
+      };
+    }
+  };
+}
+
 async function ensureIndexes(db) {
   await Promise.all([
     db.collection(COLLECTIONS.providers).createIndex({ service: 1, city: 1, area: 1 }),
@@ -200,8 +264,17 @@ async function setupDatabase() {
 
   if (!clientPromise) {
     clientPromise = connectMongo().catch(err => {
+      console.warn('[DB] MongoDB connection failed, falling back to in-memory store:', err.message);
       clientPromise = null;
-      throw err;
+      // Create an in-memory DB wrapper and seed caches from local files
+      const inMem = createInMemoryDb();
+      // preload caches
+      try {
+        const coordsDoc = inMem.collection(COLLECTIONS.coordinates).findOne({ _id: 'coordinates_catalog' });
+        const coords = Array.isArray(coordsDoc) ? coordsDoc[0] : coordsDoc;
+      } catch (_) {}
+      cachedDb = inMem;
+      return { client: null, db: inMem };
     });
   }
 

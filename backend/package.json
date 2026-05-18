@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start:charts": "cross-env TERMINAL_CHARTS=true node server.js",
     "dev": "node --watch server.js",
     "test": "node test/run_tests.js"
   },
@@ -19,5 +20,9 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1",
     "uuid": "^9.0.0"
+  }
+  ,
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

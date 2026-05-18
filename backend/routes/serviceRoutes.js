@@ -29,13 +29,18 @@ router.post('/service-request', async (req, res) => {
       return res.status(400).json({ success: false, error: 'user_text is required and must be a string' });
     }
 
+    // Prefer explicit user_location; if not provided, allow session.lastKnownLocation
+    const session = req.body.session || {};
+    const effectiveUserLocation = user_location || session.lastKnownLocation || null;
+
     const result = await orchestrator.run({
       input: {
         user_text,
         user_id: user_id || `user_${Date.now()}`,
         city: city || null,
-        user_location: user_location || null,
-        location_source: location_source || null
+        user_location: effectiveUserLocation,
+        location_source: location_source || (session.lastKnownLocation ? 'session' : null),
+        session,
       },
       options: { emit_trace: true, timeout_ms: 15000, retry_on_failure: true, fallback_mode: 'graceful' }
     });
