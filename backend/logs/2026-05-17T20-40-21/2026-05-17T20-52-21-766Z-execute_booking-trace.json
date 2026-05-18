@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-17T20-40-21",
+  "timestamp": "2026-05-17T20:52:21.766Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "PECHS Clean AC Technician Zahid",
+    "time_slot": "10:00"
+  },
+  "output": {
+    "booking_id": "BK_1779051141694",
+    "confirmation_message": "Booking confirmed! PECHS Clean AC Technician Zahid arrives 19/05/2026 at 10:00. Contact: 0378-1538492. Booking ID: BK_1779051141694",
+    "scheduled_time": "2026-05-19T05:00:00.000Z",
+    "time_slot": "10:00"
+  },
+  "durationMs": 73
+}

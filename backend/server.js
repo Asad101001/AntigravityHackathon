@@ -12,6 +12,7 @@ const rateLimit = require('express-rate-limit');
 const { sanitizeInput } = require('./middleware/sanitize');
 const authRoutes = require('./routes/authRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
 
@@ -46,6 +47,7 @@ app.use(sanitizeInput);
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api', serviceRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Friendly root page/status for people opening http://localhost:3001 in a browser.

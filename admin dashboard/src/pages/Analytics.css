@@ -1,0 +1,91 @@
+.analytics-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.analytics-container h2 {
+  font-size: 1.8rem;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+}
+
+.analytics-loading {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+.error-message {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--red);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--red);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card h3 {
+  margin: 0 0 1rem;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.city-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.city-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 5px;
+  border-left: 4px solid #667eea;
+}
+
+.city-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.city-name {
+  font-weight: 700;
+  color: #333;
+  font-size: 1rem;
+}
+
+.city-count {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.city-revenue {
+  font-weight: 700;
+  color: #667eea;
+  white-space: nowrap;
+}

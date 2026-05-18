@@ -119,4 +119,57 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// POST /api/auth/admin-login
+// Admin login endpoint
+// ═══════════════════════════════════════════════════════════════
+router.post('/admin-login', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ success: false, error: 'A valid email is required' });
+    }
+    if (!password) {
+      return res.status(400).json({ success: false, error: 'Password is required' });
+    }
+
+    const mongoDb = await db.getDb();
+    const adminUser = await mongoDb.collection(db.COLLECTIONS.adminUsers).findOne({ emailLower: email });
+    
+    if (!adminUser) {
+      return res.status(401).json({ success: false, error: 'Admin account not found' });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, adminUser.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, error: 'Incorrect password' });
+    }
+
+    // Record login
+    await mongoDb.collection(db.COLLECTIONS.adminUsers).updateOne(
+      { _id: adminUser._id },
+      {
+        $set: { lastLoginAt: new Date().toISOString() },
+        $inc: { loginCount: 1 }
+      }
+    );
+
+    const token = signToken(adminUser);
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: adminUser._id,
+        email: adminUser.email,
+        displayName: adminUser.displayName,
+        isAdmin: true
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { MongoClient } = require('mongodb');
+const bcryptjs = require('bcryptjs');
 
 const coordinatesByCityPath = path.join(__dirname, 'data', 'coordinates.json');
 const providersPath = path.join(__dirname, 'data', 'providers.json');
@@ -11,6 +12,7 @@ const COLLECTIONS = {
   keywords: 'keywords_catalog',
   providers: 'providers',
   users: 'users',
+  adminUsers: 'admin_users',
   chatMessages: 'chat_messages',
   ragChunks: 'rag_chunks',
   bookings: 'bookings',
@@ -119,6 +121,7 @@ async function connectMongo() {
   const db = client.db(dbName);
   await ensureIndexes(db);
   await seedCollections(db);
+  await seedAdminUsers(db);
   await refreshCaches(db);
   return { client, db };
 }
@@ -127,6 +130,7 @@ async function ensureIndexes(db) {
   await Promise.all([
     db.collection(COLLECTIONS.providers).createIndex({ service: 1, city: 1, area: 1 }),
     db.collection(COLLECTIONS.users).createIndex({ emailLower: 1 }, { unique: true }),
+    db.collection(COLLECTIONS.adminUsers).createIndex({ emailLower: 1 }, { unique: true }),
     db.collection(COLLECTIONS.chatMessages).createIndex({ booking_id: 1, created_at: 1 }),
     db.collection(COLLECTIONS.ragChunks).createIndex({ created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
@@ -186,6 +190,39 @@ async function seedCollections(db) {
   }
 }
 
+async function seedAdminUsers(db) {
+  const adminCollection = db.collection(COLLECTIONS.adminUsers);
+  const count = await adminCollection.countDocuments();
+  
+  if (count === 0) {
+    // Create demo admin account
+    const demoEmail = 'admin@asaaniyat.com';
+    const demoPassword = 'AdminPassword123';
+    const demoEmailLower = demoEmail.toLowerCase();
+    
+    // Hash password
+    const salt = await bcryptjs.genSalt(10);
+    const passwordHash = await bcryptjs.hash(demoPassword, salt);
+    
+    const demoAdmin = {
+      _id: `admin_${Date.now()}`,
+      email: demoEmail,
+      emailLower: demoEmailLower,
+      passwordHash,
+      displayName: 'Admin User',
+      isAdmin: true,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: null,
+      loginCount: 0
+    };
+    
+    await adminCollection.insertOne(demoAdmin);
+    console.log('✅ Demo admin created:');
+    console.log('   Email: admin@asaaniyat.com');
+    console.log('   Password: AdminPassword123');
+  }
+}
+
 async function refreshCaches(db) {
   const [coordinatesDoc, keywordsDoc] = await Promise.all([
     db.collection(COLLECTIONS.coordinates).findOne({ _id: 'coordinates_catalog' }),
@@ -208,6 +245,11 @@ async function setupDatabase() {
   const { db } = await clientPromise;
   cachedDb = db;
   return cachedDb;
+}
+
+// Convenience function to get the database
+async function getDb() {
+  return setupDatabase();
 }
 
 async function getCoordinatesByCity() {
@@ -454,6 +496,8 @@ module.exports = {
   checkDuplicateBooking,
   cancelBooking,
   getAllBookings,
+  getDb,
+  COLLECTIONS,
 };
 
 

@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-17T20-40-21",
+  "timestamp": "2026-05-17T20:52:17.596Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.85984573170819,
+      "lng": 67.0736267170927,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "mujhe ac repairer chahye kal subha 9 baje"
+  },
+  "output": {
+    "lat": 24.85984573170819,
+    "lng": 67.0736267170927,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 18
+}

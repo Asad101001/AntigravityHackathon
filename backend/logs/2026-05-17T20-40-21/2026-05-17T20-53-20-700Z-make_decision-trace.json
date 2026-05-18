@@ -1,0 +1,63 @@
+{
+  "run_id": "2026-05-17T20-40-21",
+  "timestamp": "2026-05-17T20:53:20.700Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5,
+    "qualified_count": 1
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a2a0c",
+      "id": "AC069",
+      "name": "PECHS Clean AC Technician Zahid",
+      "service": "AC Technician",
+      "city": "Karachi",
+      "area": "PECHS",
+      "lat": 24.8761,
+      "lng": 67.0644,
+      "distance_km": 4.32,
+      "rating": 4.7,
+      "reviews_count": 72,
+      "available_slots": [
+        "10:00",
+        "12:00"
+      ],
+      "phone": "0378-1538492",
+      "response_time_min": 11,
+      "verified": true,
+      "specialization": [
+        "gas_refill",
+        "installation",
+        "split_ac"
+      ],
+      "base_rate_pkr": 1395,
+      "on_time_score": 95,
+      "cancellation_risk": "low",
+      "recent_sentiment": "Verified documents are on file. Strong local reputation in PECHS, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "haversine_km": 2.03,
+      "distance_text": "4.3 km",
+      "duration_text": "11 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9400000000000001,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": true,
+        "service_available": true
+      }
+    },
+    "constraint_checks": "✓ service_available = true\n✓ available_slots = 2 slots\n✓ provider_status = \"verified\"\n✓ distance_km = 4.32 (≤ 5km)",
+    "alternatives": []
+  },
+  "durationMs": 0
+}
