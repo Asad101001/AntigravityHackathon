@@ -6,11 +6,17 @@
 
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Platform
 } from 'react-native';
 import { COLORS } from '../config';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 export default function IntentConfirmScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
+  const { registerScroll } = useTabBarVisibility();
   const { parsedIntent, fullResult } = route.params;
 
   const confidence = Math.round((parsedIntent.confidence || 0) * 100);
@@ -24,20 +30,24 @@ export default function IntentConfirmScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 24 }]}
+        onScroll={registerScroll}
+        scrollEventThrottle={16}
+      >
         <Text style={styles.title}>Please confirm your details:</Text>
 
         {/* Parsed Fields */}
         <View style={styles.card}>
           <ParsedRow 
             label="Service" 
-            value={parsedIntent.service_type || '❌ Not detected'} 
+            value={parsedIntent.service_type || 'Not detected'}
             success={!!parsedIntent.service_type}
           />
           <View style={styles.separator} />
           <ParsedRow 
             label="Location" 
-            value={parsedIntent.location || '❌ Not specified'} 
+            value={parsedIntent.location || 'Not specified'}
             success={!!parsedIntent.location}
           />
           <View style={styles.separator} />
@@ -55,7 +65,7 @@ export default function IntentConfirmScreen({ route, navigation }) {
           {parsedIntent.urgency === 'high' && (
             <>
               <View style={styles.separator} />
-              <ParsedRow label="Urgency" value="🔴 HIGH" success={true} />
+              <ParsedRow label="Urgency" value="HIGH" success={true} />
             </>
           )}
         </View>
@@ -63,7 +73,7 @@ export default function IntentConfirmScreen({ route, navigation }) {
         {/* Low Confidence Warning */}
         {isLowConfidence && (
           <View style={styles.warningCard}>
-            <Text style={styles.warningIcon}>⚠️</Text>
+            <Ionicons name="time-outline" size={24} color={COLORS.warning} style={styles.warningIcon} />
             <Text style={styles.warningText}>
               Some details may be missing or incorrect. Please review and edit if needed.
             </Text>
@@ -84,7 +94,7 @@ export default function IntentConfirmScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Text style={styles.editButtonText}>✏️  Edit Request</Text>
+          <Text style={styles.editButtonText}>Edit Request</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -105,7 +115,7 @@ function ParsedRow({ label, value, success }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { padding: 24 },
+  content: { paddingHorizontal: 24 },
 
   title: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 20, textAlign: 'center' },
 

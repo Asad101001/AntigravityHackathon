@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,16 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const gradientShift = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(gradientShift, { toValue: 1, duration: 4200, useNativeDriver: true }),
+        Animated.timing(gradientShift, { toValue: 0, duration: 4200, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [gradientShift]);
 
   const isRegister = mode === 'register';
   const title = useMemo(() => (isRegister ? 'Create your account' : 'Welcome back'), [isRegister]);
@@ -49,6 +59,8 @@ export default function AuthScreen() {
 
   return (
     <View style={styles.shell}>
+      <Animated.View style={[styles.gradientOrbSage, { transform: [{ translateX: gradientShift.interpolate({ inputRange: [0, 1], outputRange: [-24, 34] }) }] }]} />
+      <Animated.View style={[styles.gradientOrbWhite, { transform: [{ translateY: gradientShift.interpolate({ inputRange: [0, 1], outputRange: [28, -34] }) }] }]} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <View style={styles.card}>
           <View style={styles.logo}><Ionicons name="flash" size={28} color="#FFFFFF" /></View>
@@ -110,22 +122,24 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1, backgroundColor: COLORS.bg, padding: 20, justifyContent: 'center' },
+  shell: { flex: 1, backgroundColor: '#EEF5F1', padding: 20, justifyContent: 'center', overflow: 'hidden' },
+  gradientOrbSage: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: 'hsla(139, 44%, 74%, 0.48)', top: -120, left: -130 },
+  gradientOrbWhite: { position: 'absolute', width: 420, height: 420, borderRadius: 210, backgroundColor: 'rgba(255,255,255,0.82)', bottom: -150, right: -170 },
   flex: { flex: 1, justifyContent: 'center' },
-  card: { borderRadius: 28, backgroundColor: '#FFFFFF', padding: 24, borderWidth: 1, borderColor: COLORS.border, shadowColor: COLORS.primary, shadowOpacity: 0.12, shadowRadius: 24, elevation: 4 },
+  card: { borderRadius: 28, backgroundColor: 'rgba(255, 255, 255, 0.16)', padding: 24, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.45)', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
   logo: { width: 60, height: 60, borderRadius: 18, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
   brand: { color: COLORS.primary, fontSize: 13, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
   title: { marginTop: 8, fontSize: 28, fontWeight: '900', color: COLORS.textPrimary },
   subtitle: { marginTop: 8, fontSize: 14, lineHeight: 21, color: COLORS.textSecondary },
-  segmentRow: { flexDirection: 'row', backgroundColor: COLORS.bgCardHover, borderRadius: 18, padding: 4, marginTop: 18, marginBottom: 16 },
+  segmentRow: { flexDirection: 'row', backgroundColor: 'rgba(255, 255, 255, 0.16)', borderRadius: 20, padding: 4, marginTop: 18, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.45)' },
   segment: { flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center' },
-  segmentActive: { backgroundColor: COLORS.primary },
+  segmentActive: { backgroundColor: 'rgba(14, 143, 70, 0.74)' },
   segmentText: { color: COLORS.textSecondary, fontWeight: '800' },
   segmentTextActive: { color: '#FFFFFF' },
   field: { marginBottom: 12 },
   label: { marginBottom: 6, color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
-  input: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 13, color: COLORS.textPrimary, fontSize: 15, backgroundColor: '#FFFFFF' },
-  button: { marginTop: 10, borderRadius: 18, backgroundColor: COLORS.primary, paddingVertical: 15, alignItems: 'center' },
+  input: { borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.45)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 13, color: COLORS.textPrimary, fontSize: 15, backgroundColor: 'rgba(255, 255, 255, 0.16)', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
+  button: { marginTop: 10, borderRadius: 20, backgroundColor: 'rgba(14, 143, 70, 0.82)', paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.45)', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
   buttonDisabled: { opacity: 0.7 },
   buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
   error: { color: COLORS.danger, marginTop: 4, marginBottom: 6, fontWeight: '700' },

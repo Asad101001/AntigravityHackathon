@@ -16,31 +16,37 @@ function parseExplicitAppointment(userText = '', timePref = '', appointmentText 
   const text = sourceText.toLowerCase();
   const now = new Date();
   const scheduledDate = new Date(now);
-
-  if (/\btomorrow\b/.test(text)) {
-    scheduledDate.setDate(scheduledDate.getDate() + 1);
-  }
+  let dateShiftApplied = false;
 
   if (/\bday after tomorrow\b/.test(text)) {
-    scheduledDate.setDate(scheduledDate.getDate() + 2);
+    scheduledDate.setDate(now.getDate() + 2);
+    dateShiftApplied = true;
+  } else if (/\btomorrow\b/.test(text)) {
+    scheduledDate.setDate(now.getDate() + 1);
+    dateShiftApplied = true;
   }
 
-  const dateKeywords = [
-    ['today', 0],
-    ['tonight', 0],
-    ['tomorrow', 1],
-    ['weekend', null],
-  ];
+  if (/\bweekend\b/.test(text)) {
+    const todayDay = now.getDay();
+    const daysUntilSaturday = (6 - todayDay + 7) % 7 || 7;
+    scheduledDate.setDate(now.getDate() + daysUntilSaturday);
+    dateShiftApplied = true;
+  }
 
-  for (const [keyword, offset] of dateKeywords) {
-    if (text.includes(keyword) && Number.isInteger(offset)) {
-      scheduledDate.setDate(now.getDate() + offset);
-      break;
-    }
+  if (/\b(today|tonight)\b/.test(text) && !dateShiftApplied) {
+    scheduledDate.setDate(now.getDate());
+    dateShiftApplied = true;
   }
 
   const timeMatch = sourceText.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
   if (!timeMatch) {
+    if (dateShiftApplied) {
+      scheduledDate.setHours(10, 0, 0, 0);
+      return {
+        slotLabel: '10:00 AM',
+        scheduledDate,
+      };
+    }
     return null;
   }
 

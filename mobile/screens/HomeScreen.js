@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +12,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import { SERVICES } from '../config';
 import { COLORS, RADII } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
@@ -23,12 +21,17 @@ const SUPPORTED_CITIES = (process.env.EXPO_PUBLIC_SUPPORTED_CITIES || 'Karachi,L
   .map(city => city.trim())
   .filter(Boolean);
 
-const SERVICE_MEDIA = {
-  electrician: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=320&q=55',
-  plumber:     'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=320&q=55',
-  ac:          'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=320&q=55',
-  carpenter:   'https://images.unsplash.com/photo-1601058268499-e52658b8bb88?auto=format&fit=crop&w=320&q=55',
-};
+const PREMIUM_SERVICES = [
+  { id: 'ac', label: 'AC Repair', urdu: 'اے سی مرمت', icon: 'snow-outline', color: '#0EA5E9' },
+  { id: 'electrician', label: 'Electrician', urdu: 'بجلی والا', icon: 'flash-outline', color: '#F59E0B' },
+  { id: 'plumber', label: 'Plumber', urdu: 'پلمبر', icon: 'water-outline', color: '#2563EB' },
+  { id: 'maid', label: 'Maid', urdu: 'ماسی', icon: 'sparkles-outline', color: '#EC4899' },
+  { id: 'carpenter', label: 'Carpenter', urdu: 'بڑھئی', icon: 'hammer-outline', color: '#92400E' },
+  { id: 'painter', label: 'Painter', urdu: 'رنگ ساز', icon: 'color-palette-outline', color: '#7C3AED' },
+  { id: 'handyman', label: 'Handyman', urdu: 'ہنر مند', icon: 'construct-outline', color: '#10B981' },
+  { id: 'car-mechanic', label: 'Car Mechanic', urdu: 'کار مکینک', icon: 'car-sport-outline', color: '#EF4444' },
+  { id: 'salon', label: 'Salon', urdu: 'سیلون', icon: 'cut-outline', color: '#14B8A6' },
+];
 
 export default function HomeScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -98,7 +101,8 @@ export default function HomeScreen({ route, navigation }) {
     }
   }, [route.params?.pickedLocation]);
 
-  const featuredServices = useMemo(() => SERVICES.slice(0, 4), []);
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
+  const featuredServices = useMemo(() => PREMIUM_SERVICES, []);
   const locationLabel = gpsLoading
     ? 'Detecting location…'
     : pickedLocation?.label || 'Pick exact location';
@@ -124,7 +128,7 @@ export default function HomeScreen({ route, navigation }) {
         <ScrollView
           contentContainerStyle={[
             styles.content,
-            { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 124 },
+            { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 124 },
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -228,16 +232,13 @@ export default function HomeScreen({ route, navigation }) {
                 onPress={() => prefill(service.label)}
                 activeOpacity={0.86}
               >
-                <Image
-                  source={{ uri: SERVICE_MEDIA[service.id] || SERVICE_MEDIA.plumber }}
-                  style={styles.serviceImage}
-                />
-                <View style={styles.serviceTone} />
-                <View style={styles.serviceIcon}>
-                  <Ionicons name={service.icon} size={18} color={COLORS.primary} />
+                <View style={styles.serviceCopy}>
+                  <Text style={styles.serviceLabel}>{service.label}</Text>
+                  <Text style={styles.serviceUrdu}>{service.urdu}</Text>
                 </View>
-                <Text style={styles.serviceLabel}>{service.label}</Text>
-                <Text style={styles.serviceUrdu}>{service.urdu}</Text>
+                <View style={[styles.serviceIcon, { backgroundColor: service.color + '20' }]}>
+                  <Ionicons name={service.icon} size={18} color={service.color} />
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -336,33 +337,36 @@ const styles = StyleSheet.create({
   sectionTitle:  { color: COLORS.textPrimary, fontSize: 18, fontWeight: '900' },
   sectionHint:   { color: COLORS.textMuted, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
 
-  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12 },
   serviceCard: {
-    width: '48%',
-    aspectRatio: 1.05,
-    borderRadius: 20,
-    padding: 14,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    width: '31.5%',
+    aspectRatio: 0.95,
+    borderRadius: 18,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
   },
-  serviceImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', opacity: 0.38 },
-  serviceTone:  { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(245,251,247,0.42)' },
+  serviceCopy: { flex: 1, paddingRight: 6 },
   serviceIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.82)',
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    marginBottom: 28,
+    borderColor: 'rgba(255,255,255,0.72)',
   },
-  serviceLabel: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900' },
-  serviceUrdu:  { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
+  serviceLabel: { color: '#10251A', fontSize: 12, lineHeight: 15, fontWeight: '900' },
+  serviceUrdu:  { marginTop: 3, color: '#51645A', fontSize: 10, lineHeight: 13, fontWeight: '700' },
 
   infoPanel:   { marginTop: 18 },
   infoContent: { padding: 16, flexDirection: 'row', gap: 12, alignItems: 'center' },

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +20,7 @@ const DEFAULT_REGION = {
 
 export default function LocationPickerScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
 
   const [pin, setPin] = useState(
     route.params?.pickedLocation || {
@@ -75,7 +76,7 @@ export default function LocationPickerScreen({ route, navigation }) {
   const mapBottomMargin = sheetBottom + SHEET_APPROX_HEIGHT;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: HEADER_PADDING }]}>
       <View style={styles.orb} />
 
       <MapPanel
@@ -128,7 +129,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
-    paddingTop: 112,  // below AppHeader
   },
   orb: {
     position: 'absolute',
