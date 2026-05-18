@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, Animated, Easing
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
@@ -23,7 +24,7 @@ const PIPELINE = [
   {
     id: 1,
     label: 'Parsing Intent',
-    icon: '🧠',
+    iconName: 'bulb-outline', iconColor: '#7C3AED',
     agentName: 'LLMIntentParserAgent',
     narration: [
       'Tokenising your request...',
@@ -36,7 +37,7 @@ const PIPELINE = [
   {
     id: 2,
     label: 'Resolving Location',
-    icon: '📍',
+    iconName: 'location-outline', iconColor: '#0EA5E9',
     agentName: 'LocationResolverAgent',
     narration: [
       'Checking typed area against the request...',
@@ -48,7 +49,7 @@ const PIPELINE = [
   {
     id: 3,
     label: 'Discovering Providers',
-    icon: '🔍',
+    iconName: 'search-outline', iconColor: '#10B981',
     agentName: 'ProviderDiscoveryAgent',
     narration: [
       'Querying verified provider network...',
@@ -61,7 +62,7 @@ const PIPELINE = [
   {
     id: 4,
     label: 'Ranking & Reasoning',
-    icon: '📊',
+    iconName: 'stats-chart-outline', iconColor: '#F59E0B',
     agentName: 'LLMRankerAgent',
     narration: [
       'Sending candidate list to LLM...',
@@ -76,7 +77,7 @@ const PIPELINE = [
   {
     id: 5,
     label: 'Selecting Provider',
-    icon: '🎯',
+    iconName: 'aperture-outline', iconColor: '#EF4444',
     agentName: 'DecisionMakerAgent',
     narration: [
       'Applying hard constraints...',
@@ -88,7 +89,7 @@ const PIPELINE = [
   {
     id: 6,
     label: 'Dynamic Pricing',
-    icon: '💰',
+    iconName: 'cash-outline', iconColor: '#14B8A6',
     agentName: 'DynamicPricingAgent',
     narration: [
       'Loading provider base_rate_pkr...',
@@ -101,7 +102,7 @@ const PIPELINE = [
   {
     id: 7,
     label: 'Executing Booking',
-    icon: '📋',
+    iconName: 'clipboard-outline', iconColor: '#6366F1',
     agentName: 'BookingExecutorAgent',
     narration: [
       'Reserving provider time slot...',
@@ -113,7 +114,7 @@ const PIPELINE = [
   {
     id: 8,
     label: 'Scheduling Follow-up',
-    icon: '🔔',
+    iconName: 'notifications-outline', iconColor: '#EC4899',
     agentName: 'FollowUpManagerAgent',
     narration: [
       'Preparing reminder schedule...',
@@ -124,10 +125,8 @@ const PIPELINE = [
   },
 ];
 
-// How long each narration sub-message stays visible (ms)
+// How long each narration sub-message stays visible before API completion (ms)
 const NARRATION_TICK_MS = 900;
-// Minimum time we hold on each pipeline step so narration is readable
-const MIN_STEP_MS = NARRATION_TICK_MS * 2;
 
 // ---------------------------------------------------------------------------
 export default function LoadingScreen({ route, navigation }) {
@@ -148,6 +147,9 @@ export default function LoadingScreen({ route, navigation }) {
   const narrationIdxRef = useRef(0);
   const apiDoneRef = useRef(false);
   const apiResultRef = useRef(null);
+  const tickDurationRef = useRef(900);
+  const tickerTimeoutRef = useRef(null);
+  const runTickerRef = useRef(null);
 
   // ── Pulse animation on the active icon ──────────────────────────────────
   useEffect(() => {
@@ -159,32 +161,38 @@ export default function LoadingScreen({ route, navigation }) {
     ).start();
   }, []);
 
-  // ── Narration ticker ─────────────────────────────────────────────────────
+  // ── Narration ticker with warp-speed catch-up after API completion ───────
   useEffect(() => {
-    const tick = setInterval(() => {
-      const step = currentStepRef.current;
-      if (step >= PIPELINE.length) return;
+    const runTicker = () => {
+      if (currentStepRef.current >= PIPELINE.length) return;
 
+      if (apiDoneRef.current === true) {
+        tickDurationRef.current = 120;
+      }
+
+      const step = currentStepRef.current;
       const maxNarration = PIPELINE[step].narration.length;
       const nextIdx = narrationIdxRef.current + 1;
 
-      if (nextIdx < maxNarration) {
-        // Still more lines for this step
+      if (apiDoneRef.current === true || nextIdx >= maxNarration) {
+        if (apiDoneRef.current === true) {
+          advanceStep();
+        }
+      } else {
         narrationIdxRef.current = nextIdx;
-        // Fade transition
         Animated.sequence([
-          Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+          Animated.timing(fadeAnim, { toValue: 0, duration: 120, useNativeDriver: true }),
           Animated.timing(fadeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
         ]).start();
         setNarrationIdx(nextIdx);
-      } else if (apiDoneRef.current) {
-        // API finished and we've shown all narration — advance step
-        advanceStep();
       }
-      // else: hold on last narration line until API resolves
-    }, NARRATION_TICK_MS);
 
-    return () => clearInterval(tick);
+      tickerTimeoutRef.current = setTimeout(runTicker, tickDurationRef.current);
+    };
+
+    runTickerRef.current = runTicker;
+    tickerTimeoutRef.current = setTimeout(runTicker, tickDurationRef.current);
+    return () => clearTimeout(tickerTimeoutRef.current);
   }, []);
 
   const advanceStep = () => {
@@ -232,6 +240,9 @@ export default function LoadingScreen({ route, navigation }) {
 
       apiResultRef.current = response.data;
       apiDoneRef.current   = true;
+      tickDurationRef.current = 120;
+      if (tickerTimeoutRef.current) clearTimeout(tickerTimeoutRef.current);
+      runTickerRef.current?.();
       if (response.data?.success) {
         void sendLocalNotification(
           'Provider match found',
@@ -269,7 +280,7 @@ export default function LoadingScreen({ route, navigation }) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Ionicons name="time-outline" size={48} color="#D97706" style={styles.errorIcon} />
           <Text style={styles.errorTitle}>Something went wrong</Text>
           <Text style={styles.errorText}>{error}</Text>
           <Text style={styles.retryButton} onPress={() => navigation.goBack()}>
@@ -300,13 +311,13 @@ export default function LoadingScreen({ route, navigation }) {
         <View style={styles.agentBadge}>
           <Text style={styles.agentBadgeLabel}>ACTIVE AGENT</Text>
           <Text style={styles.agentBadgeName}>
-            {complete ? '✅  All Agents Done' : activeStep.agentName}
+            {complete ? 'All Agents Done' : activeStep.agentName}
           </Text>
         </View>
 
         {/* ── Pulsing icon ───────────────────────────────────────────────── */}
         <Animated.View style={[styles.iconWrapper, { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.activeIcon}>{complete ? '✅' : activeStep.icon}</Text>
+          <Ionicons name={complete ? 'checkmark-circle' : activeStep.iconName} size={38} color={complete ? '#16A34A' : activeStep.iconColor} />
         </Animated.View>
 
         <Text style={styles.title}>
@@ -342,7 +353,7 @@ export default function LoadingScreen({ route, navigation }) {
                   isActive && styles.stepDotActive,
                 ]}>
                   <Text style={[styles.stepDotText, isDone && { color: '#fff' }]}>
-                    {isDone ? '✓' : step.id}
+                    {isDone ? '' : step.id}
                   </Text>
                 </View>
 
@@ -353,7 +364,7 @@ export default function LoadingScreen({ route, navigation }) {
                   isActive  && styles.stepLabelActive,
                   isPending && styles.stepLabelPending,
                 ]}>
-                  {step.icon}  {step.label}
+                  {step.label}
                 </Text>
 
                 {/* Agent chip (only active) */}
@@ -362,7 +373,9 @@ export default function LoadingScreen({ route, navigation }) {
                     <Text style={styles.agentChipText}>running</Text>
                   </View>
                 )}
-                {isDone && <Text style={styles.doneCheck}>✅</Text>}
+                {isDone && <Ionicons name="checkmark-circle" size={20} color="#16A34A" />}
+                {isActive && <Ionicons name={step.iconName} size={20} color={step.iconColor} />}
+                {isPending && <Ionicons name="hourglass-outline" size={20} color="#8EA095" />}
               </View>
             );
           })}
@@ -526,7 +539,7 @@ const styles = StyleSheet.create({
 
   // Error
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  errorIcon:  { fontSize: 48, marginBottom: 16 },
+  errorIcon:  { marginBottom: 16 },
   errorTitle: { fontSize: 20, fontWeight: '700', color: COLORS.danger, marginBottom: 12 },
   errorText:  { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
   retryButton:{ fontSize: 16, fontWeight: '600', color: COLORS.primary, padding: 12 },

@@ -56,6 +56,7 @@ function formatBookingInfo(booking) {
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
   const scrollRef = useRef(null);
   const { registerScroll } = useTabBarVisibility();
   const [activeBooking, setActiveBooking] = useState(getActiveBooking());
@@ -232,7 +233,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
     >
-      <View style={[styles.inner, { paddingTop: insets.top + 112, paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.inner, { paddingTop: HEADER_PADDING, paddingBottom: Math.max(insets.bottom, 12) }]}>
         <LiquidGlass style={styles.contextCard} contentStyle={styles.contextInner} strong radius={RADII.xl}>
           <View style={styles.contextIcon}>
             <Ionicons name="chatbubble-ellipses" size={18} color="#FFFFFF" />

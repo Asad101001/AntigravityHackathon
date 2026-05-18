@@ -38,8 +38,17 @@ class LocationResolverAgent extends BaseAgent {
     const explicitCity = this._resolveCity(context.city || context.explicit_city || context.selected_city);
     const rawLocation = this._usableParsedLocation(context.location);
     const userText = String(context.user_text || '');
-    const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
 
+    // Prefer a typed/extracted neighborhood over device GPS so explicit user intent
+    // like "plumber for Bahria Town" is not overridden by a current-location pin.
+    if (rawLocation && rawLocation.trim().length > 0) {
+      const typedResolution = await this._resolveTyped(rawLocation, explicitCity, userText);
+      if (typedResolution?.output?.area_name && !typedResolution.output.fallback) {
+        return typedResolution;
+      }
+    }
+
+    const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
     if (pinResolution) return pinResolution;
 
     if (rawLocation) {

@@ -61,9 +61,8 @@ function getCurrentRouteName(state) {
   return route.name;
 }
 
-function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) {
+function LiquidTabBar({ navigationRef, currentRouteName, translateY, showTabBar }) {
   const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(0)).current;
   const activeTab = useMemo(() => {
     if (['Home', 'Bookings', 'Chat'].includes(currentRouteName)) return currentRouteName;
     if (currentRouteName === 'ProviderChat') return 'Chat';
@@ -72,14 +71,6 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
     return 'Home';
   }, [currentRouteName]);
 
-  useEffect(() => {
-    Animated.spring(translateY, {
-      toValue: visible ? 0 : 112,
-      useNativeDriver: true,
-      damping: 18,
-      stiffness: 180,
-    }).start();
-  }, [translateY, visible]);
 
   if (currentRouteName === 'Splash') return null;
 
@@ -113,10 +104,11 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
 function AppNavigator() {
   const { user, logout } = useAuth();
   const navigationRef = useRef(null);
-  const [currentRouteName, setCurrentRouteName] = useState('Splash');
+  const [currentRouteName, setCurrentRouteName] = useState('Home');
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [tabVisible, setTabVisible] = useState(true);
+  const headerY = useRef(new Animated.Value(0)).current;
+  const tabBarY = useRef(new Animated.Value(0)).current;
   const idleTimer = useRef(null);
   const lastOffset = useRef(0);
 
@@ -124,19 +116,44 @@ function AppNavigator() {
     void configureNotifications();
   }, []);
 
-  const hideTabBar = useCallback(() => setTabVisible(false), []);
+  const animateChrome = useCallback((visible) => {
+    Animated.parallel([
+      Animated.spring(headerY, {
+        toValue: visible ? 0 : -100,
+        useNativeDriver: true,
+        damping: 18,
+        stiffness: 180,
+      }),
+      Animated.spring(tabBarY, {
+        toValue: visible ? 0 : 120,
+        useNativeDriver: true,
+        damping: 18,
+        stiffness: 180,
+      }),
+    ]).start();
+  }, [headerY, tabBarY]);
+
+  const hideTabBar = useCallback(() => {
+    animateChrome(false);
+  }, [animateChrome]);
+
   const showTabBar = useCallback(() => {
-    setTabVisible(true);
+    animateChrome(true);
     if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setTabVisible(false), 3200);
-  }, []);
+    idleTimer.current = setTimeout(() => animateChrome(false), 3000);
+  }, [animateChrome]);
 
   const registerScroll = useCallback((event) => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
     const y = event.nativeEvent.contentOffset.y;
-    if (y > lastOffset.current + 8 && y > 24) hideTabBar();
-    if (y < lastOffset.current - 8) showTabBar();
+    if (y > lastOffset.current + 8 && y > 24) {
+      animateChrome(false);
+    }
+    if (y < lastOffset.current - 8) {
+      showTabBar();
+    }
     lastOffset.current = y;
-  }, [hideTabBar, showTabBar]);
+  }, [animateChrome, showTabBar]);
 
   useEffect(() => {
     if (currentRouteName !== 'Splash') showTabBar();
@@ -157,20 +174,20 @@ function AppNavigator() {
         >
           <StatusBar style="dark" />
           <Stack.Navigator
-            initialRouteName="Splash"
+            initialRouteName="Home"
             screenOptions={({ navigation, route }) => ({
               headerTransparent: true,
               headerShadowVisible: false,
               headerBackVisible: false,
               header: ({ back }) => (
-                <View style={styles.headerFrame} pointerEvents="box-none">
+                <Animated.View style={[styles.headerFrame, { transform: [{ translateY: headerY }] }]} pointerEvents="box-none">
                   <AppHeader
                     navigation={navigation}
                     routeName={ROUTE_LABELS[route.name] || route.name}
                     canGoBack={!!back && !['Home', 'Bookings', 'Chat', 'Loading'].includes(route.name)}
                     onProfilePress={() => setSidebarVisible(true)}
                   />
-                </View>
+                </Animated.View>
               ),
               contentStyle: { backgroundColor: COLORS.bg },
               animation: 'slide_from_right',
@@ -192,7 +209,7 @@ function AppNavigator() {
             <Stack.Screen name="AgentTrace" component={AgentTraceScreen} />
           </Stack.Navigator>
         </NavigationContainer>
-        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} visible={tabVisible} showTabBar={showTabBar} />
+        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} translateY={tabBarY} showTabBar={showTabBar} />
         <Sidebar
           visible={sidebarVisible}
           onClose={() => setSidebarVisible(false)}
@@ -207,7 +224,37 @@ function AppNavigator() {
   );
 }
 
+function SplashGate() {
+  return (
+    <View style={styles.splashGate} pointerEvents="auto">
+      <View style={styles.splashOrbLarge} />
+      <View style={styles.splashOrbSmall} />
+      <View style={styles.splashLogoBackdrop}>
+        <View style={styles.splashLogo}>
+          <Ionicons name="flash" size={42} color="#FFFFFF" />
+        </View>
+        <Text style={styles.splashBrand}>Asaaniyat</Text>
+        <Text style={styles.splashSubtitle}>Home help, beautifully simple</Text>
+      </View>
+    </View>
+  );
+}
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const splashOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(splashOpacity, {
+        toValue: 0,
+        duration: 240,
+        useNativeDriver: true,
+      }).start(() => setShowSplash(false));
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [splashOpacity]);
+
   function AuthGate() {
     const { isLoading, user } = useAuth();
 
@@ -230,14 +277,22 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <AuthGate />
-      </AuthProvider>
+      <View style={styles.root}>
+        <AuthProvider>
+          <AuthGate />
+        </AuthProvider>
+        {showSplash ? (
+          <Animated.View style={[StyleSheet.absoluteFill, styles.splashOverlay, { opacity: splashOpacity }]}>
+            <SplashGate />
+          </Animated.View>
+        ) : null}
+      </View>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   appShell: { flex: 1, backgroundColor: COLORS.bg },
   appShellDim: { backgroundColor: '#EAF8EF' },
   headerFrame: {
@@ -274,4 +329,56 @@ const styles = StyleSheet.create({
   authGate: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
   authGateTitle: { color: COLORS.primary, fontSize: 30, fontWeight: '900', letterSpacing: 1 },
   authGateSubtitle: { marginTop: 8, color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
+  splashOverlay: { zIndex: 9999, elevation: 9999 },
+  splashGate: {
+    flex: 1,
+    backgroundColor: 'rgba(238, 245, 241, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  splashOrbLarge: {
+    position: 'absolute',
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(14, 143, 70, 0.12)',
+    top: '18%',
+    right: -70,
+  },
+  splashOrbSmall: {
+    position: 'absolute',
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    bottom: '16%',
+    left: -42,
+  },
+  splashLogoBackdrop: {
+    minWidth: 210,
+    borderRadius: 34,
+    paddingVertical: 28,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#0E8F46',
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
+  splashLogo: {
+    width: 86,
+    height: 86,
+    borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  splashBrand: { color: '#10251A', fontSize: 28, fontWeight: '900', letterSpacing: 1.5 },
+  splashSubtitle: { marginTop: 6, color: '#51645A', fontSize: 12, fontWeight: '800' },
 });

@@ -1,10 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Platform } from 'react-native';
 import MapPanel from '../components/MapPanel';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 export default function ProviderResultsScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
+  const { registerScroll } = useTabBarVisibility();
   const { fullResult } = route.params;
   const providers = [fullResult.provider, ...(fullResult.alternatives || [])].filter(Boolean).map((p, i) => ({ ...p, rank: i + 1, isRecommended: i === 0 }));
   const userCoords = fullResult.parsed_intent?.coordinates;
@@ -20,21 +25,27 @@ export default function ProviderResultsScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 32 }]}
+        onScroll={registerScroll}
+        scrollEventThrottle={16}
+      >
         <Text style={styles.step}>STEP 4 OF 5</Text>
         <Text style={styles.title}>Available Professionals</Text>
         <Text style={styles.subtitle}>Choose the best match for your requested service.</Text>
 
-        <View style={styles.mapWrap}>
-          <MapPanel
-            style={styles.map}
-            userCoordinates={userCoords}
-            providers={providers}
-            initialRegion={initialRegion}
-            markers={[
-              ...(userCoords ? [{ id: 'user-location', coordinate: { latitude: userCoords.lat, longitude: userCoords.lng }, title: 'Service location', pinColor: COLORS.primaryDim }] : [])
-            ]}
-          />
+        <View style={styles.mapOuter}>
+          <View style={styles.mapWrap}>
+            <MapPanel
+              style={styles.map}
+              userCoordinates={userCoords}
+              providers={providers}
+              initialRegion={initialRegion}
+              markers={[
+                ...(userCoords ? [{ id: 'user-location', coordinate: { latitude: userCoords.lat, longitude: userCoords.lng }, title: 'Service location', pinColor: COLORS.primaryDim }] : [])
+              ]}
+            />
+          </View>
         </View>
 
         {providers.map(provider => (
@@ -69,11 +80,12 @@ function Metric({ icon, value }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { padding: 18, paddingBottom: 32 },
+  content: { paddingHorizontal: 18 },
   step: { color: COLORS.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, marginTop: 4 },
   title: { color: COLORS.textPrimary, fontSize: 26, fontWeight: '900', marginTop: 18 },
   subtitle: { color: COLORS.textSecondary, fontSize: 13, marginTop: 4, marginBottom: 16 },
-  mapWrap: { height: 150, borderRadius: 22, overflow: 'hidden', marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
+  mapOuter: { height: 280, borderRadius: 26, padding: 4, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(14, 143, 70, 0.2)', shadowColor: '#0E8F46', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 10, backgroundColor: 'rgba(255,255,255,0.25)' },
+  mapWrap: { flex: 1, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.85)' },
   map: { flex: 1 },
   card: { backgroundColor: COLORS.bgCard, borderRadius: 24, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: COLORS.border, shadowColor: COLORS.primary, shadowOpacity: 0.08, shadowRadius: 12, elevation: 2 },
   recommended: { borderColor: COLORS.primary, backgroundColor: '#F2FFF6' },

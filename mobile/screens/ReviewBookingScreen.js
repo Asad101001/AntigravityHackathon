@@ -10,9 +10,11 @@
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Animated
+  SafeAreaView, ScrollView, Animated, Platform
 } from 'react-native';
 import { COLORS } from '../config';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -31,6 +33,9 @@ const multiplierLabel = (m) => {
 
 // ---------------------------------------------------------------------------
 export default function ReviewBookingScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
+  const { registerScroll } = useTabBarVisibility();
   const { provider, fullResult } = route.params;
 
   // ── Quote data — prefer backend PKR breakdown, fall back to USD stub ──
@@ -74,7 +79,11 @@ export default function ReviewBookingScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 24 }]}
+        onScroll={registerScroll}
+        scrollEventThrottle={16}
+      >
 
         {/* ── Header ───────────────────────────────────────────────────── */}
         <Text style={styles.step}>Checkout</Text>

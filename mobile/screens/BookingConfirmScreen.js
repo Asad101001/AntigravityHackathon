@@ -14,14 +14,19 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
-  ScrollView, ActivityIndicator, Modal, Animated
+  ScrollView, ActivityIndicator, Modal, Animated, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 // ---------------------------------------------------------------------------
 export default function BookingConfirmScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
+  const { registerScroll } = useTabBarVisibility();
   const { provider, fullResult } = route.params;
   const slot =
     provider.confirmed_slot ||
@@ -92,7 +97,11 @@ export default function BookingConfirmScreen({ route, navigation }) {
   // ────────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 24 }]}
+        onScroll={registerScroll}
+        scrollEventThrottle={16}
+      >
 
         {/* ── Header ───────────────────────────────────────────────────── */}
         <Text style={styles.step}>STEP 5 OF 5</Text>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -45,6 +45,7 @@ function getStatusIcon(status) {
 
 export default function BookingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
   const { registerScroll } = useTabBarVisibility();
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
@@ -109,7 +110,7 @@ export default function BookingsScreen({ navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
+      contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 128 }]}
       onScroll={registerScroll}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}

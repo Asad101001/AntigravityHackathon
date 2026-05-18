@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from '../components/LiquidGlass';
@@ -11,6 +11,7 @@ const STAGES = ['Confirmed', 'Assigned', 'On the way', 'Started', 'Completed'];
 
 export default function OrderStatusScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
+  const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
   const { registerScroll } = useTabBarVisibility();
   const { booking } = route.params;
   const [stageIndex, setStageIndex] = useState(booking?.stageIndex || 0);
@@ -50,7 +51,7 @@ export default function OrderStatusScreen({ route, navigation }) {
     return (
       <ScrollView
         style={styles.screen}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
+        contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 128 }]}
       >
         <LiquidGlass style={styles.card} contentStyle={styles.emptyContent} strong>
           <View style={styles.emptyIcon}>
@@ -68,7 +69,7 @@ export default function OrderStatusScreen({ route, navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
+      contentContainerStyle={[styles.content, { paddingTop: HEADER_PADDING, paddingBottom: insets.bottom + 128 }]}
       onScroll={registerScroll}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
