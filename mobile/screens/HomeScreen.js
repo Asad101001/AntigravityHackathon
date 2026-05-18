@@ -264,9 +264,9 @@ export default function HomeScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* ── Banners & Promotions ── */}
+          {/* ── Exclusive Offers ── */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Banners & Promotions</Text>
+            <Text style={styles.sectionTitle}>Exclusive Offers</Text>
           </View>
 
           {/* Promo Card 1: Summer Cooling Promo */}
@@ -274,7 +274,7 @@ export default function HomeScreen({ route, navigation }) {
             <View style={styles.promoLeft}>
               <Text style={styles.promoKicker}>Summer Cooling Promo</Text>
               <Text style={styles.promoText}>
-                Get 20% off all AC maintenance services this month. Stay cool and save.
+                Get 20% off all AC maintenance services this month. Stay cool and beat the heat with our expert services.
               </Text>
               <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('AC Repair')}>
                 <Text style={styles.promoButtonText}>Book Now</Text>
@@ -290,7 +290,7 @@ export default function HomeScreen({ route, navigation }) {
             <View style={styles.promoLeft}>
               <Text style={[styles.promoKicker, styles.promoDarkKicker]}>Home Makeover Deal</Text>
               <Text style={[styles.promoText, styles.promoDarkText]}>
-                Save 15% on professional painting & carpentry. Perfect dynamic styling for your living room.
+                Save 15% on professional painting & carpentry. Refresh your space and transform your home today.
               </Text>
               <TouchableOpacity style={[styles.promoButton, styles.promoDarkButton]} activeOpacity={0.84} onPress={() => prefill('Painter')}>
                 <Text style={styles.promoDarkButtonText}>Explore Deal</Text>
@@ -304,9 +304,9 @@ export default function HomeScreen({ route, navigation }) {
           {/* Promo Card 3: Quick Fix Friday */}
           <LiquidGlass style={styles.promoPanel} contentStyle={[styles.promoContent, styles.promoGoldBackground]} strong radius={RADII.md}>
             <View style={styles.promoLeft}>
-              <Text style={[styles.promoKicker, styles.promoGoldKicker]}>Express Home Spa</Text>
+              <Text style={[styles.promoKicker, styles.promoGoldKicker]}>Deep Home Spa Cleaning</Text>
               <Text style={styles.promoText}>
-                Book deep house cleaning & sanitization and get a free disinfection upgrade. Limited availability!
+                Get a deep home cleaning & sanitization with a complimentary disinfection upgrade. Limited availability!
               </Text>
               <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('Cleaning')}>
                 <Text style={styles.promoButtonText}>Claim Now</Text>

@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
 import { COLORS, RADII, SHADOWS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
@@ -132,6 +133,7 @@ function TypingIndicator() {
 }
 
 export default function ProviderChatScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { fullResult = {} } = route.params || {};
   const provider = fullResult.provider || {};
   const bookingId = fullResult.booking_id || 'general';
@@ -232,25 +234,17 @@ export default function ProviderChatScreen({ route, navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+    >
       {/* Ambient background tints */}
       <View style={styles.ambientTop} />
       <View style={styles.ambientBottom} />
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={[styles.inner, { paddingTop: insets.top + 60, paddingBottom: Math.max(insets.bottom, 12) }]}>
         
-        {/* Custom Header with Back Button */}
-        <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
-          </TouchableOpacity>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Asaaniyat</Text>
-            <Text style={styles.headerSubtitle}>PROVIDER CHAT</Text>
-          </View>
-          <View style={styles.headerSpacer} />
-        </View>
-
         {/* Active Provider Info Card */}
         <LiquidGlass style={styles.providerPanel} contentStyle={styles.providerPanelInner} strong radius={RADII.xl}>
           <View style={styles.avatar}><Ionicons name="person" size={18} color="#FFFFFF" /></View>
@@ -325,8 +319,8 @@ export default function ProviderChatScreen({ route, navigation }) {
             <Ionicons name="arrow-up" size={19} color="#FFFFFF" />
           </TouchableOpacity>
         </LiquidGlass>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -336,7 +330,8 @@ function generateMessageId() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: '#F9FCFA' },
+  screen: { flex: 1, backgroundColor: '#F9FCFA' },
+  inner: { flex: 1, paddingHorizontal: 16, gap: 12 },
   
   // Ambient backgrounds
   ambientTop: {
@@ -358,52 +353,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 
-  // Custom mock-matching header row
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    zIndex: 10,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.06)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerTitleContainer: {
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: COLORS.primary,
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: {
-    color: '#10251A',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    marginTop: 2,
-  },
-  headerSpacer: {
-    width: 40,
-  },
-
   // Provider panel
-  providerPanel: { marginTop: 10, marginHorizontal: 16 },
+  providerPanel: { marginTop: 6, zIndex: 10 },
   providerPanelInner: { minHeight: 68, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary },
   providerCopy: { flex: 1 },

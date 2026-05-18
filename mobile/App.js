@@ -181,7 +181,7 @@ function AppNavigator() {
                   <AppHeader
                     navigation={navigation}
                     routeName={ROUTE_LABELS[route.name] || route.name}
-                    canGoBack={!!back && !['Home', 'Bookings', 'Chat', 'Loading'].includes(route.name)}
+                    canGoBack={!['Home', 'Bookings', 'Chat'].includes(route.name)}
                     onProfilePress={() => setSidebarVisible(true)}
                   />
                 </View>
