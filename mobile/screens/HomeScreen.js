@@ -15,6 +15,7 @@ import * as Location from 'expo-location';
 import { COLORS, RADII } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
+import { useAppContext } from '../context/AppContext';
 
 const SUPPORTED_CITIES = (process.env.EXPO_PUBLIC_SUPPORTED_CITIES || 'Karachi,Lahore,Islamabad')
   .split(',')
@@ -41,6 +42,7 @@ export default function HomeScreen({ route, navigation }) {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [selectedCity, setSelectedCity] = useState(SUPPORTED_CITIES[0] || 'Karachi');
   const [cityOpen, setCityOpen] = useState(false);
+  const { setLastKnownLocation } = useAppContext();
 
   // ── True GPS on mount ───────────────────────────────────────────────────
   useEffect(() => {
@@ -86,6 +88,8 @@ export default function HomeScreen({ route, navigation }) {
           lng:   loc.coords.longitude,
           label,
         });
+        // update shared app context last-known location
+        try { setLastKnownLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude, label }); } catch (_) {}
       } catch (err) {
         console.warn('[HomeScreen] GPS error:', err.message);
       } finally {

@@ -5,10 +5,13 @@ const AppContext = createContext({
   activeJob: null,
   setActiveJob: () => {},
   triggerBookingConfirmedNotification: async () => false,
+  lastKnownLocation: null,
+  setLastKnownLocation: () => {},
 });
 
 export function AppContextProvider({ children }) {
   const [activeJob, setActiveJobState] = useState(null);
+  const [lastKnownLocation, setLastKnownLocationState] = useState(null);
   const lastNotifiedJobId = useRef(null);
 
   useEffect(() => {
@@ -40,6 +43,8 @@ export function AppContextProvider({ children }) {
     activeJob,
     setActiveJob,
     triggerBookingConfirmedNotification,
+    lastKnownLocation,
+    setLastKnownLocation: setLastKnownLocationState,
   }), [activeJob, setActiveJob, triggerBookingConfirmedNotification]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

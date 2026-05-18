@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppContext } from '../context/AppContext';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import MapPanel from '../components/MapPanel';
@@ -20,6 +21,7 @@ const DEFAULT_REGION = {
 
 export default function LocationPickerScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
+  const { setLastKnownLocation } = useAppContext();
   const HEADER_PADDING = insets.top + (Platform.OS === 'ios' ? 74 : 64);
 
   const [pin, setPin] = useState(
@@ -69,7 +71,10 @@ export default function LocationPickerScreen({ route, navigation }) {
     setPin({ lat: latitude, lng: longitude, label });
   };
 
-  const confirm = () => navigation.navigate('Home', { pickedLocation: pin });
+  const confirm = () => {
+    try { setLastKnownLocation(pin); } catch (_) {}
+    navigation.navigate('Home', { pickedLocation: pin });
+  };
 
   // Sheet height is fixed so map fills the remaining space above it
   const SHEET_APPROX_HEIGHT = 220;
