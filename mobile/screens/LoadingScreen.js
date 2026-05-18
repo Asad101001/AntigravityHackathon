@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SHADOWS, RADII } from '../theme';
 import { API_URL } from '../config';
 import apiClient from '../lib/apiClient';
@@ -298,7 +298,7 @@ export default function LoadingScreen({ route, navigation }) {
           
           {/* Top Brain/Gear Square Container */}
           <Animated.View style={[styles.iconContainer, { transform: [{ scale: scaleAnim }] }]}>
-            <Ionicons name="brain" size={32} color={COLORS.primary} />
+            <MaterialCommunityIcons name="brain" size={32} color={COLORS.primary} />
           </Animated.View>
 
           {/* Heading */}
@@ -324,7 +324,7 @@ export default function LoadingScreen({ route, navigation }) {
           </View>
 
           {/* Checklist of Pipeline Steps */}
-          <ScrollView style={styles.checklistScroll} showsVerticalScrollIndicator={false} bounces={true}>
+          <View style={styles.checklistContainer}>
             {PIPELINE.map((step, index) => {
               const isDone = index < currentStep;
               const isActive = index === currentStep && !complete;
@@ -341,7 +341,7 @@ export default function LoadingScreen({ route, navigation }) {
                 >
                   <Ionicons
                     name={isDone ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={20}
+                    size={18}
                     color={
                       isDone
                         ? COLORS.primary
@@ -370,7 +370,7 @@ export default function LoadingScreen({ route, navigation }) {
                 </View>
               );
             })}
-          </ScrollView>
+          </View>
 
           {/* Card Footer Info */}
           <View style={styles.cardFooter}>
@@ -508,18 +508,18 @@ const styles = StyleSheet.create({
   },
 
   // Checklist
-  checklistScroll: {
+  checklistContainer: {
     width: '100%',
-    flex: 1,
-    marginBottom: 14,
+    marginBottom: 10,
+    gap: 2,
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 9,
+    paddingVertical: 5,
     paddingHorizontal: 12,
-    borderRadius: 10,
-    marginBottom: 4,
+    borderRadius: 8,
+    marginBottom: 2,
     backgroundColor: 'transparent',
   },
   checkRowActive: {

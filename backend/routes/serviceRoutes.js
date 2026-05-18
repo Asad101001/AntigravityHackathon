@@ -195,12 +195,25 @@ router.post('/chat/message', async (req, res) => {
 
     if ((isAskingStatus || isAskingInfo) && bookingInfo) {
       const formatBookingDetail = (booking) => {
+        const orderId = booking._id || booking.booking_id || booking.id || 'N/A';
+        
+        let appointmentTime = 'Pending';
+        const rawTime = booking.booking_start_time || booking.scheduled_time || booking.time_slot;
+        if (rawTime) {
+          const date = new Date(rawTime);
+          if (!isNaN(date.getTime())) {
+            appointmentTime = date.toLocaleString('en-PK');
+          } else {
+            appointmentTime = rawTime;
+          }
+        }
+
         const details = [
-          `📦 Order ID: ${booking._id}`,
-          `👨‍🔧 Provider: ${booking.provider_name}`,
-          `🔧 Service: ${booking.service_type}`,
-          `📍 Location: ${[booking.area, booking.city].filter(Boolean).join(', ')}`,
-          `🗓️ Appointment: ${new Date(booking.booking_start_time).toLocaleString('en-PK')}`,
+          `📦 Order ID: ${orderId}`,
+          `👨‍🔧 Provider: ${booking.provider_name || 'N/A'}`,
+          `🔧 Service: ${booking.service_type || 'N/A'}`,
+          `📍 Location: ${[booking.area, booking.city, booking.location].filter(Boolean).join(', ') || 'N/A'}`,
+          `🗓️ Appointment: ${appointmentTime}`,
           `💰 Quote: ${booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}`,
           `📊 Status: ${(booking.status || 'unknown').toUpperCase()}`,
         ];
