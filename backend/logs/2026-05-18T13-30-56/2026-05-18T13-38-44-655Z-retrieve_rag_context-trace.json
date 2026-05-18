@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-18T13-30-56",
+  "timestamp": "2026-05-18T13:38:44.655Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "Mujhe chahye paani"
+  },
+  "output": {
+    "chunk_count": 0,
+    "chunks": []
+  },
+  "durationMs": 259
+}
