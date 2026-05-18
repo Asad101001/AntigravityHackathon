@@ -44,7 +44,8 @@ function logAgentTrace(agentName, action, input, output, durationMs) {
     console.log(`[TRACE] ${agentName} -> ${path.relative(process.cwd(), filepath)}`);
     // also print a concise human-friendly terminal line when renderer available
     try {
-      if (terminalRenderer && typeof terminalRenderer.renderAgentLine === 'function') {
+      const shouldRender = (process.env.TERMINAL_CHARTS === 'true') || (process.env.LOG_HUMAN_FMT === 'true');
+      if (shouldRender && terminalRenderer && typeof terminalRenderer.renderAgentLine === 'function') {
         terminalRenderer.renderAgentLine({ agentName, action, input, output, durationMs, tracePath: filepath });
       }
     } catch (err) {
