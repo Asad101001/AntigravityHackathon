@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Asaaniyat - Loading</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#68fcbf",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-tint": "#006c4a",
+                        "inverse-primary": "#68dba9",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#45dfa4",
+                        "surface-container-highest": "#dae2fd",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#006949",
+                        "on-primary-fixed": "#002114",
+                        "primary-container": "#00855d",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#f5fff7",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-container": "#6cf8bb",
+                        "on-tertiary-fixed": "#002114",
+                        "primary-fixed": "#85f8c4",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface-bright": "#faf8ff",
+                        "on-background": "#131b2e",
+                        "on-surface-variant": "#3d4a42",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "surface-container-low": "#f2f3ff",
+                        "on-error": "#ffffff",
+                        "surface": "#faf8ff",
+                        "secondary": "#006c49",
+                        "surface-container": "#eaedff",
+                        "on-tertiary-container": "#f5fff7",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d2d9f4",
+                        "on-secondary-fixed-variant": "#005236",
+                        "primary": "#006948",
+                        "on-secondary-container": "#00714d",
+                        "outline": "#6d7a72",
+                        "secondary-fixed": "#6ffbbe",
+                        "outline-variant": "#bccac0",
+                        "tertiary-container": "#00855d",
+                        "primary-fixed-dim": "#68dba9",
+                        "surface-variant": "#dae2fd",
+                        "background": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#283044",
+                        "on-primary-fixed-variant": "#005137",
+                        "on-surface": "#131b2e",
+                        "surface-container-high": "#e2e7ff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "1.5rem",
+                        "unit": "8px",
+                        "stack-lg": "2rem",
+                        "container-padding-desktop": "2.5rem",
+                        "stack-md": "1rem",
+                        "container-padding-mobile": "1.25rem",
+                        "stack-sm": "0.5rem"
+                    },
+                    fontFamily: {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "1.2", fontWeight: "700" }],
+                        "display": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "label-sm": ["14px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest min-h-screen w-full flex items-center justify-center relative overflow-hidden font-body-md text-on-surface">
+<!-- Ambient Liquid Light Effects (Background) -->
+<div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-fixed/20 blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-tertiary-fixed/20 blur-[120px] pointer-events-none"></div>
+<div class="absolute top-[40%] left-[30%] w-[30vw] h-[30vw] rounded-full bg-secondary-container/10 blur-[80px] pointer-events-none"></div>
+<!-- Main Glass Container -->
+<main class="relative z-10 w-[90%] max-w-[420px] aspect-square rounded-2xl flex flex-col items-center justify-center p-container-padding-mobile md:p-container-padding-desktop bg-white/70 backdrop-blur-[20px] border-t border-l border-white/60 border-r border-b border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.5)]">
+<!-- Floating Logo -->
+<div class="flex-1 flex items-center justify-center relative w-full">
+<h1 class="font-display text-display text-primary tracking-tight text-center relative z-20">
+                Asaaniyat
+            </h1>
+<!-- Subtle glow behind text to enhance the floating effect -->
+<div class="absolute inset-0 bg-white/40 blur-2xl rounded-full z-10 scale-150"></div>
+</div>
+<!-- Loading Indicator Area -->
+<div class="w-full flex flex-col items-center mt-stack-lg relative z-20">
+<!-- Progress Bar Track -->
+<div class="w-3/4 max-w-[200px] h-[3px] bg-surface-variant/50 rounded-full overflow-hidden shadow-inner">
+<!-- Progress Bar Fill (Simulating ~60% loaded for visual) -->
+<div class="h-full bg-primary rounded-full w-[60%] shadow-[0_0_8px_rgba(0,105,72,0.4)]"></div>
+</div>
+<!-- Caption -->
+<p class="mt-stack-md font-label-sm text-label-sm text-outline tracking-widest">
+                Curating Experience
+            </p>
+</div>
+</main>
+</body></html>

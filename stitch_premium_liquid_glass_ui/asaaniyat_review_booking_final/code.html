@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Review Booking - Asaaniyat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-highest": "#d8e3fb", "inverse-on-surface": "#ecf1ff", "on-primary": "#ffffff", "on-secondary": "#ffffff", "on-error-container": "#93000a", "primary-fixed-dim": "#68dba9", primary: "#006948", "on-tertiary-fixed": "#131e19", "surface-container-high": "#dee8ff", "primary-fixed": "#85f8c4", "surface-variant": "#d8e3fb", "surface-bright": "#f9f9ff", "on-primary-fixed": "#002114", error: "#ba1a1a", "primary-container": "#00855d", "secondary-fixed-dim": "#6bd8cb", "tertiary-container": "#6b7770", "secondary-container": "#86f2e4", "surface-tint": "#006c4a", background: "#f9f9ff", "on-tertiary-container": "#f5fff7", "on-tertiary-fixed-variant": "#3e4943", "on-error": "#ffffff", "on-secondary-container": "#006f66", tertiary: "#535f58", "tertiary-fixed": "#d9e6dd", "on-secondary-fixed-variant": "#005049", outline: "#6d7a72", "on-primary-fixed-variant": "#005137", "inverse-surface": "#263143", "secondary-fixed": "#89f5e7", secondary: "#006a61", "on-primary-container": "#f5fff7", "surface-container": "#e7eeff", "inverse-primary": "#68dba9", "on-background": "#111c2d", "on-secondary-fixed": "#00201d", "on-tertiary": "#ffffff", surface: "#f9f9ff", "outline-variant": "#bccac0", "error-container": "#ffdad6", "surface-container-low": "#f0f3ff", "on-surface-variant": "#3d4a42", "surface-dim": "#cfdaf2", "surface-container-lowest": "#ffffff", "on-surface": "#111c2d", "tertiary-fixed-dim": "#bdcac1"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {base: "8px", "margin-desktop": "64px", "stack-md": "24px", "margin-mobile": "20px", gutter: "16px", "container-padding": "24px", "stack-lg": "48px", "stack-sm": "12px"}, fontFamily: {"headline-lg-mobile": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-caps": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], display: ["Plus Jakarta Sans"], headline: ["Plus Jakarta Sans"], body: ["Plus Jakarta Sans"], label: ["Plus Jakarta Sans"]}, fontSize: {"headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-md": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-caps": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700"}], "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg": ["30px", {lineHeight: "38px", letterSpacing: "-0.01em", fontWeight: "700"}], display: ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800"}]}}}};</script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 8px 32px rgba(0, 105, 72, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            box-shadow: inset 2px 2px 10px rgba(255, 255, 255, 0.5), inset -2px -2px 10px rgba(0, 105, 72, 0.02);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .liquid-bg {
+            background: radial-gradient(circle at 20% 30%, rgba(133, 248, 196, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(107, 216, 203, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 50%, rgba(240, 243, 255, 0.8) 0%, transparent 100%);
+            background-color: #f9f9ff;
+            background-attachment: fixed;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen liquid-bg font-sans pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 bg-white/70 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,105,72,0.04)] border-b border-white/40">
+<button class="text-primary hover:bg-white/40 transition-colors p-2 rounded-full active:scale-95 duration-200 ease-in-out flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">
+            Asaaniyat
+        </div>
+<div class="w-10"></div> <!-- Spacer for center alignment -->
+</header>
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto flex flex-col gap-6">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-2 tracking-tight">Review Booking</h1>
+<!-- Service Details Card -->
+<section class="glass-panel rounded-[24px] p-6 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+<div class="flex flex-col gap-2 w-full md:w-auto">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm text-primary border border-white/60">
+<span class="material-symbols-outlined text-[28px]" data-icon="plumbing">plumbing</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                            Emergency Plumbing
+                            <span class="font-body-sm text-primary/70 font-normal">سباكة</span>
+</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sink &amp; Pipe Repair</p>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-3 text-on-surface-variant bg-white/30 p-3 rounded-xl border border-white/40">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="location_on">location_on</span>
+<div>
+<p class="font-body-sm text-body-sm font-medium text-on-surface">123 Palm Jumeirah</p>
+<p class="font-label-caps text-label-caps text-outline mt-1">Villa 45</p>
+</div>
+</div>
+<div class="flex items-start gap-3 text-on-surface-variant bg-white/30 p-3 rounded-xl border border-white/40">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="schedule">schedule</span>
+<div>
+<p class="font-body-sm text-body-sm font-medium text-on-surface">Today, 14:00 - 15:00</p>
+<p class="font-label-caps text-label-caps text-outline mt-1">Estimated 1h</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative w-full md:w-56 h-48 md:h-auto min-h-[160px] rounded-[16px] overflow-hidden shrink-0 shadow-sm border border-white/60">
+<img alt="Professional plumber repairing a modern sink" class="absolute inset-0 w-full h-full object-cover" data-alt="A professional plumber in a clean uniform is working on fixing a modern, minimalist bathroom sink in a high-end luxury apartment. The lighting is bright and natural, coming from a large window off-camera. The mood is professional, efficient, and trustworthy, embodying a premium service aesthetic. The overall color palette is light and fresh, with crisp whites and subtle silver tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtHblEarzJroUrfLimO_PC4yZSN1O2I4M7ev4LFt0xCsGyeCoDD_gOSlUuy3Mx3cD2kVE_k8MqSEsRHSLo7CMpEoWh9NpRdRMiIP_Iu-mN6SWt4Doj5LSrChw7FYyHxti0KEd9Nk41D9AfEl6BGI2_Xl87HLNx1A_pU8m-L9aJ9Hr0u4q83yU4HSdwO-2tUA7vk3ukWhibkiIJlS6kYQk_yiPbZnEy_pdWeQipDDShNAdYl0g74idOPlKUDTV4r8uW3md2b7MF91O7"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
+<div class="absolute bottom-3 left-3 right-3 text-white flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed" data-icon="verified">verified</span>
+<p class="font-label-caps text-label-caps opacity-100 drop-shadow-md tracking-wider">Verified Expert</p>
+</div>
+</div>
+</section>
+<!-- Dynamic Quote -->
+<section class="glass-panel rounded-[24px] p-6 flex flex-col gap-4">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-white/60 flex items-center justify-center border border-white/50">
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long">receipt_long</span>
+</div>
+                Dynamic Quote
+            </h3>
+<div class="flex flex-col gap-0 bg-white/30 rounded-2xl border border-white/50 overflow-hidden">
+<div class="flex justify-between items-center p-4 border-b border-surface-variant/30 bg-white/20">
+<span class="font-body-lg text-body-lg text-on-surface-variant">Base Callout Fee</span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">PKR 3,750 - 11,250</span>
+</div>
+<div class="flex justify-between items-center p-4 border-b border-surface-variant/30 bg-white/10">
+<span class="font-body-lg text-body-lg text-on-surface-variant">Estimated Labor (1 hr)</span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">PKR 15,000</span>
+</div>
+<div class="flex justify-between items-center p-4 bg-white/20">
+<span class="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-1">Parts <span class="text-[12px] text-outline">(Estimated)</span></span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">PKR 3,750 - 11,250</span>
+</div>
+</div>
+<div class="flex justify-between items-center p-4 mt-2 bg-primary/5 rounded-2xl border border-primary/10">
+<span class="font-headline-md text-headline-md text-primary">Estimated Total</span>
+<span class="font-headline-md text-headline-md text-primary font-bold">PKR 30,000 - 37,500</span>
+</div>
+<div class="flex items-center justify-center gap-2 mt-1">
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="info">info</span>
+<p class="font-label-caps text-label-caps text-outline text-center">Final price may vary based on actual parts required.</p>
+</div>
+</section>
+<!-- AI Reasoning Bubble -->
+<section class="flex flex-col gap-2 pl-6 border-l-2 border-primary/20 relative ml-2">
+<div class="absolute -left-[17px] top-4 w-8 h-8 rounded-full bg-white border-2 border-primary/20 flex items-center justify-center shadow-sm z-10">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="glass-panel rounded-2xl rounded-tl-sm p-5 bg-white/40 shadow-[0_4px_20px_rgba(0,105,72,0.03)] border border-white/60">
+<div class="flex items-center gap-2 mb-2">
+<p class="font-label-caps text-label-caps text-primary tracking-wider uppercase">AI Assistant Reasoning</p>
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Based on your description of "water leaking under the sink," we've allocated a specialist in residential plumbing. The estimated time accounts for a standard pipe replacement.
+                </p>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action -->
+<div class="fixed bottom-0 w-full p-margin-mobile bg-white/70 backdrop-blur-2xl border-t border-white/50 z-40 shadow-[0_-10px_40px_rgba(0,105,72,0.05)]">
+<div class="max-w-4xl mx-auto flex justify-end">
+<button class="bg-gradient-to-r text-white font-headline-md text-headline-md py-4 px-8 rounded-2xl shadow-[0_8px_20px_rgba(0,105,72,0.2)] hover:shadow-[0_12px_24px_rgba(0,105,72,0.3)] hover:-translate-y-0.5 transition-all w-full md:w-auto text-center flex justify-center items-center gap-3 from-emerald-600 to-emerald-700">
+                Continue to Checkout
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

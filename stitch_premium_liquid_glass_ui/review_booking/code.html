@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Review Booking - Asaaniyat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#d8e3fb",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#68dba9",
+                        "primary": "#006948",
+                        "on-tertiary-fixed": "#131e19",
+                        "surface-container-high": "#dee8ff",
+                        "primary-fixed": "#85f8c4",
+                        "surface-variant": "#d8e3fb",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed": "#002114",
+                        "error": "#ba1a1a",
+                        "primary-container": "#00855d",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "tertiary-container": "#6b7770",
+                        "secondary-container": "#86f2e4",
+                        "surface-tint": "#006c4a",
+                        "background": "#f9f9ff",
+                        "on-tertiary-container": "#f5fff7",
+                        "on-tertiary-fixed-variant": "#3e4943",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#006f66",
+                        "tertiary": "#535f58",
+                        "tertiary-fixed": "#d9e6dd",
+                        "on-secondary-fixed-variant": "#005049",
+                        "outline": "#6d7a72",
+                        "on-primary-fixed-variant": "#005137",
+                        "inverse-surface": "#263143",
+                        "secondary-fixed": "#89f5e7",
+                        "secondary": "#006a61",
+                        "on-primary-container": "#f5fff7",
+                        "surface-container": "#e7eeff",
+                        "inverse-primary": "#68dba9",
+                        "on-background": "#111c2d",
+                        "on-secondary-fixed": "#00201d",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "outline-variant": "#bccac0",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f0f3ff",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "tertiary-fixed-dim": "#bdcac1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "stack-md": "24px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "stack-lg": "48px",
+                        "stack-sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            box-shadow: inset 2px 2px 10px rgba(255, 255, 255, 0.1), inset -2px -2px 10px rgba(0, 105, 72, 0.05);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .liquid-bg {
+            background: radial-gradient(circle at 20% 30%, rgba(133, 248, 196, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(107, 216, 203, 0.1) 0%, transparent 40%);
+            background-color: #f9f9ff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen liquid-bg font-sans pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 bg-white/60 dark:bg-surface-container/60 backdrop-blur-xl bg-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-white/20 shadow-sm backdrop-blur-3xl">
+<button class="text-primary dark:text-primary-fixed hover:bg-white/20 dark:hover:bg-white/5 transition-colors p-2 rounded-full active:scale-95 duration-200 ease-in-out flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="font-headline-md text-headline-md font-extrabold text-primary dark:text-primary-fixed">
+            Asaaniyat
+        </div>
+<div class="w-10"></div> <!-- Spacer for center alignment -->
+</header>
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto flex flex-col gap-stack-md">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-2">Review Booking</h1>
+<!-- Service Details Card -->
+<section class="glass-panel rounded-xl p-container-padding flex flex-col gap-stack-sm md:flex-row md:items-start md:justify-between">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm text-primary">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Emergency Plumbing</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sink &amp; Pipe Repair</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+<div>
+<p class="font-body-sm text-body-sm">123 Palm Jumeirah</p>
+<p class="font-label-caps text-label-caps text-outline">Villa 45</p>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<div>
+<p class="font-body-sm text-body-sm">Today, 14:00 - 15:00</p>
+<p class="font-label-caps text-label-caps text-outline">Estimated 1h</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4 md:mt-0 relative w-full md:w-48 h-32 md:h-full min-h-[120px] rounded-lg overflow-hidden shrink-0 shadow-sm border border-white/40">
+<img alt="Professional plumber repairing a modern sink" class="absolute inset-0 w-full h-full object-cover" data-alt="A professional plumber in a clean uniform is working on fixing a modern, minimalist bathroom sink in a high-end luxury apartment. The lighting is bright and natural, coming from a large window off-camera. The mood is professional, efficient, and trustworthy, embodying a premium service aesthetic. The overall color palette is light and fresh, with crisp whites and subtle silver tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtHblEarzJroUrfLimO_PC4yZSN1O2I4M7ev4LFt0xCsGyeCoDD_gOSlUuy3Mx3cD2kVE_k8MqSEsRHSLo7CMpEoWh9NpRdRMiIP_Iu-mN6SWt4Doj5LSrChw7FYyHxti0KEd9Nk41D9AfEl6BGI2_Xl87HLNx1A_pU8m-L9aJ9Hr0u4q83yU4HSdwO-2tUA7vk3ukWhibkiIJlS6kYQk_yiPbZnEy_pdWeQipDDShNAdYl0g74idOPlKUDTV4r8uW3md2b7MF91O7"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute bottom-2 left-2 right-2 text-white">
+<p class="font-label-caps text-label-caps opacity-90 drop-shadow-md">Verified Expert</p>
+</div>
+</div>
+</section>
+<!-- Dynamic Quote -->
+<section class="glass-panel rounded-xl p-container-padding flex flex-col gap-stack-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long">receipt_long</span>
+                Dynamic Quote
+            </h3>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center py-2 border-b border-surface-variant/50">
+<span class="font-body-lg text-body-lg text-on-surface-variant">Base Callout Fee</span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">AED 150</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-surface-variant/50">
+<span class="font-body-lg text-body-lg text-on-surface-variant">Estimated Labor (1 hr)</span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">AED 200</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-surface-variant/50">
+<span class="font-body-lg text-body-lg text-on-surface-variant">Parts (Estimated)</span>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">AED 50 - 150</span>
+</div>
+<div class="flex justify-between items-center pt-4 mt-2">
+<span class="font-headline-md text-headline-md text-primary">Estimated Total</span>
+<span class="font-headline-md text-headline-md text-primary">AED 400 - 500</span>
+</div>
+</div>
+<p class="font-label-caps text-label-caps text-outline mt-2 text-center">Final price may vary based on actual parts required.</p>
+</section>
+<!-- AI Reasoning Bubble -->
+<section class="flex flex-col gap-2 pl-4 border-l-2 border-primary-fixed-dim/50 relative">
+<div class="absolute -left-[11px] top-4 w-5 h-5 rounded-full bg-primary-container flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[12px] text-on-primary-container" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="glass-panel rounded-xl rounded-tl-sm p-4 bg-surface-container-low/60 shadow-sm border border-surface-variant">
+<p class="font-label-caps text-label-caps text-primary mb-1">AI Assistant Reasoning</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Based on your description of "water leaking under the sink," we've allocated a specialist in residential plumbing. The estimated time accounts for a standard pipe replacement.
+                </p>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action -->
+<div class="fixed bottom-0 w-full p-margin-mobile bg-white/80 dark:bg-surface-container-lowest/80 backdrop-blur-2xl border-t border-surface-variant/30 z-40">
+<div class="max-w-4xl mx-auto flex justify-end">
+<button class="bg-gradient-to-r from-primary to-primary-container text-white font-headline-md text-headline-md py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all w-full md:w-auto text-center flex justify-center items-center gap-2">
+                Continue to Checkout
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

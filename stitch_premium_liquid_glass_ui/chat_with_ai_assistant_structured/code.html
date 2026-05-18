@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Asaaniyat - AI Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"tertiary-fixed": "#d9e6dd", "secondary-fixed-dim": "#6bd8cb", "surface-tint": "#006c4a", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "tertiary-fixed-dim": "#bdcac1", "surface-container-highest": "#d8e3fb", "on-secondary": "#ffffff", tertiary: "#535f58", "on-primary-fixed": "#002114", "primary-container": "#00855d", "on-tertiary": "#ffffff", "on-primary-container": "#f5fff7", "inverse-on-surface": "#ecf1ff", "secondary-container": "#86f2e4", "on-tertiary-fixed": "#131e19", "primary-fixed": "#85f8c4", "on-tertiary-fixed-variant": "#3e4943", "surface-bright": "#f9f9ff", "on-background": "#111c2d", "on-surface-variant": "#3d4a42", "on-primary": "#ffffff", "on-secondary-fixed": "#00201d", "surface-container-low": "#f0f3ff", "on-error": "#ffffff", surface: "#f9f9ff", secondary: "#006a61", "surface-container": "#e7eeff", "on-tertiary-container": "#f5fff7", "error-container": "#ffdad6", error: "#ba1a1a", "surface-dim": "#cfdaf2", "on-secondary-fixed-variant": "#005049", primary: "#006948", "on-secondary-container": "#006f66", outline: "#6d7a72", "secondary-fixed": "#89f5e7", "outline-variant": "#bccac0", "tertiary-container": "#6b7770", "primary-fixed-dim": "#68dba9", "surface-variant": "#d8e3fb", background: "#f9f9ff", "on-error-container": "#93000a", "inverse-surface": "#263143", "on-primary-fixed-variant": "#005137", "on-surface": "#111c2d", "surface-container-high": "#dee8ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "1.5rem", unit: "8px", "stack-lg": "2rem", "container-padding-desktop": "2.5rem", "stack-md": "1rem", "container-padding-mobile": "1.25rem", "stack-sm": "0.5rem", "margin-mobile": "1rem"}, fontFamily: {"body-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], display: ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], headline: ["Plus Jakarta Sans"], body: ["Plus Jakarta Sans"], label: ["Plus Jakarta Sans"]}, fontSize: {"body-md": ["16px", {lineHeight: "1.6", fontWeight: "400"}], "headline-lg-mobile": ["28px", {lineHeight: "1.2", fontWeight: "700"}], display: ["48px", {lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "1.3", fontWeight: "600"}], "label-sm": ["14px", {lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "1.6", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700"}]}}}};</script>
+<style>
+        .glass-container {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 4px 30px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+        .glass-bubble-ai {
+            background: rgba(218, 226, 253, 0.5); /* surface-variant tint */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-bottom-left-radius: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .glass-bubble-user {
+            background: rgba(0, 105, 72, 0.8); /* primary tint */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(133, 248, 196, 0.2); /* primary-fixed tint */
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 0;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 105, 72, 0.2);
+        }
+        .bg-gradient-mesh {
+            background-color: #faf8ff;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(218, 226, 253, 0.4) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(133, 248, 196, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gradient-mesh text-on-background min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-40 flex justify-between items-center px-margin-mobile py-4 bg-surface/60 backdrop-blur-[40px] border-b border-white/10 shadow-sm text-primary font-headline-md">
+<div class="flex items-center gap-4">
+<button class="hover:bg-white/10 transition-colors p-2 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<span class="font-display text-headline-lg-mobile tracking-tight">Asaaniyat</span>
+</div>
+<button class="hover:bg-white/10 transition-colors p-2 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button>
+</header>
+<!-- Main Chat Canvas -->
+<main class="flex-grow pt-[80px] pb-[160px] overflow-y-auto px-4 md:px-container-padding-desktop max-w-4xl mx-auto w-full flex flex-col gap-stack-md">
+<!-- Chat Date Header -->
+<div class="text-center w-full my-stack-sm">
+<span class="inline-block glass-container font-label-sm text-label-sm text-on-surface-variant px-4 py-1 rounded-full">Today, 10:42 AM</span>
+</div>
+<!-- AI Message 1 -->
+<div class="flex items-start gap-3 max-w-[85%]">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="glass-bubble-ai p-4 text-on-surface">
+<p class="font-body-md text-body-md">Hello. I am the Asaaniyat Assistant. I see you are inquiring about a plumbing service. How can I assist you in finalizing your request?</p>
+</div>
+</div>
+<!-- User Message 1 -->
+<div class="flex flex-col items-end w-full mt-stack-sm">
+<div class="glass-bubble-user p-4 max-w-[85%]">
+<p class="font-body-md text-body-md">What is the base fee?</p>
+</div>
+</div>
+<!-- AI Message 2 (Structured Response) -->
+<div class="flex items-start gap-3 max-w-[90%] mt-stack-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<div class="glass-bubble-ai p-4 text-on-surface w-full">
+<p class="font-body-md text-body-md mb-4">The base fee structure for plumbing diagnostics is as follows:</p>
+<div class="glass-container rounded-lg p-4 bg-white/40 border border-white/60 mb-2">
+<div class="flex justify-between items-center border-b border-surface-variant/50 pb-2 mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Service Tier</span>
+<span class="font-headline-md text-headline-md text-primary">Standard</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface">Diagnostic Fee</span>
+<span class="font-body-md text-body-md font-semibold text-on-background">PKR 1,500</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Estimated Arrival</span>
+<span class="font-label-sm text-label-sm text-primary-container font-semibold">45 - 60 mins</span>
+</div>
+</div>
+<p class="font-body-sm text-sm text-on-surface-variant mt-2">Note: Parts and additional labor are calculated separately after diagnosis.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Area (Restricted Preset Blocks) -->
+<div class="fixed bottom-0 w-full z-40 bg-surface/80 backdrop-blur-xl border-t border-white/20 shadow-[0px_-10px_30px_rgba(0,0,0,0.05)] pb-6 pt-4 px-4">
+<div class="max-w-4xl mx-auto">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-3 text-center uppercase tracking-widest">Select Inquiry</p>
+<div class="flex flex-wrap gap-2 justify-center">
+<!-- Preset Option 1 -->
+<button class="glass-container hover:bg-primary/5 hover:border-primary/30 transition-all px-5 py-3 rounded-full text-primary font-body-md text-body-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">schedule</span>
+                    How quickly can you arrive?
+                </button>
+<!-- Preset Option 2 -->
+<button class="glass-container hover:bg-primary/5 hover:border-primary/30 transition-all px-5 py-3 rounded-full text-primary font-body-md text-body-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">person_search</span>
+                    Show technician profile
+                </button>
+<!-- Preset Option 3 -->
+<button class="glass-container hover:bg-primary/5 hover:border-primary/30 transition-all px-5 py-3 rounded-full text-primary font-body-md text-body-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">verified</span>
+                    Confirm Request
+                </button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Asaaniyat - Booking Confirmed</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#68fcbf",
+                    "secondary-fixed-dim": "#4edea3",
+                    "surface-tint": "#006c4a",
+                    "inverse-primary": "#68dba9",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#45dfa4",
+                    "surface-container-highest": "#dae2fd",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#006949",
+                    "on-primary-fixed": "#002114",
+                    "primary-container": "#00855d",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#f5fff7",
+                    "inverse-on-surface": "#eef0ff",
+                    "secondary-container": "#6cf8bb",
+                    "on-tertiary-fixed": "#002114",
+                    "primary-fixed": "#85f8c4",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "surface-bright": "#faf8ff",
+                    "on-background": "#131b2e",
+                    "on-surface-variant": "#3d4a42",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#002113",
+                    "surface-container-low": "#f2f3ff",
+                    "on-error": "#ffffff",
+                    "surface": "#faf8ff",
+                    "secondary": "#006c49",
+                    "surface-container": "#eaedff",
+                    "on-tertiary-container": "#f5fff7",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d2d9f4",
+                    "on-secondary-fixed-variant": "#005236",
+                    "primary": "#006948",
+                    "on-secondary-container": "#00714d",
+                    "outline": "#6d7a72",
+                    "secondary-fixed": "#6ffbbe",
+                    "outline-variant": "#bccac0",
+                    "tertiary-container": "#00855d",
+                    "primary-fixed-dim": "#68dba9",
+                    "surface-variant": "#dae2fd",
+                    "background": "#faf8ff",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#283044",
+                    "on-primary-fixed-variant": "#005137",
+                    "on-surface": "#131b2e",
+                    "surface-container-high": "#e2e7ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "1.5rem",
+                    "unit": "8px",
+                    "stack-lg": "2rem",
+                    "container-padding-desktop": "2.5rem",
+                    "stack-md": "1rem",
+                    "container-padding-mobile": "1.25rem",
+                    "stack-sm": "0.5rem"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Base typography rendering optimization */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-on-background selection:bg-primary/20 selection:text-primary">
+<!-- Ambient Background Depth (No Photos, High-Fidelity Tinting) -->
+<div class="fixed inset-0 z-0 pointer-events-none">
+<!-- Soft top-left highlight -->
+<div class="absolute -top-40 -left-40 w-[600px] h-[600px] bg-tertiary-fixed/20 rounded-full blur-[100px] mix-blend-multiply opacity-50"></div>
+<!-- Soft bottom-right anchor -->
+<div class="absolute -bottom-40 -right-40 w-[800px] h-[800px] bg-surface-container-high rounded-full blur-[120px] mix-blend-multiply opacity-70"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 w-full max-w-[480px] px-container-padding-mobile md:px-0 flex flex-col items-center">
+<!-- Animated Entry Container (Simulated via structure) -->
+<div class="flex flex-col items-center w-full">
+<!-- Success Icon: Shimmering Circular Glass Pane -->
+<div class="w-32 h-32 mb-stack-lg rounded-full flex items-center justify-center relative bg-white/70 backdrop-blur-[20px] border border-white/80 border-b-white/20 border-r-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.8)] overflow-hidden">
+<!-- Inner liquid highlight -->
+<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-white/10 rotate-45 pointer-events-none"></div>
+<!-- The Checkmark -->
+<span class="material-symbols-outlined text-[64px] text-primary relative z-10 drop-shadow-[0_4px_8px_rgba(0,105,72,0.3)]" style="font-variation-settings: 'FILL' 1, 'wght' 300;">
+                    check_circle
+                </span>
+</div>
+<!-- Typography Header -->
+<div class="text-center mb-stack-lg w-full flex flex-col items-center gap-stack-sm">
+<h1 class="font-display text-display text-on-surface">
+                    Booking Confirmed
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[320px]">
+                    Your Asaaniyat service professional has been successfully scheduled.
+                </p>
+</div>
+<!-- Detailed Glass Card -->
+<div class="w-full mb-stack-lg rounded-xl p-6 relative overflow-hidden bg-white/60 backdrop-blur-[24px] border border-white/60 border-b-white/20 border-r-white/20 shadow-[0_12px_30px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.6)]">
+<div class="flex flex-col gap-5">
+<!-- Row: Booking ID -->
+<div class="flex justify-between items-center pb-4 border-b border-surface-variant/50">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                            Booking ID
+                        </span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">
+                            ASN-9284-XK
+                        </span>
+</div>
+<!-- Row: Technician -->
+<div class="flex justify-between items-center pb-4 border-b border-surface-variant/50">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">engineering</span>
+                            Technician
+                        </span>
+<span class="font-body-md text-body-md text-on-surface font-semibold flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-secondary-container">TA</div>
+                            Tariq Ahmed
+                        </span>
+</div>
+<!-- Row: Scheduled Time -->
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+                            Scheduled Time
+                        </span>
+<div class="flex flex-col items-end text-right">
+<span class="font-body-md text-body-md text-on-surface font-semibold">
+                                Oct 24, 2023
+                            </span>
+<span class="font-body-md text-body-md text-primary font-semibold">
+                                10:00 AM - 11:30 AM
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-3">
+<!-- Primary Action -->
+<button class="w-full bg-primary text-on-primary py-4 px-6 rounded-xl font-label-sm text-label-sm flex justify-center items-center gap-2 relative overflow-hidden group shadow-[0_8px_16px_rgba(0,105,72,0.2)] hover:shadow-[0_12px_24px_rgba(0,105,72,0.25)] transition-all duration-300">
+<div class="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300"></div>
+<span class="material-symbols-outlined text-[20px]">event_note</span>
+                    View Schedule
+                </button>
+<!-- Secondary Action -->
+<button class="w-full bg-white/40 backdrop-blur-md border border-outline-variant text-on-surface py-4 px-6 rounded-xl font-label-sm text-label-sm flex justify-center items-center gap-2 hover:bg-white/60 transition-colors duration-300">
+<span class="material-symbols-outlined text-[20px]">home</span>
+                    Return Home
+                </button>
+</div>
+</div>
+</main>
+</body></html>

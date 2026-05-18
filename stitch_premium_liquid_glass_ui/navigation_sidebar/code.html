@@ -1,0 +1,241 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Asaaniyat Settings Drawer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#bdcac1",
+                        "inverse-primary": "#68dba9",
+                        "surface-bright": "#f9f9ff",
+                        "primary": "#006948",
+                        "on-tertiary-fixed": "#131e19",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#d8e3fb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dee8ff",
+                        "surface-tint": "#006c4a",
+                        "on-background": "#111c2d",
+                        "on-primary-fixed-variant": "#005137",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#f5fff7",
+                        "tertiary-fixed": "#d9e6dd",
+                        "secondary-container": "#86f2e4",
+                        "primary-fixed": "#85f8c4",
+                        "surface-dim": "#cfdaf2",
+                        "tertiary": "#535f58",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface": "#f9f9ff",
+                        "secondary": "#006a61",
+                        "on-primary-fixed": "#002114",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#6b7770",
+                        "on-secondary-container": "#006f66",
+                        "outline-variant": "#bccac0",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d8e3fb",
+                        "surface-container": "#e7eeff",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "on-tertiary-fixed-variant": "#3e4943",
+                        "on-secondary-fixed": "#00201d",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#6d7a72",
+                        "on-tertiary-container": "#f5fff7",
+                        "on-surface": "#111c2d",
+                        "secondary-fixed": "#89f5e7",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-surface-variant": "#3d4a42",
+                        "primary-container": "#00855d",
+                        "surface-container-low": "#f0f3ff",
+                        "primary-fixed-dim": "#68dba9",
+                        "inverse-surface": "#263143",
+                        "background": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "container-padding": "24px",
+                        "stack-md": "24px",
+                        "stack-lg": "48px",
+                        "margin-desktop": "64px",
+                        "stack-sm": "12px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .liquid-glass {
+            background: rgba(249, 249, 255, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .liquid-item {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        .liquid-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-tertiary-fixed-dim min-h-screen relative overflow-hidden flex items-center justify-end p-4 md:p-margin-desktop">
+<!-- Background element to simulate the app underneath -->
+<div class="absolute inset-0 z-0">
+<div class="absolute top-20 left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl mix-blend-multiply"></div>
+<div class="absolute bottom-20 right-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl mix-blend-multiply"></div>
+<!-- Mock App Content -->
+<div class="p-8 hidden md:block">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-4">Hello Asaaniyat</h1>
+<div class="grid grid-cols-2 gap-4 max-w-2xl">
+<div class="h-48 bg-white/40 backdrop-blur-md rounded-3xl p-6"></div>
+<div class="h-48 bg-white/40 backdrop-blur-md rounded-3xl p-6"></div>
+</div>
+</div>
+</div>
+<!-- Navigation Drawer (Right aligned for this view based on typical user settings flow or side panel) -->
+<aside class="liquid-glass w-full max-w-sm rounded-[32px] h-[calc(100vh-2rem)] md:h-[calc(100vh-4rem)] relative z-50 flex flex-col p-container-padding overflow-y-auto">
+<!-- Close Button -->
+<div class="absolute top-6 right-6">
+<button class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center text-on-surface hover:bg-white/80 transition-colors">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<!-- Profile Header -->
+<div class="flex items-center gap-4 mt-8 mb-stack-lg">
+<div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg">
+<span class="font-headline-lg text-headline-lg text-on-primary">A</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Asad</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate w-48">muhammadassad42@gmail.com</p>
+</div>
+</div>
+<!-- Sections -->
+<div class="flex-1 flex flex-col gap-stack-lg">
+<!-- Preferences Section -->
+<div>
+<h3 class="font-label-caps text-label-caps text-outline mb-stack-sm uppercase tracking-widest">Preferences</h3>
+<div class="liquid-item rounded-[24px] p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+</div>
+<div>
+<p class="font-headline-md text-headline-md text-base text-on-surface">Theme Toggle</p>
+<p class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">Aaaaniyat light branding</p>
+</div>
+</div>
+<!-- Toggle Switch Mock -->
+<div class="w-12 h-6 bg-surface-variant rounded-full relative cursor-pointer shadow-inner">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+</div>
+<!-- Project Section -->
+<div>
+<h3 class="font-label-caps text-label-caps text-outline mb-stack-sm uppercase tracking-widest">Project</h3>
+<div class="flex flex-col gap-3">
+<!-- GitHub Link -->
+<a class="liquid-item rounded-[24px] p-4 flex items-center justify-between group" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">code</span>
+</div>
+<div>
+<p class="font-headline-md text-headline-md text-base text-on-surface">GitHub Repo Link</p>
+<p class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">Open repository</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Rate Our App -->
+<a class="liquid-item rounded-[24px] p-4 flex items-center justify-between group" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div>
+<p class="font-headline-md text-headline-md text-base text-on-surface">Rate Our App</p>
+<p class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">Share your feedback</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Agent Traces -->
+<a class="liquid-item rounded-[24px] p-4 flex items-center justify-between group" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+</div>
+<div>
+<p class="font-headline-md text-headline-md text-base text-on-surface">Agent Traces</p>
+<p class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">View orchestrator decisions</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Log out -->
+<button class="liquid-item rounded-[24px] p-4 flex items-center justify-between group mt-2">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-error-container/50 flex items-center justify-center text-error group-hover:bg-error group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">logout</span>
+</div>
+<div class="text-left">
+<p class="font-headline-md text-headline-md text-base text-error">Log out</p>
+<p class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">End this secure session</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+</body></html>
