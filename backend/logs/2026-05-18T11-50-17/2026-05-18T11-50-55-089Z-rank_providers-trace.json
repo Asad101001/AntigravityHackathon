@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T11-50-17",
+  "timestamp": "2026-05-18T11:50:55.089Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL056",
+    "ranked_ids": [
+      "EL056",
+      "EL067",
+      "EL166",
+      "EL221",
+      "EL111"
+    ],
+    "reasoning_log": "After analyzing the candidate electricians in Tariq Road Karachi, we selected EL056 as the overall best option due to its excellent rating, low cancellation risk, and competitive base rate. The provider's recent sentiment is also positive, with customers praising its punctuality and clear pricing. While EL067 and EL166 are also strong contenders, EL056's slightly lower base rate and better response time make it the top choice.",
+    "multi_factor": {
+      "overall_best_id": "EL056",
+      "most_affordable_id": "EL111",
+      "closest_fastest_id": "EL221",
+      "analysis": {
+        "overall_best_id": "EL056 was chosen as the overall best option due to its excellent rating, low cancellation risk, and competitive base rate.",
+        "most_affordable_id": "EL111 has the lowest base rate of 1523 PKR, making it the most affordable option despite its lower rating and higher cancellation risk.",
+        "closest_fastest_id": "EL221 is the closest provider with an available slot, located just 4.16 km away from Tariq Road Karachi."
+      }
+    }
+  },
+  "durationMs": 682
+}

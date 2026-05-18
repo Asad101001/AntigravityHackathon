@@ -3,6 +3,7 @@ const LLMClient = require('../llm/LLMClient');
 const IntentParserAgent = require('./IntentParserAgent');
 const { findLocationCandidate, normalizeLocation } = require('../utils/locationNormalizer');
 const { withRetry } = require('../utils/retryHelper');
+const { parseDateTime } = require('../utils/dateTimeParser');
 
 const GEOCODING_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 
@@ -28,7 +29,7 @@ class LLMIntentParserAgent extends BaseAgent {
       '{',
       '  "service_type": string | null,  // canonical: Electrician|Plumber|AC Technician|Carpenter|Painter|Handyman|Maid|Car Mechanic|Cleaning Lady|Hairdresser|Salon',
       '  "location": string | null,       // area or city name as written by user',
-      '  "time_preference": string | null, // e.g. "today_morning","tomorrow","today_now","weekend"',
+      '  "time_preference": string | null, // e.g. "today_morning","tomorrow","tomorrow_afternoon","today_2pm","today_now","weekend". IMPORTANT: If user mentions a specific time like "2pm" or "14:00", include it in the time_preference (e.g., "tomorrow_2pm" not just "tomorrow")',
       '  "urgency_level": "high" | "low",  // high if user uses urgent/abhi/foran/emergency/jaldi',
       '  "price_sensitivity": "high" | "low" | "neutral", // high if user mentions cheap/sasta/budget; low if premium/achha',
       '  "confidence": number,             // 0.0–1.0 how confident you are in the parse',
@@ -51,7 +52,17 @@ class LLMIntentParserAgent extends BaseAgent {
       const service = parsed.service_type || null;
       const locationResolution = await this._normalizeParsedLocation(parsed.location, context);
       const location = locationResolution.location;
-      const time = parsed.time_preference || null;
+      let time = parsed.time_preference || null;
+      
+      // Enhanced date/time parsing: try to extract specific time if not already in time_preference
+      if (!time || !time.includes('_')) {
+        const parsedDateTime = parseDateTime(userText);
+        if (parsedDateTime) {
+          // Build a more specific time_preference string
+          time = _buildTimePreferenceString(userText, parsedDateTime);
+        }
+      }
+      
       const urgency = parsed.urgency_level === 'high' ? 'high' : 'normal';
       const priceSensitivity = parsed.price_sensitivity || 'neutral';
       const confidence = typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.75;
@@ -176,6 +187,61 @@ class LLMIntentParserAgent extends BaseAgent {
     return null;
   }
 
+}
+
+/**
+ * Build a detailed time preference string from parsed date/time info
+ * @private
+ */
+function _buildTimePreferenceString(userText, parsedDateTime) {
+  if (!parsedDateTime) return null;
+
+  let prefix = '';
+  userText = userText.toLowerCase();
+
+  // Determine date prefix
+  if (/\btomorrow\b/.test(userText)) {
+    prefix = 'tomorrow';
+  } else if (/\b(today|tonight|tonite)\b/.test(userText)) {
+    prefix = 'today';
+  } else if (/day after tomorrow/.test(userText)) {
+    prefix = 'day_after_tomorrow';
+  } else {
+    // Fallback based on date
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (parsedDateTime.date.toDateString() === now.toDateString()) {
+      prefix = 'today';
+    } else if (parsedDateTime.date.toDateString() === tomorrow.toDateString()) {
+      prefix = 'tomorrow';
+    } else {
+      // Just return the parsed time with time only
+      return `specific_time_${parsedDateTime.timeIn24H.replace(':', '')}`;
+    }
+  }
+
+  // Determine time slot suffix
+  const hours = parsedDateTime.date.getHours();
+  let suffix = '';
+
+  if (hours >= 5 && hours < 12) {
+    suffix = '_morning';
+  } else if (hours >= 12 && hours < 17) {
+    suffix = '_afternoon';
+  } else if (hours >= 17 && hours < 21) {
+    suffix = '_evening';
+  } else if (hours >= 21 || hours < 5) {
+    suffix = '_night';
+  }
+
+  // Include specific time if it's precise
+  if (parsedDateTime.timeIn24H !== '09:00') {
+    suffix = `_${parsedDateTime.timeIn24H.replace(':', '')}`;
+  }
+
+  return prefix + suffix;
 }
 
 module.exports = LLMIntentParserAgent;
