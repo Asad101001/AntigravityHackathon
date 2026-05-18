@@ -1,0 +1,63 @@
+{
+  "run_id": "2026-05-18T19-56-05",
+  "timestamp": "2026-05-18T19:56:34.292Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a2a42",
+      "id": "PL123",
+      "name": "Defence Works Plumber Usman",
+      "service": "Plumber",
+      "city": "Karachi",
+      "area": "Defence",
+      "lat": 24.8061,
+      "lng": 67.0744,
+      "distance_km": 11.37,
+      "rating": 4.7,
+      "reviews_count": 123,
+      "available_slots": [
+        "09:00",
+        "11:00",
+        "14:00",
+        "16:00"
+      ],
+      "phone": "0352-1966118",
+      "response_time_min": 22,
+      "verified": true,
+      "specialization": [
+        "pipe_fitting",
+        "bathroom_fitting",
+        "leak_repair"
+      ],
+      "base_rate_pkr": 768,
+      "on_time_score": 91,
+      "cancellation_risk": "low",
+      "recent_sentiment": "Verified documents are on file. Strong local reputation in Defence, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "haversine_km": 5.98,
+      "distance_text": "11.4 km",
+      "duration_text": "22 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9400000000000001,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 2
+}

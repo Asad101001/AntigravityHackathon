@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-18T20-05-51",
+  "timestamp": "2026-05-18T20:17:03.409Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.8598453749008,
+      "lng": 67.07362647592836,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "mujhe plumber chahye kal subha 9 bajay"
+  },
+  "output": {
+    "lat": 24.8598453749008,
+    "lng": 67.07362647592836,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 3
+}

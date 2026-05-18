@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:43:51.198Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "hi provider: Defence Works Plumber Usman type: Plumber"
+  },
+  "output": {
+    "chunk_count": 0,
+    "chunks": []
+  },
+  "durationMs": 215
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T19-50-45",
+  "timestamp": "2026-05-18T19:51:15.939Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "Given the high urgency for a plumber in Tariq Road Karachi, we prioritized providers with high ratings, low cancellation risk, and quick response times. Among the top contenders, Defence Works Plumber Usman (PL123) stood out for his excellent rating, low cancellation risk, and available slots, making him the overall best choice. For the most affordable option, Defence Works Plumber Maryam (PL277) offered a competitive base rate while still maintaining a high rating and low cancellation risk. The closest/fastest option was a tie between Defence Works Plumber Usman (PL123) and Defence Fix Plumber Waqar (PL068), both of whom had available slots and were relatively close to the desired location.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL123",
+      "analysis": {
+        "overall_best": "Defence Works Plumber Usman (PL123) was chosen as the overall best due to his high rating, low cancellation risk, and available slots, making him the most suitable option for the user's high-urgency request.",
+        "most_affordable": "Defence Works Plumber Maryam (PL277) was selected as the most affordable option due to her competitive base rate while still maintaining a high rating and low cancellation risk.",
+        "closest_fastest": "Defence Works Plumber Usman (PL123) and Defence Fix Plumber Waqar (PL068) were tied as the closest/fastest options due to their relatively close distance to the desired location and available slots."
+      }
+    }
+  },
+  "durationMs": 1056
+}

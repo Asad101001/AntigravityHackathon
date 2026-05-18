@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:42:30.609Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Defence Works Plumber Usman",
+    "time_slot": "5:00 PM"
+  },
+  "output": {
+    "booking_id": "BK_1779133350606",
+    "confirmation_message": "Booking confirmed! Defence Works Plumber Usman arrives 20/05/2026 at 5:00 PM. Contact: 0352-1966118. Booking ID: BK_1779133350606",
+    "scheduled_time": "2026-05-20T12:00:00.000Z",
+    "time_slot": "5:00 PM"
+  },
+  "durationMs": 6
+}

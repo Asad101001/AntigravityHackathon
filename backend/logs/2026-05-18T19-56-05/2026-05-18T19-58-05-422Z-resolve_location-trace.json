@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-18T19-56-05",
+  "timestamp": "2026-05-18T19:58:05.422Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859843941083724,
+      "lng": 67.07362832985953,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "MUJHE KAL SUBHA 9 BAJAY PLUMBER KI NEED"
+  },
+  "output": {
+    "lat": 24.859843941083724,
+    "lng": 67.07362832985953,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 4
+}

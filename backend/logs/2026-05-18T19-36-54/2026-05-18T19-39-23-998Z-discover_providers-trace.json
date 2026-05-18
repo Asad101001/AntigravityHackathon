@@ -1,0 +1,196 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:39:23.998Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859784015478308,
+      "lng": 67.0736730890882
+    },
+    "service_type": "Electrician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2aa4",
+        "id": "EL221",
+        "name": "Tariq Road Home Electrician Maryam",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Tariq Road",
+        "lat": 24.8732,
+        "lng": 67.064,
+        "distance_km": 4.17,
+        "rating": 3.8,
+        "reviews_count": 209,
+        "available_slots": [
+          "08:00",
+          "10:00"
+        ],
+        "phone": "0370-2742180",
+        "response_time_min": 10,
+        "verified": false,
+        "specialization": [
+          "inverter_installation",
+          "wiring",
+          "distribution_boards"
+        ],
+        "base_rate_pkr": 1789,
+        "on_time_score": 81,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Solid electrician option for Tariq Road; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 1.78,
+        "distance_text": "4.2 km",
+        "duration_text": "10 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0a",
+        "id": "EL067",
+        "name": "Clifton Clean Electrician Usman",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Clifton",
+        "lat": 24.8127,
+        "lng": 67.0322,
+        "distance_km": 9.58,
+        "rating": 4.8,
+        "reviews_count": 175,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0376-1522654",
+        "response_time_min": 21,
+        "verified": true,
+        "specialization": [
+          "wiring",
+          "distribution_boards",
+          "inverter_installation"
+        ],
+        "base_rate_pkr": 1797,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Clifton, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.7,
+        "distance_text": "9.6 km",
+        "duration_text": "21 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a6d",
+        "id": "EL166",
+        "name": "DHA Metro Electrician Bushra",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8039,
+        "lng": 67.0722,
+        "distance_km": 11.65,
+        "rating": 4.8,
+        "reviews_count": 121,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0315-2306635",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "UPS",
+          "ceiling_fans",
+          "fault_finding"
+        ],
+        "base_rate_pkr": 1656,
+        "on_time_score": 86,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.22,
+        "distance_text": "11.6 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a36",
+        "id": "EL111",
+        "name": "DHA Care Electrician Ali",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8028,
+        "lng": 67.0711,
+        "distance_km": 11.86,
+        "rating": 2.5,
+        "reviews_count": 13,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0340-1871090",
+        "response_time_min": 22,
+        "verified": false,
+        "specialization": [
+          "distribution_boards",
+          "inverter_installation",
+          "wiring"
+        ],
+        "base_rate_pkr": 1523,
+        "on_time_score": 59,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.34,
+        "distance_text": "11.9 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29ff",
+        "id": "EL056",
+        "name": "DHA Clean Electrician Ahmed",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8017,
+        "lng": 67.07,
+        "distance_km": 12,
+        "rating": 4.9,
+        "reviews_count": 122,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0365-1435545",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "fault_finding",
+          "UPS",
+          "ceiling_fans"
+        ],
+        "base_rate_pkr": 1390,
+        "on_time_score": 90,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.47,
+        "distance_text": "12.0 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 2125
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T19-56-05",
+  "timestamp": "2026-05-18T19:56:34.281Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "Given the high urgency and neutral price sensitivity, the overall best provider is Defence Works Plumber Usman (PL123) due to his high rating, good response time, and low cancellation risk. He is also the most affordable option among the top-rated providers. However, the closest/fastest provider is also a top-rated option, DHA Works Plumber Maryam (PL277), who is only slightly farther away but has a similar profile.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL123",
+      "closest_fastest_id": "PL277",
+      "analysis": {
+        "overall_best_id": "Defence Works Plumber Usman (PL123) is the overall best choice due to his high rating, good response time, and low cancellation risk.",
+        "most_affordable_id": "Defence Works Plumber Usman (PL123) is also the most affordable option among the top-rated providers.",
+        "closest_fastest_id": "DHA Works Plumber Maryam (PL277) is the closest/fastest provider, with a similar profile to the overall best choice."
+      }
+    }
+  },
+  "durationMs": 819
+}

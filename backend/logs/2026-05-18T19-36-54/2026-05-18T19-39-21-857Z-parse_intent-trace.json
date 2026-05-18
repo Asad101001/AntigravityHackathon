@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:39:21.857Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician needed on 26th may",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "26th May",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "User requested an Electrician on a specific date, implying a regular booking."
+  },
+  "durationMs": 909
+}

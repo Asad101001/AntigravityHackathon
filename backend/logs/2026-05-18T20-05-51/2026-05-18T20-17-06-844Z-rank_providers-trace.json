@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T20-05-51",
+  "timestamp": "2026-05-18T20:17:06.844Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "After analyzing the candidate providers, we selected Defence Works Plumber Usman (PL123) as the overall best option due to his high rating, good response time, and low cancellation risk. He also offers competitive pricing and is available for booking. The other providers were ranked based on their trade-offs between distance, rating, availability, on-time score, and cancellation risk.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL013",
+      "analysis": {
+        "overall_best_id": "PL123 was chosen as the overall best option due to his high rating, good response time, and low cancellation risk, making him a well-rounded choice.",
+        "most_affordable_id": "PL277 was selected as the most affordable option with a base rate of 760 PKR, making him a good choice for those on a budget.",
+        "closest_fastest_id": "PL013 was chosen as the closest/fastest option with a distance of 8.03 km and a response time of 20 minutes, making him a convenient choice for those in the area."
+      }
+    }
+  },
+  "durationMs": 1089
+}

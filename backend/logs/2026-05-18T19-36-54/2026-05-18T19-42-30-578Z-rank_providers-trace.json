@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:42:30.578Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best plumber for the job is Defence Works Plumber Usman (PL123). This decision is driven by a balanced trade-off between distance, rating, availability, on-time score, and cancellation risk. Usman's verified documents, strong local reputation, and high on-time score make him a reliable choice. Although Saddar Metro Plumber Zahid (PL013) has a slightly higher rating, Usman's lower cancellation risk and better on-time score tip the scales in his favor.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL013",
+      "analysis": {
+        "overall_best_id": "Defence Works Plumber Usman (PL123) is the overall best choice due to his balanced trade-off between distance, rating, availability, on-time score, and cancellation risk.",
+        "most_affordable_id": "DHA Works Plumber Maryam (PL277) is the most affordable option with a base rate of 760 PKR, while still being verified and having available slots.",
+        "closest_fastest_id": "Saddar Metro Plumber Zahid (PL013) is the closest/fastest option with a distance of 8.03 km and available slots, making him a reliable choice for urgent plumbing needs."
+      }
+    }
+  },
+  "durationMs": 816
+}

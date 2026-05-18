@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-18T18-33-55",
+  "timestamp": "2026-05-18T18:34:35.348Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "mujhe kal subha aik okumber ki need hai",
+  "output": {
+    "service_type": "Plumber",
+    "location": null,
+    "time_preference": "tomorrow_morning",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "User asked for a plumber tomorrow morning, assuming a standard service type and urgency level."
+  },
+  "durationMs": 763
+}

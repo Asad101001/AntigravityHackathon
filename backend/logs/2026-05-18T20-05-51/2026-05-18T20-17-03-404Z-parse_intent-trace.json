@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-18T20-05-51",
+  "timestamp": "2026-05-18T20:17:03.405Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "mujhe plumber chahye kal subha 9 bajay",
+  "output": {
+    "service_type": "Plumber",
+    "location": null,
+    "time_preference": "tomorrow_morning_9am",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User asked for a plumber tomorrow morning at 9am, urgency level is low and price sensitivity is neutral"
+  },
+  "durationMs": 1396
+}

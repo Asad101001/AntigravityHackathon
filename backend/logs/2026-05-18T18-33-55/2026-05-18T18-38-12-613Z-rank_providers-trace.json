@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T18-33-55",
+  "timestamp": "2026-05-18T18:38:12.613Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with high ratings, low cancellation risk, and quick response times. Among these, Defence Works Plumber Usman (PL123) stood out for their excellent rating, low cancellation risk, and relatively fast response time, making them the best choice for this high-priority request.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL013",
+      "analysis": {
+        "overall_best_id": "PL123 was chosen as the overall best due to their high rating, low cancellation risk, and quick response time, making them the most suitable option for this high-priority request.",
+        "most_affordable_id": "PL277 was chosen as the most affordable option as they have a lower base rate compared to the other verified and available providers.",
+        "closest_fastest_id": "PL013 was chosen as the closest/fastest option as they have the smallest distance and available slots, making them the most convenient choice for this service request."
+      }
+    }
+  },
+  "durationMs": 903
+}
