@@ -26,7 +26,7 @@ export default function LocationPickerScreen({ route, navigation }) {
     route.params?.pickedLocation || {
       lat:   DEFAULT_REGION.latitude,
       lng:   DEFAULT_REGION.longitude,
-      label: 'Gulshan-e-Iqbal Karachi',
+      label: 'Current location',
     }
   );
 

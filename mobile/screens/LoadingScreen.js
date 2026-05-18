@@ -234,6 +234,7 @@ export default function LoadingScreen({ route, navigation }) {
           city,
           user_location: userLocation || null,
           location_source: userLocation ? (locationSource || 'map') : 'typed',
+          session: { lastKnownLocation: userLocation || null },
         },
         { timeout: 20000 }
       );
