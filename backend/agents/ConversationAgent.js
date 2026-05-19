@@ -22,6 +22,7 @@ class ConversationAgent extends BaseAgent {
 
     await this._safeSaveMessage({
       booking_id: bookingId,
+      user_id: context.user_id || null,
       role: 'user',
       content: message,
       token_count: tokenize(message).tokens.length,
@@ -60,6 +61,7 @@ class ConversationAgent extends BaseAgent {
 
     await this._safeSaveMessage({
       booking_id: bookingId,
+      user_id: context.user_id || null,
       role: 'assistant',
       content: reply,
       token_count: tokenize(reply).tokens.length,

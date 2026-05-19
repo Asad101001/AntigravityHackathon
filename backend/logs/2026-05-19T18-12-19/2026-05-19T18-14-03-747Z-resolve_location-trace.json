@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-19T18-12-19",
+  "timestamp": "2026-05-19T18:14:03.747Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.8598219,
+      "lng": 67.0735224,
+      "label": "P.E.C.H.S., Karachi City"
+    },
+    "parsed_location": null,
+    "user_text": "AC Repair needed tomorrow at 4 PM"
+  },
+  "output": {
+    "lat": 24.8598219,
+    "lng": 67.0735224,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 10
+}

@@ -132,6 +132,7 @@ async function ensureIndexes(db) {
     db.collection(COLLECTIONS.users).createIndex({ emailLower: 1 }, { unique: true }),
     db.collection(COLLECTIONS.adminUsers).createIndex({ emailLower: 1 }, { unique: true }),
     db.collection(COLLECTIONS.chatMessages).createIndex({ booking_id: 1, created_at: 1 }),
+    db.collection(COLLECTIONS.chatMessages).createIndex({ user_id: 1, booking_id: 1, created_at: -1 }),
     db.collection(COLLECTIONS.ragChunks).createIndex({ created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }, { unique: true, sparse: true }),
@@ -350,22 +351,95 @@ async function findProvidersByService(service) {
   return results.map(hydrateProvider);
 }
 
-async function saveChatMessage({ booking_id, role, content, token_count = 0 }) {
+async function saveChatMessage({ booking_id, user_id = null, role, content, token_count = 0, metadata = {} }) {
   const db = await setupDatabase();
   const id = `MSG_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const created_at = new Date().toISOString();
-  const record = { id, booking_id, role, content, token_count, created_at };
+  const record = {
+    id,
+    booking_id: booking_id || 'general',
+    user_id: user_id ? String(user_id) : null,
+    role,
+    content,
+    token_count,
+    metadata: metadata && typeof metadata === 'object' ? metadata : {},
+    created_at,
+  };
   await db.collection(COLLECTIONS.chatMessages).insertOne(record);
   return record;
 }
 
-async function getChatMessages(booking_id, limit = 40) {
+async function getChatMessages(booking_id, limit = 40, user_id = null) {
   const db = await setupDatabase();
+  const query = { booking_id: booking_id || 'general' };
+  if (user_id) query.user_id = String(user_id);
   return db.collection(COLLECTIONS.chatMessages)
-    .find({ booking_id })
+    .find(query)
     .sort({ created_at: 1 })
     .limit(limit)
     .toArray();
+}
+
+async function getChatThreads(user_id) {
+  const db = await setupDatabase();
+  const userId = user_id ? String(user_id) : null;
+  const bookings = userId ? await getUserBookings(userId) : [];
+  const visibleBookings = bookings
+    .filter(booking => String(booking.status || '').toLowerCase() !== 'canceled')
+    .sort((a, b) => new Date(b.created_at || b.updated_at || 0) - new Date(a.created_at || a.updated_at || 0));
+
+  const bookingThreads = await Promise.all(visibleBookings.map(async booking => {
+    const lastMessage = await db.collection(COLLECTIONS.chatMessages)
+      .find(userId ? { booking_id: booking._id, user_id: userId } : { booking_id: booking._id })
+      .sort({ created_at: -1 })
+      .limit(1)
+      .next();
+
+    return {
+      id: booking._id,
+      booking_id: booking._id,
+      kind: 'booking',
+      title: booking.provider_name || 'Provider Chat',
+      subtitle: [booking.service_type, booking.area].filter(Boolean).join(' • ') || 'Booking chat',
+      preview: lastMessage?.content || `Chat with ${booking.provider_name || 'this provider'} about this booking.`,
+      updated_at: lastMessage?.created_at || booking.updated_at || booking.created_at || null,
+      status: booking.status || null,
+      booking,
+      provider: {
+        id: booking.provider_id || null,
+        name: booking.provider_name || null,
+        service_type: booking.service_type || null,
+        area: booking.area || null,
+        city: booking.city || null,
+        confirmed_slot: booking.booking_start_time || null,
+      },
+      is_pinned: false,
+    };
+  }));
+
+  const generalMessage = await db.collection(COLLECTIONS.chatMessages)
+    .find(userId ? { booking_id: 'general', user_id: userId } : { booking_id: 'general' })
+    .sort({ created_at: -1 })
+    .limit(1)
+    .next();
+
+  const generalThread = {
+    id: 'general',
+    booking_id: 'general',
+    kind: 'assistant',
+    title: 'Asaaniyat AI',
+    subtitle: 'Pinned assistant chat',
+    preview: generalMessage?.content || 'Ask about bookings, providers, or next steps.',
+    updated_at: generalMessage?.created_at || null,
+    status: 'active',
+    is_pinned: true,
+  };
+
+  return [generalThread, ...bookingThreads].sort((a, b) => {
+    if (a.is_pinned) return -1;
+    if (b.is_pinned) return 1;
+    return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+  });
 }
 
 async function saveRagChunk({ source, content, tokens = [], metadata = {} }) {
@@ -487,6 +561,7 @@ module.exports = {
   findProvidersByService,
   saveChatMessage,
   getChatMessages,
+  getChatThreads,
   saveRagChunk,
   getRagChunks,
   createBooking,

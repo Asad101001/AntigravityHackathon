@@ -200,6 +200,16 @@ export default function BookingsScreen({ navigation }) {
                   <Ionicons name="pulse-outline" size={16} color={COLORS.primary} />
                   <Text style={styles.viewStatusButtonText}>View Status</Text>
                 </TouchableOpacity>
+                {['confirmed', 'operating'].includes(String(booking.status || '').toLowerCase()) && (
+                  <TouchableOpacity
+                    style={styles.chatButton}
+                    onPress={() => navigation.navigate('ProviderChat', { booking })}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="chatbubble-ellipses-outline" size={16} color="#FFFFFF" />
+                    <Text style={styles.chatButtonText}>Chat</Text>
+                  </TouchableOpacity>
+                )}
                 {booking.status?.toLowerCase() !== 'canceled' && booking.status?.toLowerCase() !== 'completed' && (
                   <TouchableOpacity
                     style={styles.cancelButton}
@@ -260,6 +270,8 @@ const styles = StyleSheet.create({
   buttonRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
   viewStatusButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: `${COLORS.primary}20` },
   viewStatusButtonText: { color: COLORS.primary, fontSize: 13, fontWeight: '700' },
+  chatButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: COLORS.primary },
+  chatButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   cancelButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#F4433620' },
   cancelButtonText: { color: '#F44336', fontSize: 13, fontWeight: '700' },
 });

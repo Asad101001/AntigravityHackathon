@@ -25,7 +25,6 @@ function stamp() {
 const QUICK_REPLIES = [
   { text: 'How quickly can you arrive?', icon: 'time-outline', custom: false },
   { text: 'Show technician profile', icon: 'person-outline', custom: false },
-  { text: 'Confirm Request', icon: 'checkmark-circle-outline', custom: true },
 ];
 
 function MessageBubble({ message }) {
@@ -133,13 +132,21 @@ function TypingIndicator() {
 
 export default function ProviderChatScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
-  const { fullResult = {} } = route.params || {};
-  const provider = fullResult.provider || {};
-  const bookingId = fullResult.booking_id || 'general';
+  const { fullResult = {}, booking: bookingParam = null } = route.params || {};
+  const provider = bookingParam ? {
+    id: bookingParam.provider_id,
+    name: bookingParam.provider_name,
+    service_type: bookingParam.service_type,
+    service: bookingParam.service_type,
+    area: bookingParam.area,
+    city: bookingParam.city,
+    confirmed_slot: bookingParam.booking_start_time,
+  } : (fullResult.provider || {});
+  const bookingId = bookingParam?._id || fullResult.booking?._id || fullResult.booking_id || 'general';
   const scrollRef = useRef(null);
   const { registerScroll } = useTabBarVisibility();
-  const [bookingStatus, setBookingStatus] = useState(null);
-  const [bookingStateLoading, setBookingStateLoading] = useState(true);
+  const [bookingStatus, setBookingStatus] = useState(String(bookingParam?.status || '').toLowerCase() || null);
+  const [bookingStateLoading, setBookingStateLoading] = useState(Boolean(bookingId && bookingId !== 'general' && !bookingParam));
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Hello! I can coordinate with ${provider.name || 'your provider'} and summarize what needs to happen next.`, time: stamp() },
   ]);

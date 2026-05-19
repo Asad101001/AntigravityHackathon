@@ -64,65 +64,86 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
   const { registerScroll, showTabBar } = useTabBarVisibility();
-  const [activeBooking, setActiveBooking] = useState(getActiveBooking());
+  const [activeBooking, setActiveBooking] = useState({
+    id: 'general',
+    service: 'Asaaniyat AI',
+    provider: 'Asaaniyat AI',
+    area: 'Pinned assistant chat',
+    slot: null,
+    quote_pkr: null,
+    status: 'active',
+    kind: 'assistant',
+  });
   const [input, setInput] = useState('');
   
-  // Set up rich mock conversations on start to show standard flow of mockup
-  const [messages, setMessages] = useState([
-    {
-      id: generateMessageId(),
-      role: 'assistant',
-      content: 'Hello. I am the Asaaniyat Assistant. I see you are inquiring about a plumbing service. How can I assist you in finalizing your request?',
-      time: '10:40 AM',
-    },
-    {
-      id: generateMessageId(),
-      role: 'user',
-      content: 'What is the base fee?',
-      time: '10:41 AM',
-    },
-    {
-      id: generateMessageId(),
-      role: 'assistant',
-      content: 'The base fee structure for plumbing diagnostics is as follows:',
-      time: '10:42 AM',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   
-  const [allBookings, setAllBookings] = useState([]);
+  const [chatThreads, setChatThreads] = useState([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [loadingBookings, setLoadingBookings] = useState(false);
 
-  // Fetch bookings from database on mount
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchThreads = async () => {
       try {
         setLoadingBookings(true);
-        const response = await apiClient.get('/bookings');
-        if (response.data.success && response.data.bookings) {
-          setAllBookings(response.data.bookings);
-          // If we have an active booking in the db but none selected, set it
-          if (!activeBooking && response.data.bookings.length > 0) {
-            const booking = response.data.bookings[0];
-            setActiveBooking({
-              id: booking._id,
-              service: booking.service_type,
-              provider: booking.provider_name,
-              area: booking.area,
-              slot: booking.booking_start_time,
-              quote_pkr: booking.quote_pkr,
-              status: booking.status,
-            });
-          }
+        const response = await apiClient.get('/chat/threads');
+        if (response.data.success && response.data.threads) {
+          setChatThreads(response.data.threads);
         }
       } catch (error) {
-        console.error('Failed to fetch bookings:', error);
+        console.error('Failed to fetch chats:', error);
       } finally {
         setLoadingBookings(false);
       }
     };
-    fetchBookings();
+    fetchThreads();
   }, []);
+
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const response = await apiClient.get(`/chat/${activeBooking.id || 'general'}`);
+        if (response.data?.messages?.length) {
+          setMessages(response.data.messages.map(m => ({ ...m, time: m.created_at || stamp() })));
+          return;
+        }
+
+        if ((activeBooking.id || 'general') === 'general') {
+          setMessages([
+            {
+              id: generateMessageId(),
+              role: 'assistant',
+              content: 'Hello. I am the Asaaniyat Assistant. I can help you manage your bookings and chat threads. How can I assist you today?',
+              time: stamp(),
+            },
+          ]);
+        } else {
+          setMessages([
+            {
+              id: generateMessageId(),
+              role: 'assistant',
+              content: `Hello! I can coordinate with ${activeBooking.provider || 'your provider'} and summarize what needs to happen next.`,
+              time: stamp(),
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to load chat messages:', error);
+        if ((activeBooking.id || 'general') === 'general') {
+          setMessages([
+            {
+              id: generateMessageId(),
+              role: 'assistant',
+              content: 'Hello. I am the Asaaniyat Assistant. I can help you manage your bookings and chat threads. How can I assist you today?',
+              time: stamp(),
+            },
+          ]);
+        }
+      }
+    };
+
+    loadMessages();
+  }, [activeBooking.id]);
 
   useEffect(() => subscribeSessionBookings(list => {
     if (list[0]) {
@@ -172,23 +193,44 @@ export default function ChatScreen() {
       return;
     }
 
-    // Call backend API
+    // Call backend API  
+    // Send booking_id='general' for general chat, otherwise send the actual booking_id
+    const booking_id_to_send = activeBooking.id === 'general' ? 'general' : activeBooking.id;
+    
     try {
       const response = await apiClient.post('/chat/message', {
-        booking_id: activeBooking.id,
+        booking_id: booking_id_to_send,
         message: content,
       });
 
       if (response.data.success) {
-        setMessages(prev => [
-          ...prev,
-          {
-            id: generateMessageId(),
-            role: 'assistant',
-            content: response.data.reply || 'I am here to help. What would you like to do?',
-            time: stamp(),
-          },
-        ]);
+        // Check if backend is asking for booking selection
+        if (response.data.requires_booking_selection) {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: generateMessageId(),
+              role: 'assistant',
+              content: response.data.reply,
+              time: stamp(),
+            },
+          ]);
+          
+          // Show booking modal so user can select a booking
+          setShowBookingModal(true);
+          // Store the user's original message so we can send it again after selection
+          global.pendingOrderMessage = content;
+        } else {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: generateMessageId(),
+              role: 'assistant',
+              content: response.data.reply || 'I am here to help. What would you like to do?',
+              time: stamp(),
+            },
+          ]);
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -244,6 +286,16 @@ export default function ChatScreen() {
         time: stamp(),
       },
     ]);
+    
+    // If there was a pending order-related message, send it now to this booking
+    if (global.pendingOrderMessage) {
+      const pendingMsg = global.pendingOrderMessage;
+      global.pendingOrderMessage = null;
+      
+      setTimeout(() => {
+        handleSend(pendingMsg);
+      }, 500);
+    }
   };
 
   return (
@@ -258,18 +310,18 @@ export default function ChatScreen() {
 
       <View style={[styles.inner, { paddingTop: insets.top + 60, paddingBottom: Math.max(insets.bottom, 12) }]}>
         
-        {/* Context Top Card */}
+        {/* Context Top Card — Show Active Chat Thread */}
         <LiquidGlass style={styles.contextCard} contentStyle={styles.contextInner} strong radius={RADII.xl}>
           <View style={styles.contextIcon}>
-            <Ionicons name="chatbubble-ellipses" size={18} color="#FFFFFF" />
+            <Ionicons name={activeBooking.kind === 'assistant' ? 'chatbubble' : 'person'} size={18} color="#FFFFFF" />
           </View>
           <View style={styles.contextCopy}>
-            <Text style={styles.contextTitle}>{activeBooking ? activeBooking.provider : 'Asaaniyat Assistant'}</Text>
-            <Text style={styles.contextMeta}>{activeBooking ? `${activeBooking.service} - ${activeBooking.area}` : 'No active service booking'}</Text>
+            <Text style={styles.contextTitle}>{activeBooking.provider || activeBooking.title || 'Chat'}</Text>
+            <Text style={styles.contextMeta}>{activeBooking.area || activeBooking.subtitle || 'Assistant'}</Text>
           </View>
-          {allBookings.length > 1 && (
+          {chatThreads.length > 1 && (
             <TouchableOpacity style={styles.switchButton} onPress={() => setShowBookingModal(true)} activeOpacity={0.7}>
-              <Text style={styles.switchButtonText}>Switch</Text>
+              <Text style={styles.switchButtonText}>All Chats</Text>
             </TouchableOpacity>
           )}
         </LiquidGlass>
@@ -289,7 +341,7 @@ export default function ChatScreen() {
           {messages.map((message) => <ChatBubble key={message.id} message={message} />)}
           
           {/* Select Inquiry drawer inside scroll view at the bottom of standard messages */}
-          {activeBooking && (
+          {activeBooking && activeBooking.id !== 'general' && (
             <View style={styles.quickReplySection}>
               <Text style={styles.quickReplyHeader}>SELECT INQUIRY</Text>
               <View style={styles.quickReplyContainer}>
@@ -323,11 +375,35 @@ export default function ChatScreen() {
             </View>
           )}
         </ScrollView>
+
+        {/* Message Composer */}
+        <View style={styles.composerWrap}>
+          <View style={styles.composer}>
+            <TextInput
+              style={styles.composerInput}
+              value={input}
+              onChangeText={setInput}
+              placeholder={activeBooking?.kind === 'assistant' || activeBooking?.id === 'general' ? 'Message Asaaniyat Assistant...' : 'Message your provider...'}
+              placeholderTextColor={COLORS.textMuted}
+              multiline
+              returnKeyType="send"
+              onSubmitEditing={send}
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
+              onPress={send}
+              activeOpacity={0.85}
+              disabled={!input.trim()}
+            >
+              <Ionicons name="send" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
-      {/* Booking Selection Modal */}
+      {/* Chat Threads List Modal */}
       <Modal
-        visible={showBookingModal && allBookings.length > 1}
+        visible={showBookingModal}
         transparent={true}
         animationType="slide"
         onRequestClose={() => setShowBookingModal(false)}
@@ -335,7 +411,7 @@ export default function ChatScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Active Booking</Text>
+              <Text style={styles.modalTitle}>Chat Threads</Text>
               <TouchableOpacity onPress={() => setShowBookingModal(false)}>
                 <Ionicons name="close" size={24} color={COLORS.textPrimary} />
               </TouchableOpacity>
@@ -344,27 +420,42 @@ export default function ChatScreen() {
             {loadingBookings ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
-                <Text style={styles.loadingText}>Loading orders...</Text>
+                <Text style={styles.loadingText}>Loading chats...</Text>
               </View>
             ) : (
               <FlatList
-                data={allBookings}
-                keyExtractor={(item) => item._id}
+                data={chatThreads}
+                keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.bookingsList}
-                renderItem={({ item }) => (
+                renderItem={({ item: thread }) => (
                   <TouchableOpacity
-                    style={styles.bookingRow}
-                    onPress={() => selectBooking(item)}
+                    style={[styles.bookingRow, thread.is_pinned && styles.pinnedThread]}
+                    onPress={() => {
+                      setActiveBooking({
+                        id: thread.id,
+                        kind: thread.kind,
+                        service: thread.subtitle,
+                        provider: thread.title,
+                        area: thread.subtitle,
+                        slot: thread.booking?.booking_start_time || null,
+                        quote_pkr: thread.booking?.quote_pkr || null,
+                        status: thread.booking?.status || 'active',
+                      });
+                      setShowBookingModal(false);
+                    }}
                     activeOpacity={0.7}
                   >
                     <View style={styles.bookingRowLeft}>
-                      <View style={[styles.serviceIcon, { backgroundColor: 'rgba(14,143,70,0.1)' }]}>
-                        <Ionicons name="construct-outline" size={20} color={COLORS.primary} />
+                      <View style={[styles.serviceIcon, { backgroundColor: thread.is_pinned ? 'rgba(250, 204, 21, 0.1)' : 'rgba(14,143,70,0.1)' }]}>
+                        <Ionicons name={thread.kind === 'assistant' ? 'logo-android' : 'person-outline'} size={20} color={thread.is_pinned ? 'rgb(250, 204, 21)' : COLORS.primary} />
                       </View>
                       <View style={styles.bookingInfo}>
-                        <Text style={styles.bookingProvider}>{item.provider_name}</Text>
-                        <Text style={styles.bookingMeta}>{item.service_type} • {item.area}</Text>
-                        <Text style={styles.bookingTime}>{formatDate(item.booking_start_time)}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Text style={styles.bookingProvider}>{thread.title}</Text>
+                          {thread.is_pinned && <Text style={{ color: 'rgb(250, 204, 21)', fontSize: 12, fontWeight: '900' }}>📌 PINNED</Text>}
+                        </View>
+                        <Text style={styles.bookingMeta}>{thread.subtitle}</Text>
+                        <Text style={styles.bookingTime} numberOfLines={1}>{thread.preview}</Text>
                       </View>
                     </View>
                     <View style={styles.bookingRowRight}>
@@ -494,6 +585,48 @@ const styles = StyleSheet.create({
   // Message area
   messageList: { flex: 1 },
   messageContent: { gap: 14, paddingTop: 14, paddingBottom: 110 },
+  composerWrap: {
+    paddingTop: 6,
+    paddingBottom: 8,
+  },
+  composer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    flexWrap: 'nowrap',
+    gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    borderRadius: 22,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.08)',
+    ...SHADOWS.card,
+  },
+  composerInput: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 46,
+    maxHeight: 110,
+    color: COLORS.textPrimary,
+    fontSize: 15,
+    lineHeight: 21,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    textAlignVertical: 'top',
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    flexShrink: 0,
+    alignSelf: 'flex-end',
+  },
+  sendButtonDisabled: {
+    opacity: 0.45,
+  },
   
   // Message bubbles containers
   bubbleContainer: {
@@ -819,5 +952,10 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 13,
     fontWeight: '700',
+  },
+  pinnedThread: {
+    backgroundColor: 'rgba(250, 204, 21, 0.06)',
+    borderColor: 'rgba(250, 204, 21, 0.2)',
+    borderWidth: 1.5,
   },
 });

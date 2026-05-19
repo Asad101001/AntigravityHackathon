@@ -172,9 +172,10 @@ router.post('/chat/message', async (req, res) => {
     }
 
     const db = require('../db');
+    const isGeneralChat = !booking_id || booking_id === 'general' || booking_id === 'general_assistant';
     let bookingInfo = null;
 
-    if (booking_id) {
+    if (!isGeneralChat && booking_id) {
       const mongoBooking = await db.getBookingById(booking_id);
       const booking = mongoBooking || BookingExecutorAgent.getBooking(booking_id);
       
@@ -190,39 +191,206 @@ router.post('/chat/message', async (req, res) => {
       bookingInfo = booking;
     }
 
+    const formatBookingDetail = (booking) => {
+      const orderId = booking?._id || booking?.booking_id || booking?.id || 'N/A';
+      let appointmentTime = 'Pending';
+      const rawTime = booking?.booking_start_time || booking?.scheduled_time || booking?.time_slot;
+      if (rawTime) {
+        const date = new Date(rawTime);
+        if (!isNaN(date.getTime())) {
+          appointmentTime = date.toLocaleString('en-PK');
+        } else {
+          appointmentTime = rawTime;
+        }
+      }
+
+      return {
+        orderId,
+        providerName: booking?.provider_name || 'N/A',
+        serviceType: booking?.service_type || 'N/A',
+        location: [booking?.area, booking?.city, booking?.location].filter(Boolean).join(', ') || 'N/A',
+        appointmentTime,
+        quoteText: booking?.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending',
+        status: (booking?.status || 'unknown').toUpperCase(),
+      };
+    };
+
+    const buildProviderReply = async (booking, text) => {
+      const info = formatBookingDetail(booking);
+      const llm = new (require('../llm/LLMClient'))();
+      
+      // Build a contextual system prompt that makes the LLM act as the provider
+      const systemPrompt = [
+        `You are ${info.providerName}, a professional service provider responding to a customer message.`,
+        `You have a booking with the following details:`,
+        `- Service: ${info.serviceType}`,
+        `- Location: ${info.location}`,
+        `- Appointment Time: ${info.appointmentTime}`,
+        `- Quote: ${info.quoteText}`,
+        `- Order ID: ${info.orderId}`,
+        ``,
+        `Respond naturally as the provider would, answering their question directly.`,
+        `Keep your response concise (2-3 sentences max).`,
+        `If they ask about the booking details, reference them confidently.`,
+        `Be professional, friendly, and helpful.`
+      ].join('\n');
+      
+      try {
+        const reply = await llm.complete({
+          system: systemPrompt,
+          user: text,
+          temperature: 0.7,
+          maxTokens: 150,
+        });
+        return reply.trim();
+      } catch (err) {
+        console.warn('[Provider Reply] LLM unavailable, using fallback:', err.message);
+        // Fallback: simple contextual response
+        return `Hi, I'm ${info.providerName}. I received your message about the ${info.serviceType} booking scheduled for ${info.appointmentTime} in ${info.location}. I'll help you with any questions you have.`;
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // GENERAL ASAANIYAT AI CHAT HANDLER
+    // ═══════════════════════════════════════════════════════════════
+    if (isGeneralChat) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Detect if user is asking about their order
+      const isAskingAboutOrder = 
+        lowerMessage.includes('order') || 
+        lowerMessage.includes('booking') || 
+        lowerMessage.includes('my booking') ||
+        lowerMessage.includes('my order') ||
+        lowerMessage.includes('services') ||
+        lowerMessage.includes('service') ||
+        lowerMessage.includes('appointment') ||
+        lowerMessage.includes('status');
+
+      // Detect if asking about how the app works
+      const isAskingHowWorks = 
+        lowerMessage.includes('how do we work') ||
+        lowerMessage.includes('how does this work') ||
+        lowerMessage.includes('how does this application work') ||
+        lowerMessage.includes('how it works') ||
+        lowerMessage.includes('flow') ||
+        lowerMessage.includes('what is asaaniyat') ||
+        lowerMessage.includes('who are you');
+
+      // Detect if asking to cancel
+      const isAskingCancel =
+        lowerMessage.includes('cancel') ||
+        lowerMessage.includes('want to cancel');
+
+      // Save user message
+      await db.saveChatMessage({
+        booking_id: 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'user',
+        content: message,
+        token_count: message.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'general_chat' },
+      });
+
+      let reply = '';
+      let requiresBookingSelection = false;
+
+      if (isAskingAboutOrder && !isAskingHowWorks) {
+        // User is asking about their order/booking
+        reply = '📦 To help you with your order, please select which booking you\'d like to know about:';
+        requiresBookingSelection = true;
+      } else if (isAskingCancel) {
+        // User wants to cancel
+        reply = '❌ To cancel a booking, please:\n\n1. Go to the "Bookings" tab\n2. Find the booking you want to cancel\n3. Tap "Cancel" button to proceed with cancellation\n\nWould you like help with anything else?';
+      } else if (isAskingHowWorks) {
+        // Explain how Asaaniyat works
+        reply = `🚀 **How Asaaniyat Works:**\n\n1. **Request Service**: Describe what you need (plumbing, electrician, etc.)\n2. **Get Providers**: We match you with verified providers in your area\n3. **Book Appointment**: Confirm date, time, and payment\n4. **Service Delivery**: Provider arrives and completes the service\n5. **Rate & Review**: Share your experience\n\n💬 You can also chat with your provider directly before or after booking!\n\nWhat service do you need help with?`;
+      } else {
+        // General chat
+        reply = `👋 I'm Asaaniyat, your personal home service assistant. I can help you:\n\n✅ Find service providers\n✅ Track your bookings\n✅ Chat with your providers\n✅ Answer questions about your orders\n\nWhat can I help you with today?`;
+      }
+
+      // Save assistant message
+      await db.saveChatMessage({
+        booking_id: 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'assistant',
+        content: reply,
+        token_count: reply.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'general_chat', requires_booking_selection: requiresBookingSelection },
+      });
+
+      return res.json({
+        success: true,
+        reply,
+        requires_booking_selection: requiresBookingSelection,
+        chat_mode: 'general',
+        execution_logs: [],
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BOOKING-SPECIFIC CHAT HANDLER
+    // ═══════════════════════════════════════════════════════════════
+    if (bookingInfo) {
+      const reply = String(bookingInfo.status || '').toLowerCase() === 'canceled'
+        ? 'The order is cancelled by you so I cant help further more! Sorry'
+        : await buildProviderReply(bookingInfo, message);
+
+      await db.saveChatMessage({
+        booking_id: booking_id || bookingInfo._id || 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'user',
+        content: message,
+        token_count: message.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'provider_chat' },
+      });
+
+      await db.saveChatMessage({
+        booking_id: booking_id || bookingInfo._id || 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'assistant',
+        content: reply,
+        token_count: reply.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'provider_chat', provider_mode: true },
+      });
+
+      return res.json({
+        success: true,
+        reply,
+        booking_status: bookingInfo.status,
+        chat_mode: 'provider',
+        execution_logs: [],
+      });
+    }
+
     // Check if message is asking about status or order info
     const lowerMessage = message.toLowerCase();
     const isAskingStatus = lowerMessage.includes('status') || lowerMessage.includes('where') || lowerMessage.includes('progress') || lowerMessage.includes('update');
     const isAskingInfo = lowerMessage.includes('info') || lowerMessage.includes('details') || lowerMessage.includes('booking');
 
     if ((isAskingStatus || isAskingInfo) && bookingInfo) {
-      const formatBookingDetail = (booking) => {
-        const orderId = booking._id || booking.booking_id || booking.id || 'N/A';
-        
-        let appointmentTime = 'Pending';
-        const rawTime = booking.booking_start_time || booking.scheduled_time || booking.time_slot;
-        if (rawTime) {
-          const date = new Date(rawTime);
-          if (!isNaN(date.getTime())) {
-            appointmentTime = date.toLocaleString('en-PK');
-          } else {
-            appointmentTime = rawTime;
-          }
-        }
+      const details = formatBookingDetail(bookingInfo);
+      const statusText = `Here are the details of your order:\n\n📦 Order ID: ${details.orderId}\n👨‍🔧 Provider: ${details.providerName}\n🔧 Service: ${details.serviceType}\n📍 Location: ${details.location}\n🗓️ Appointment: ${details.appointmentTime}\n💰 Quote: ${details.quoteText}\n📊 Status: ${details.status}\n\nHow can I help you further?`;
 
-        const details = [
-          `📦 Order ID: ${orderId}`,
-          `👨‍🔧 Provider: ${booking.provider_name || 'N/A'}`,
-          `🔧 Service: ${booking.service_type || 'N/A'}`,
-          `📍 Location: ${[booking.area, booking.city, booking.location].filter(Boolean).join(', ') || 'N/A'}`,
-          `🗓️ Appointment: ${appointmentTime}`,
-          `💰 Quote: ${booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}`,
-          `📊 Status: ${(booking.status || 'unknown').toUpperCase()}`,
-        ];
-        return details.join('\n');
-      };
+      await db.saveChatMessage({
+        booking_id: booking_id || bookingInfo._id || 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'user',
+        content: message,
+        token_count: message.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'status_lookup' },
+      });
 
-      const statusText = `Here are the details of your order:\n\n${formatBookingDetail(bookingInfo)}\n\nHow can I help you further?`;
+      await db.saveChatMessage({
+        booking_id: booking_id || bookingInfo._id || 'general',
+        user_id: user_id || req.auth.sub,
+        role: 'assistant',
+        content: statusText,
+        token_count: statusText.split(/\s+/).filter(Boolean).length,
+        metadata: { source: 'status_lookup' },
+      });
+
       return res.json({
         success: true,
         reply: statusText,
@@ -233,7 +401,7 @@ router.post('/chat/message', async (req, res) => {
 
     // For other messages, run the full conversation pipeline
     const result = await orchestrator.runConversation({
-      input: { booking_id, message, user_id, provider },
+      input: { booking_id, message, user_id, provider: provider || bookingInfo || {} },
       options: { emit_trace: true }
     });
     return res.json({ success: true, ...result });
@@ -243,11 +411,22 @@ router.post('/chat/message', async (req, res) => {
   }
 });
 
+// GET /api/chat/threads
+router.get('/chat/threads', async (req, res) => {
+  try {
+    const db = require('../db');
+    const threads = await db.getChatThreads(req.auth.sub);
+    return res.json({ success: true, threads });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // GET /api/chat/:booking_id
 router.get('/chat/:booking_id', async (req, res) => {
   try {
     const db = require('../db');
-    const messages = await db.getChatMessages(req.params.booking_id, 80);
+    const messages = await db.getChatMessages(req.params.booking_id, 80, req.auth.sub);
     return res.json({ success: true, messages });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
