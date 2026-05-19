@@ -10,7 +10,7 @@ function isExpoGo() {
 }
 
 async function getNotificationsModule() {
-  if (Platform.OS === 'web' || isExpoGo()) return null;
+  if (Platform.OS === 'web') return null;
   if (NotificationsModule) return NotificationsModule;
 
   NotificationsModule = await import('expo-notifications');
@@ -18,7 +18,6 @@ async function getNotificationsModule() {
   if (!handlerConfigured) {
     NotificationsModule.setNotificationHandler({
       handleNotification: async () => ({
-        shouldShowAlert: true,
         shouldShowBanner: true,
         shouldShowList: true,
         shouldPlaySound: true,
@@ -34,7 +33,7 @@ async function getNotificationsModule() {
 export async function configureNotifications() {
   if (configured) return true;
 
-  if (Platform.OS === 'web' || isExpoGo()) {
+  if (Platform.OS === 'web') {
     configured = false;
     return false;
   }

@@ -38,12 +38,22 @@ class LocationResolverAgent extends BaseAgent {
     const explicitCity = this._resolveCity(context.city || context.explicit_city || context.selected_city);
     const rawLocation = this._usableParsedLocation(context.location);
     const userText = String(context.user_text || '');
-    const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
 
+    let typedFallback = null;
+    if (rawLocation) {
+      const typedResolution = await this._resolveTyped(rawLocation, explicitCity, userText);
+      // If it resolved to a real neighborhood, local match, or geocoding coordinates (not a fallback)
+      if (typedResolution && typedResolution.output && !typedResolution.output.fallback && typedResolution.output.source !== 'explicit_city_area_fallback') {
+        return typedResolution;
+      }
+      typedFallback = typedResolution;
+    }
+
+    const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
     if (pinResolution) return pinResolution;
 
-    if (rawLocation) {
-      return this._resolveTyped(rawLocation, explicitCity, userText);
+    if (typedFallback) {
+      return typedFallback;
     }
 
     if (explicitCity) {

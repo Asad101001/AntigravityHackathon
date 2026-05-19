@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:38:08.703Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL254",
+    "ranked_ids": [
+      "EL254",
+      "EL199",
+      "EL144",
+      "EL089",
+      "EL034"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best electrician for the job is EL254, Gulshan Home Electrician Danish, due to its high rating, excellent on-time score, low cancellation risk, and competitive base rate. The ranked list reflects a balance between quality, distance, and affordability.",
+    "multi_factor": {
+      "overall_best_id": "EL254",
+      "most_affordable_id": "EL199",
+      "closest_fastest_id": "EL089",
+      "analysis": {
+        "overall_best_id": "EL254's high rating, excellent on-time score, and low cancellation risk make it the top choice for quality and reliability.",
+        "most_affordable_id": "EL199 offers the lowest base rate while still being verified and having available slots, making it the most affordable option.",
+        "closest_fastest_id": "EL089 has the smallest distance and fastest response time, making it the closest and fastest qualified provider."
+      }
+    }
+  },
+  "durationMs": 785
+}

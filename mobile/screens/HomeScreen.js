@@ -48,6 +48,23 @@ export default function HomeScreen({ route, navigation }) {
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [cityOpen, setCityOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
+
+  // Autoplay popular services carousel every 3.5 seconds
+  useEffect(() => {
+    if (!autoplay) return;
+
+    const timer = setInterval(() => {
+      setCurrentPage(prev => (prev + 1) % SERVICES_PAGES.length);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [autoplay]);
+
+  const handleDotPress = (index) => {
+    setAutoplay(false); // Stop autoplay when dot explicitly clicked
+    setCurrentPage(index);
+  };
 
   // GPS on mount
   useEffect(() => {
@@ -226,25 +243,30 @@ export default function HomeScreen({ route, navigation }) {
               ))}
             </View>
 
-            {/* Dynamic Pagination Dots */}
+            {/* Dynamic Pagination Dots with Generous Click Target Size */}
             <View style={styles.paginationContainer}>
               {SERVICES_PAGES.map((_, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[
-                    styles.paginationDot,
-                    currentPage === index && styles.paginationDotActive
-                  ]}
-                  onPress={() => setCurrentPage(index)}
-                  activeOpacity={0.8}
-                />
+                  style={styles.paginationDotTouchable}
+                  onPress={() => handleDotPress(index)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <View
+                    style={[
+                      styles.paginationDot,
+                      currentPage === index && styles.paginationDotActive
+                    ]}
+                  />
+                </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          {/* ── Banners & Promotions ── */}
+          {/* ── Exclusive Offers ── */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Banners & Promotions</Text>
+            <Text style={styles.sectionTitle}>Exclusive Offers</Text>
           </View>
 
           {/* Promo Card 1: Summer Cooling Promo */}
@@ -252,7 +274,7 @@ export default function HomeScreen({ route, navigation }) {
             <View style={styles.promoLeft}>
               <Text style={styles.promoKicker}>Summer Cooling Promo</Text>
               <Text style={styles.promoText}>
-                Get 20% off all AC maintenance services this month. Stay cool and save.
+                Get 20% off all AC maintenance services this month. Stay cool and beat the heat with our expert services.
               </Text>
               <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('AC Repair')}>
                 <Text style={styles.promoButtonText}>Book Now</Text>
@@ -268,7 +290,7 @@ export default function HomeScreen({ route, navigation }) {
             <View style={styles.promoLeft}>
               <Text style={[styles.promoKicker, styles.promoDarkKicker]}>Home Makeover Deal</Text>
               <Text style={[styles.promoText, styles.promoDarkText]}>
-                Save 15% on professional painting & carpentry. Perfect dynamic styling for your living room.
+                Save 15% on professional painting & carpentry. Refresh your space and transform your home today.
               </Text>
               <TouchableOpacity style={[styles.promoButton, styles.promoDarkButton]} activeOpacity={0.84} onPress={() => prefill('Painter')}>
                 <Text style={styles.promoDarkButtonText}>Explore Deal</Text>
@@ -282,9 +304,9 @@ export default function HomeScreen({ route, navigation }) {
           {/* Promo Card 3: Quick Fix Friday */}
           <LiquidGlass style={styles.promoPanel} contentStyle={[styles.promoContent, styles.promoGoldBackground]} strong radius={RADII.md}>
             <View style={styles.promoLeft}>
-              <Text style={[styles.promoKicker, styles.promoGoldKicker]}>Express Home Spa</Text>
+              <Text style={[styles.promoKicker, styles.promoGoldKicker]}>Deep Home Spa Cleaning</Text>
               <Text style={styles.promoText}>
-                Book deep house cleaning & sanitization and get a free disinfection upgrade. Limited availability!
+                Get a deep home cleaning & sanitization with a complimentary disinfection upgrade. Limited availability!
               </Text>
               <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('Cleaning')}>
                 <Text style={styles.promoButtonText}>Claim Now</Text>
@@ -489,19 +511,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
-    gap: 6,
+    marginTop: 6,
+    gap: 2,
+  },
+  paginationDotTouchable: {
+    padding: 12, // Generous padding click target!
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: 'rgba(14,143,70,0.18)',
   },
   paginationDotActive: {
-    width: 14,
-    height: 6,
-    borderRadius: 3,
+    width: 16,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.primary,
   },
 

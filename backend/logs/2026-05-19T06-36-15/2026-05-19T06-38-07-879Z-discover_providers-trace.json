@@ -1,0 +1,195 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:38:07.879Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.9498793,
+      "lng": 67.1075582
+    },
+    "service_type": "Electrician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2a20",
+        "id": "EL089",
+        "name": "Gulzar-e-Hijri Comfort Electrician Imran",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulzar-e-Hijri",
+        "lat": 24.9539,
+        "lng": 67.1298,
+        "distance_km": 3.27,
+        "rating": 4.6,
+        "reviews_count": 104,
+        "available_slots": [
+          "08:00",
+          "10:00"
+        ],
+        "phone": "0318-1696872",
+        "response_time_min": 9,
+        "verified": true,
+        "specialization": [
+          "inverter_installation",
+          "wiring",
+          "distribution_boards"
+        ],
+        "base_rate_pkr": 1660,
+        "on_time_score": 93,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulzar-e-Hijri, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.29,
+        "distance_text": "3.3 km",
+        "duration_text": "9 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a57",
+        "id": "EL144",
+        "name": "Gulshan Rapid Electrician Hassan",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9304,
+        "lng": 67.0898,
+        "distance_km": 4.57,
+        "rating": 4.1,
+        "reviews_count": 192,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0373-2132417",
+        "response_time_min": 10,
+        "verified": true,
+        "specialization": [
+          "ceiling_fans",
+          "fault_finding",
+          "UPS"
+        ],
+        "base_rate_pkr": 1793,
+        "on_time_score": 80,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid electrician option for Gulshan; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.81,
+        "distance_text": "4.6 km",
+        "duration_text": "10 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a8e",
+        "id": "EL199",
+        "name": "Gulshan Pros Electrician Farhan",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9216,
+        "lng": 67.0909,
+        "distance_km": 4.66,
+        "rating": 4.5,
+        "reviews_count": 103,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0348-2567962",
+        "response_time_min": 13,
+        "verified": true,
+        "specialization": [
+          "wiring",
+          "distribution_boards",
+          "inverter_installation"
+        ],
+        "base_rate_pkr": 975,
+        "on_time_score": 89,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 3.56,
+        "distance_text": "4.7 km",
+        "duration_text": "13 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ac5",
+        "id": "EL254",
+        "name": "Gulshan Home Electrician Danish",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9227,
+        "lng": 67.092,
+        "distance_km": 4.82,
+        "rating": 4.9,
+        "reviews_count": 191,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0323-3003507",
+        "response_time_min": 14,
+        "verified": true,
+        "specialization": [
+          "fault_finding",
+          "UPS",
+          "ceiling_fans"
+        ],
+        "base_rate_pkr": 1108,
+        "on_time_score": 94,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 3.41,
+        "distance_text": "4.8 km",
+        "duration_text": "14 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29e9",
+        "id": "EL034",
+        "name": "Gulistan-e-Johar City Electrician Kamran",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Gulistan-e-Johar",
+        "lat": 24.9229,
+        "lng": 67.1309,
+        "distance_km": 6.2,
+        "rating": 3.8,
+        "reviews_count": 193,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0343-1261327",
+        "response_time_min": 17,
+        "verified": true,
+        "specialization": [
+          "UPS",
+          "ceiling_fans",
+          "fault_finding"
+        ],
+        "base_rate_pkr": 1527,
+        "on_time_score": 74,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid electrician option for Gulistan-e-Johar; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 3.81,
+        "distance_text": "6.2 km",
+        "duration_text": "17 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 2477
+}

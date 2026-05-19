@@ -13,9 +13,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
+  View, Text, TouchableOpacity, StyleSheet,
   ScrollView, Share, ActivityIndicator, Animated
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 

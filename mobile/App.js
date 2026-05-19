@@ -124,11 +124,25 @@ function AppNavigator() {
     void configureNotifications();
   }, []);
 
-  const hideTabBar = useCallback(() => setTabVisible(false), []);
+  const hideTabBar = useCallback(() => {
+    setTabVisible(prev => {
+      if (prev === false) return prev;
+      return false;
+    });
+  }, []);
+
   const showTabBar = useCallback(() => {
-    setTabVisible(true);
+    setTabVisible(prev => {
+      if (prev === true) return prev;
+      return true;
+    });
     if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setTabVisible(false), 3200);
+    idleTimer.current = setTimeout(() => {
+      setTabVisible(prev => {
+        if (prev === false) return prev;
+        return false;
+      });
+    }, 3200);
   }, []);
 
   const registerScroll = useCallback((event) => {
@@ -167,7 +181,7 @@ function AppNavigator() {
                   <AppHeader
                     navigation={navigation}
                     routeName={ROUTE_LABELS[route.name] || route.name}
-                    canGoBack={!!back && !['Home', 'Bookings', 'Chat', 'Loading'].includes(route.name)}
+                    canGoBack={!['Home', 'Bookings', 'Chat'].includes(route.name)}
                     onProfilePress={() => setSidebarVisible(true)}
                   />
                 </View>

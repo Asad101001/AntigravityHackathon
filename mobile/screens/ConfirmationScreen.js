@@ -72,6 +72,10 @@ export default function ConfirmationScreen({ route, navigation }) {
   }, [fullResult, scale, setActiveJob]);
 
   const saveBookingToDatabase = async () => {
+    if (fullResult?.booking_saved) {
+      console.log('[ConfirmationScreen] Booking already saved to database by review checkout step.');
+      return;
+    }
     try {
       const bookingStartTime = normalizeBookingStartTime(
         fullResult.scheduled_time ||

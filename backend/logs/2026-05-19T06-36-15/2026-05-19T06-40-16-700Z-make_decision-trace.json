@@ -1,0 +1,75 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:40:16.700Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5,
+    "qualified_count": 4
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a2ac5",
+      "id": "EL254",
+      "name": "Gulshan Home Electrician Danish",
+      "service": "Electrician",
+      "city": "Karachi",
+      "area": "Gulshan",
+      "lat": 24.9227,
+      "lng": 67.092,
+      "distance_km": 4.81,
+      "rating": 4.9,
+      "reviews_count": 191,
+      "available_slots": [
+        "08:00",
+        "10:00",
+        "12:00"
+      ],
+      "phone": "0323-3003507",
+      "response_time_min": 14,
+      "verified": true,
+      "specialization": [
+        "fault_finding",
+        "UPS",
+        "ceiling_fans"
+      ],
+      "base_rate_pkr": 1108,
+      "on_time_score": 94,
+      "cancellation_risk": "low",
+      "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "haversine_km": 3.4,
+      "distance_text": "4.8 km",
+      "duration_text": "14 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9800000000000001,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": true,
+        "service_available": true
+      }
+    },
+    "constraint_checks": "✓ service_available = true\n✓ available_slots = 3 slots\n✓ provider_status = \"verified\"\n✓ distance_km = 4.81 (≤ 5km)",
+    "alternatives": [
+      {
+        "name": "Gulzar-e-Hijri Comfort Electrician Imran",
+        "score": 0.9,
+        "distance": 3.27
+      },
+      {
+        "name": "Gulshan Pros Electrician Farhan",
+        "score": 0.8,
+        "distance": 4.66
+      }
+    ]
+  },
+  "durationMs": 0
+}

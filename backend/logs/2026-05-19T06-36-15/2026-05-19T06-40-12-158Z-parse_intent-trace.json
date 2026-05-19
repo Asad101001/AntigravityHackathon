@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:40:12.158Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician chahiye on 20 may subah 11 baje",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "20_may_morning_11am",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "roman_urdu",
+    "reasoning": "User asked for an Electrician on 20th May at 11am"
+  },
+  "durationMs": 773
+}
