@@ -92,6 +92,7 @@ class LLMIntentParserAgent extends BaseAgent {
           service_type: service,
           location,
           time_preference: time,
+          user_text: userText,
           confidence,
           language,
           urgency,

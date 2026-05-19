@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:42:27.817Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.85994705064059,
+      "lng": 67.07365220416746,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "Plumber needed on 26 may at 5 pm"
+  },
+  "output": {
+    "lat": 24.85994705064059,
+    "lng": 67.07365220416746,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 5
+}

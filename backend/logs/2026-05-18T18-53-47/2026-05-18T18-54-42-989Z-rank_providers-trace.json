@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T18-53-47",
+  "timestamp": "2026-05-18T18:54:42.990Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "After considering multiple factors, Defence Works Plumber Usman (PL123) was chosen as the overall best option due to its excellent rating, low cancellation risk, and competitive base rate. Although Saddar Metro Plumber Zahid (PL013) has a slightly higher rating, Defence Works Plumber Usman's better balance of factors and lower base rate make it the top choice. DHA Works Plumber Maryam (PL277) is the second-best option, closely following Defence Works Plumber Usman.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL013",
+      "analysis": {
+        "overall_best_id": "Defence Works Plumber Usman (PL123) offers the best balance of factors, including a high rating, low cancellation risk, and competitive base rate.",
+        "most_affordable_id": "DHA Works Plumber Maryam (PL277) has the lowest base rate among verified and available providers.",
+        "closest_fastest_id": "Saddar Metro Plumber Zahid (PL013) is the closest and fastest option, with a short response time and available slots."
+      }
+    }
+  },
+  "durationMs": 1102
+}

@@ -1,0 +1,22 @@
+{
+  "run_id": "2026-05-18T18-33-55",
+  "timestamp": "2026-05-18T18:39:04.701Z",
+  "agent": "dynamic_pricing",
+  "action": "dynamic_pricing",
+  "input": {
+    "provider_id": "PL123",
+    "distance_km": 11.37,
+    "urgency": "high"
+  },
+  "output": {
+    "quote_pkr": 3710,
+    "quote_breakdown": {
+      "base_rate": 768,
+      "distance_surcharge": 1705,
+      "urgency_multiplier": 1.5,
+      "subtotal": 2473,
+      "total": 3710
+    }
+  },
+  "durationMs": 0
+}

@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-18T18-33-55",
+  "timestamp": "2026-05-18T18:38:09.568Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.85984735715,
+      "lng": 67.0736253077757,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "mujhe parso 9 bajay plumber ki need hai"
+  },
+  "output": {
+    "lat": 24.85984735715,
+    "lng": 67.0736253077757,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 3
+}

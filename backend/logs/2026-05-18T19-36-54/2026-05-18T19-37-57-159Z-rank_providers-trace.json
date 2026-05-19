@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:37:57.159Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL056",
+    "ranked_ids": [
+      "EL056",
+      "EL067",
+      "EL166",
+      "EL221",
+      "EL111"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best electrician for the job is EL056, DHA Clean Electrician Ahmed, due to its excellent rating, low cancellation risk, and competitive base rate. The closest and fastest option is also EL056, with a distance of 12 km and an on-time score of 90. The most affordable option is EL111, DHA Care Electrician Ali, with a base rate of 1523 PKR, but it has a high cancellation risk and a low on-time score.",
+    "multi_factor": {
+      "overall_best_id": "EL056",
+      "most_affordable_id": "EL111",
+      "closest_fastest_id": "EL056",
+      "analysis": {
+        "overall_best_id": "EL056 was chosen as the overall best due to its excellent rating, low cancellation risk, and competitive base rate.",
+        "most_affordable_id": "EL111 was chosen as the most affordable due to its low base rate, but it has a high cancellation risk and a low on-time score.",
+        "closest_fastest_id": "EL056 was chosen as the closest and fastest due to its low distance and high on-time score."
+      }
+    }
+  },
+  "durationMs": 704
+}

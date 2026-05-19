@@ -11,6 +11,9 @@ import apiClient from '../lib/apiClient';
 function normalizeBookingStartTime(value) {
   if (!value) return new Date().toISOString();
 
+  // Prefer values that already look like full timestamps or Date objects.
+  // If the value is a booking object with a nested time, callers should pass that nested value.
+
   const directDate = new Date(value);
   if (!Number.isNaN(directDate.getTime())) {
     return directDate.toISOString();
@@ -55,7 +58,7 @@ export default function ConfirmationScreen({ route, navigation }) {
   const { user } = useAuth();
   const provider = fullResult.provider || {};
   const appointmentLabel = formatAppointmentLabel(
-    fullResult.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
+    fullResult.scheduled_time || fullResult.output?.scheduled_time || fullResult.booking?.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
     provider.confirmed_slot || 'Appointment scheduled'
   );
 
@@ -75,8 +78,10 @@ export default function ConfirmationScreen({ route, navigation }) {
     }
     try {
       const bookingStartTime = normalizeBookingStartTime(
-        fullResult.booking_start_time ||
         fullResult.scheduled_time ||
+        fullResult.output?.scheduled_time ||
+        fullResult.booking?.scheduled_time ||
+        fullResult.booking_start_time ||
         fullResult.provider?.confirmed_slot ||
         provider.confirmed_slot
       );
@@ -97,6 +102,9 @@ export default function ConfirmationScreen({ route, navigation }) {
           reasoning_log: fullResult.reasoning_log,
           alternatives: fullResult.alternatives,
           execution_logs: fullResult.execution_logs,
+          scheduled_time: fullResult.scheduled_time || fullResult.booking?.scheduled_time || null,
+          output_scheduled_time: fullResult.output?.scheduled_time || null,
+          booking_start_time: fullResult.booking_start_time || null,
         }
       };
 

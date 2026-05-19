@@ -1,0 +1,64 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:37:57.166Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a29ff",
+      "id": "EL056",
+      "name": "DHA Clean Electrician Ahmed",
+      "service": "Electrician",
+      "city": "Karachi",
+      "area": "DHA",
+      "lat": 24.8017,
+      "lng": 67.07,
+      "distance_km": 12,
+      "rating": 4.9,
+      "reviews_count": 122,
+      "available_slots": [
+        "08:00",
+        "10:00",
+        "12:00",
+        "15:00",
+        "17:00"
+      ],
+      "phone": "0365-1435545",
+      "response_time_min": 23,
+      "verified": true,
+      "specialization": [
+        "fault_finding",
+        "UPS",
+        "ceiling_fans"
+      ],
+      "base_rate_pkr": 1390,
+      "on_time_score": 90,
+      "cancellation_risk": "low",
+      "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "haversine_km": 6.47,
+      "distance_text": "12.0 km",
+      "duration_text": "23 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9800000000000001,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 2
+}

@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-18T19-56-05",
+  "timestamp": "2026-05-18T19:56:31.067Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "MUJHE KAL SUBHA 9 BAJAY PLUMBER KI NEED",
+  "output": {
+    "service_type": "Plumber",
+    "location": null,
+    "time_preference": "tomorrow_morning_9:00",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User asked for a plumber tomorrow morning at 9:00 AM"
+  },
+  "durationMs": 923
+}

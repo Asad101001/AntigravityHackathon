@@ -1,0 +1,194 @@
+{
+  "run_id": "2026-05-18T19-36-54",
+  "timestamp": "2026-05-18T19:42:29.759Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.85994705064059,
+      "lng": 67.07365220416746
+    },
+    "service_type": "Plumber"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a29d4",
+        "id": "PL013",
+        "name": "Saddar Metro Plumber Zahid",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Saddar",
+        "lat": 24.8596,
+        "lng": 67.0126,
+        "distance_km": 8.03,
+        "rating": 4.8,
+        "reviews_count": 124,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0322-1095028",
+        "response_time_min": 20,
+        "verified": false,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 1453,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Strong local reputation in Saddar, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.16,
+        "distance_text": "8.0 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a42",
+        "id": "PL123",
+        "name": "Defence Works Plumber Usman",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8061,
+        "lng": 67.0744,
+        "distance_km": 11.36,
+        "rating": 4.7,
+        "reviews_count": 123,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0352-1966118",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "pipe_fitting",
+          "bathroom_fitting",
+          "leak_repair"
+        ],
+        "base_rate_pkr": 768,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Defence, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 5.99,
+        "distance_text": "11.4 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2aa5",
+        "id": "PL222",
+        "name": "DHA Fix Plumber Bushra",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8061,
+        "lng": 67.0744,
+        "distance_km": 11.36,
+        "rating": 2.5,
+        "reviews_count": 6,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00"
+        ],
+        "phone": "0371-2750099",
+        "response_time_min": 22,
+        "verified": false,
+        "specialization": [
+          "motor_pump",
+          "drain_cleaning",
+          "water_tank"
+        ],
+        "base_rate_pkr": 1578,
+        "on_time_score": 62,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 5.99,
+        "distance_text": "11.4 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0b",
+        "id": "PL068",
+        "name": "Defence Fix Plumber Waqar",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.805,
+        "lng": 67.0733,
+        "distance_km": 11.46,
+        "rating": 3.8,
+        "reviews_count": 35,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0377-1530573",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "drain_cleaning",
+          "water_tank",
+          "motor_pump"
+        ],
+        "base_rate_pkr": 1586,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.11,
+        "distance_text": "11.5 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2adc",
+        "id": "PL277",
+        "name": "DHA Works Plumber Maryam",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8072,
+        "lng": 67.0656,
+        "distance_km": 11.43,
+        "rating": 4.2,
+        "reviews_count": 157,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0346-3185644",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 760,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 5.92,
+        "distance_text": "11.4 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 1938
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-18T18-33-55",
+  "timestamp": "2026-05-18T18:39:04.692Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL123",
+    "ranked_ids": [
+      "PL123",
+      "PL277",
+      "PL013",
+      "PL068",
+      "PL222"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the shortest response times and highest ratings. Among these, Defence Works Plumber Usman (PL123) stood out for his excellent rating, punctuality, and clear pricing. Although Saddar Metro Plumber Zahid (PL013) has a strong local reputation, his longer response time and slightly higher base rate made him less competitive in this scenario.",
+    "multi_factor": {
+      "overall_best_id": "PL123",
+      "most_affordable_id": "PL277",
+      "closest_fastest_id": "PL123",
+      "analysis": {
+        "overall_best_id": "Usman's high rating, punctuality, and clear pricing make him the best choice for this high-urgency request.",
+        "most_affordable_id": "Maryam's lower base rate makes her the most affordable option, despite slightly lower ratings.",
+        "closest_fastest_id": "Usman's short response time and proximity to the service location make him the closest and fastest option."
+      }
+    }
+  },
+  "durationMs": 773
+}

@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-18T18-53-47",
+  "timestamp": "2026-05-18T18:54:33.875Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.85984204790822,
+      "lng": 67.07362721465847,
+      "label": "Current location"
+    },
+    "parsed_location": null,
+    "user_text": "i need a plumber tomorrow at 10PM"
+  },
+  "output": {
+    "lat": 24.85984204790822,
+    "lng": 67.07362721465847,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 16
+}

@@ -151,31 +151,41 @@ class BookingExecutorAgent extends BaseAgent {
       // Determine date from timePref
       let dateFromPref = new Date(now);
       if (timePref) {
-        if (/tomorrow/.test(timePref)) {
+        if (/tomorrow|kal(?!aam)|کل/i.test(timePref)) {
           dateFromPref.setDate(dateFromPref.getDate() + 1);
           dateConfidence = 0.9;
-        } else if (/\btoday/.test(timePref) || /tonight/.test(timePref)) {
+        } else if (/\btoday|aaj|آج|\btonight/i.test(timePref)) {
           // Keep as today
           dateConfidence = 0.9;
-        } else if (/day after tomorrow/.test(timePref)) {
+        } else if (/day after tomorrow|parso|parson|paron|پرسوں|tarso|tarson|taron|تارسو/i.test(timePref)) {
           dateFromPref.setDate(dateFromPref.getDate() + 2);
           dateConfidence = 0.85;
-        } else if (/next week/.test(timePref)) {
+        } else if (/next week/i.test(timePref)) {
           dateFromPref.setDate(dateFromPref.getDate() + 7);
           dateConfidence = 0.75;
-        } else if (/weekend/.test(timePref)) {
+        } else if (/weekend/i.test(timePref)) {
           // Find next Saturday
           const currentDay = dateFromPref.getDay();
           let daysToAdd = 6 - currentDay;
           if (daysToAdd <= 0) daysToAdd += 7;
           dateFromPref.setDate(dateFromPref.getDate() + daysToAdd);
           dateConfidence = 0.80;
+        } else if (/morning|subah|subha|dopehir|afternoon|shaam|evening|raat|night|early|later/i.test(timePref)) {
+          // Time period detected without specific date → default to TOMORROW
+          // User specified a time period (morning/afternoon/evening/night/etc)
+          // so they likely mean tomorrow at that time
+          dateFromPref.setDate(dateFromPref.getDate() + 1);
+          dateConfidence = 0.70;
         } else {
-          // Default to today if no specific date indicator, lower confidence
+          // Completely unrecognized time_pref, default to TOMORROW (since booking future services)
+          dateFromPref.setDate(dateFromPref.getDate() + 1);
           dateConfidence = 0.50;
         }
       } else {
-        dateConfidence = 0.30; // No preference, default date
+        // No time preference provided, default to TOMORROW (not today)
+        // since booking future services is the most common use case
+        dateFromPref.setDate(dateFromPref.getDate() + 1);
+        dateConfidence = 0.40; // Low confidence, but better than defaulting to today
       }
 
       scheduledDate = dateFromPref;
@@ -193,6 +203,19 @@ class BookingExecutorAgent extends BaseAgent {
     } else if (/^\d{2}:\d{2}$/.test(String(selectedSlot || ''))) {
       const [hours, minutes] = String(selectedSlot).split(':').map(Number);
       scheduledDate.setHours(hours, minutes, 0, 0);
+    }
+
+    // DEBUG: Log scheduling decision before creating booking
+    try {
+      console.log('[BookingExecutor] DEBUG scheduling decision');
+      console.log('  user_text:', context.user_text);
+      console.log('  time_preference:', timePref);
+      console.log('  explicitAppointment:', JSON.stringify(explicitAppointment || null));
+      console.log('  selectedSlot:', selectedSlot);
+      console.log('  scheduledDate (local):', scheduledDate.toString());
+      console.log('  scheduledDate (iso):', scheduledDate.toISOString());
+    } catch (e) {
+      // ignore logging errors
     }
 
     const booking = {

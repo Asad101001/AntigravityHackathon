@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-18T18-53-47",
+  "timestamp": "2026-05-18T18:54:33.855Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "i need a plumber tomorrow at 10PM",
+  "output": {
+    "service_type": "Plumber",
+    "location": null,
+    "time_preference": "tomorrow_10pm",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "User requested a plumber for tomorrow at 10PM, no specific location mentioned."
+  },
+  "durationMs": 1116
+}

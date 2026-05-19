@@ -70,6 +70,8 @@ router.post('/service-request', async (req, res) => {
       confirmation_message: result.output.confirmation_message,
       alternatives: result.output.alternatives,
       parsed_intent: result.output.parsed_intent,
+      scheduled_time: result.output.scheduled_time || result.output.booking_start_time || null,
+      booking_start_time: result.output.scheduled_time || result.output.booking_start_time || null,
       reminders_scheduled: result.output.reminders_scheduled,
       quote_pkr: result.output.quote_pkr,
       quote_breakdown: result.output.quote_breakdown,
@@ -382,7 +384,9 @@ router.post('/bookings', async (req, res) => {
   try {
     const db = require('../db');
     const { sub: user_id } = req.auth;
-    const { provider_id, provider_name, service_type, location, city, area, booking_start_time, quote_pkr, status, raw_data } = req.body;
+    const { provider_id, provider_name, service_type, location, city, area, booking_start_time, scheduled_time, quote_pkr, status, raw_data } = req.body;
+
+    const resolvedBookingStartTime = booking_start_time || scheduled_time || raw_data?.scheduled_time || raw_data?.booking_start_time || null;
 
     // Validate required fields
     if (!provider_id || !provider_name || !service_type) {
@@ -390,8 +394,8 @@ router.post('/bookings', async (req, res) => {
     }
 
     // Check for duplicate booking (same provider, same time, active status)
-    if (booking_start_time) {
-      const duplicate = await db.checkDuplicateBooking(user_id, provider_id, booking_start_time);
+    if (resolvedBookingStartTime) {
+      const duplicate = await db.checkDuplicateBooking(user_id, provider_id, resolvedBookingStartTime);
       if (duplicate) {
         return res.status(409).json({
           success: false,
@@ -411,7 +415,7 @@ router.post('/bookings', async (req, res) => {
       location,
       city,
       area,
-      booking_start_time,
+      booking_start_time: resolvedBookingStartTime,
       quote_pkr,
       status: status || 'confirmed',
       raw_data
