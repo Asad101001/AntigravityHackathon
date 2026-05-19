@@ -15,9 +15,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.asaaniyat.app",
-      "config": {
-        "googleMapsApiKey": "$(EXPO_PUBLIC_MAPS_API_KEY)"
-      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Asaaniyat uses your location to find service providers near you.",
         "NSLocationAlwaysUsageDescription": "Asaaniyat uses your location to find service providers near you."
@@ -36,12 +33,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "POST_NOTIFICATIONS"
-      ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "$(EXPO_PUBLIC_MAPS_API_KEY)"
-        }
-      }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -69,8 +61,7 @@
         {
           "icon": "./assets/icon.png",
           "color": "#0E8F46",
-          "defaultChannel": "asaaniyat-service",
-          "sounds": []
+          "defaultChannel": "asaaniyat-service"
         }
       ]
     ]
