@@ -126,8 +126,6 @@ const styles = StyleSheet.create({
   rowValueMissing: { color: COLORS.danger },
   separator: { height: 1, backgroundColor: COLORS.border, marginVertical: 4 },
 
-  separator: { height: 1, backgroundColor: COLORS.border, marginVertical: 4 },
-
   // Warning
   warningCard: {
     backgroundColor: 'rgba(255, 214, 0, 0.1)',
@@ -150,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  confirmButtonText: { fontSize: 16, fontWeight: '700', color: '#0A0E17' },
+  confirmButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
   editButton: {
     backgroundColor: COLORS.bgCard,
     borderRadius: 14,

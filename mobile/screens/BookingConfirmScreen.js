@@ -21,11 +21,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
+import { useAppContext } from '../context/AppContext';
 
 // ---------------------------------------------------------------------------
 export default function BookingConfirmScreen({ route, navigation }) {
   const { provider, fullResult } = route.params;
   const insets = useSafeAreaInsets();
+  const { executionLogsCache } = useAppContext();
 
   const slot =
     provider.confirmed_slot ||
@@ -89,7 +91,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
           workflow_id: fullResult.workflow_id,
           reasoning_log: fullResult.reasoning_log,
           alternatives: fullResult.alternatives,
-          execution_logs: fullResult.execution_logs,
+          execution_logs: executionLogsCache[fullResult.booking_id] || [],
         }
       };
 
@@ -265,7 +267,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             </Text>
             <TouchableOpacity onPress={() =>
               navigation.navigate('AgentTrace', {
-                executionLogs: fullResult.execution_logs,
+                bookingId: fullResult.booking_id,
                 reasoningLog:  fullResult.reasoning_log,
               })
             }>

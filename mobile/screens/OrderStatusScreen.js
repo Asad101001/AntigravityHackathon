@@ -92,7 +92,13 @@ export default function OrderStatusScreen({ route, navigation }) {
           <View style={styles.infoCopy}>
             <Text style={styles.infoLabel}>Appointment</Text>
             <Text style={styles.infoValue}>
-              {new Date(booking.booking_start_time).toLocaleString('en-PK')}
+              {(() => {
+                try {
+                  return new Date(booking.booking_start_time).toLocaleString('en-PK');
+                } catch (_) {
+                  return new Date(booking.booking_start_time).toString();
+                }
+              })()}
             </Text>
           </View>
         </View>

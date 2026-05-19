@@ -17,6 +17,7 @@ import { COLORS } from '../config';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
+import { useAppContext } from '../context/AppContext';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,35 +70,40 @@ const SERVICE_IMAGES = {
 };
 
 const normalizeBookingStartTime = (value) => {
-  if (!value) return new Date().toISOString();
+  try {
+    if (!value) return new Date().toISOString();
 
-  const directDate = new Date(value);
-  if (!Number.isNaN(directDate.getTime())) {
-    return directDate.toISOString();
+    const directDate = new Date(value);
+    if (!Number.isNaN(directDate.getTime())) {
+      return directDate.toISOString();
+    }
+
+    const timeMatch = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    if (timeMatch) {
+      const hours = Number(timeMatch[1]);
+      const minutes = Number(timeMatch[2] || '0');
+      const period = (timeMatch[3] || '').toUpperCase();
+
+      let normalizedHours = hours;
+      if (period === 'PM' && hours < 12) normalizedHours += 12;
+      if (period === 'AM' && hours === 12) normalizedHours = 0;
+
+      const date = new Date();
+      date.setHours(normalizedHours, minutes, 0, 0);
+      return date.toISOString();
+    }
+
+    return new Date().toISOString();
+  } catch (err) {
+    return new Date().toISOString();
   }
-
-  const timeMatch = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
-  if (timeMatch) {
-    const hours = Number(timeMatch[1]);
-    const minutes = Number(timeMatch[2] || '0');
-    const period = (timeMatch[3] || '').toUpperCase();
-
-    let normalizedHours = hours;
-    if (period === 'PM' && hours < 12) normalizedHours += 12;
-    if (period === 'AM' && hours === 12) normalizedHours = 0;
-
-    const date = new Date();
-    date.setHours(normalizedHours, minutes, 0, 0);
-    return date.toISOString();
-  }
-
-  return new Date().toISOString();
 };
 
 // ---------------------------------------------------------------------------
 export default function ReviewBookingScreen({ route, navigation }) {
   const { provider, fullResult } = route.params;
   const insets = useSafeAreaInsets();
+  const { executionLogsCache } = useAppContext();
 
   // ── Quote data — prefer backend PKR breakdown, fall back to USD stub ──
   const breakdown  = fullResult?.quote_breakdown || null;
@@ -289,7 +295,10 @@ export default function ReviewBookingScreen({ route, navigation }) {
               {fullResult.reasoning_log}
             </Text>
             <TouchableOpacity onPress={() =>
-              navigation.navigate('AgentTrace', { executionLogs: fullResult.execution_logs })
+              navigation.navigate('AgentTrace', {
+                bookingId: fullResult.booking_id,
+                reasoningLog: fullResult.reasoning_log,
+              })
             }>
               <Text style={styles.reasoningLink}>View full agent trace →</Text>
             </TouchableOpacity>
