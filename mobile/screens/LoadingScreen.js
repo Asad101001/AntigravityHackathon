@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SHADOWS, RADII } from '../theme';
-import { API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
 import LiquidGlass from '../components/LiquidGlass';

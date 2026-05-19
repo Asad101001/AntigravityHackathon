@@ -6,11 +6,12 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SHADOWS } from '../theme';
 
+const SPLASH_ICON = require('../assets/splash-icon.png');
 const { width } = Dimensions.get('window');
 
 export default function SplashScreen({ navigation }) {
@@ -94,7 +95,7 @@ export default function SplashScreen({ navigation }) {
               { transform: [{ rotate: spin }] },
             ]}
           >
-            <Ionicons name="flash" size={44} color={COLORS.primary} />
+            <Image source={SPLASH_ICON} style={styles.splashImage} resizeMode="contain" />
           </Animated.View>
 
           {/* Calligraphic Urdu Typography */}
@@ -211,6 +212,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1.5,
     borderColor: 'rgba(14,143,70,0.14)',
+    overflow: 'hidden',
+  },
+  splashImage: {
+    width: 56,
+    height: 56,
   },
 
   // Calligraphy

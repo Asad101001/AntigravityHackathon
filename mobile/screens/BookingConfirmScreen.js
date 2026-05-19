@@ -18,7 +18,9 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, API_URL } from '../config';
+import { COLORS } from '../theme';
+import { useToast } from '../components/Toast';
+import ScreenHeader from '../components/ScreenHeader';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
 import { useAppContext } from '../context/AppContext';
@@ -28,6 +30,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
   const { provider, fullResult } = route.params;
   const insets = useSafeAreaInsets();
   const { executionLogsCache } = useAppContext();
+  const toast = useToast();
 
   const slot =
     provider.confirmed_slot ||
@@ -57,12 +60,22 @@ export default function BookingConfirmScreen({ route, navigation }) {
         provider.confirmed_slot ||
         slot;
 
+      // Helper: get current time in PKT (UTC+5)
+      function getPKTNow() {
+        const now = new Date();
+        const pktOffset = 5 * 60 * 60 * 1000;
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+        return new Date(utc + pktOffset);
+      }
+
       const directDate = new Date(bookingStartTime);
-      let isoStartTime = new Date().toISOString();
+      let isoStartTime = getPKTNow().toISOString();
       if (!Number.isNaN(directDate.getTime())) {
         isoStartTime = directDate.toISOString();
       } else {
-        const timeMatch = String(bookingStartTime).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+        // Parse time-only string like '10 AM', '10:30 PM', 'Today 4:00 PM'
+        const timeStr = String(bookingStartTime).trim();
+        const timeMatch = timeStr.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
         if (timeMatch) {
           const hours = Number(timeMatch[1]);
           const minutes = Number(timeMatch[2] || '0');
@@ -70,9 +83,10 @@ export default function BookingConfirmScreen({ route, navigation }) {
           let normalizedHours = hours;
           if (period === 'PM' && hours < 12) normalizedHours += 12;
           if (period === 'AM' && hours === 12) normalizedHours = 0;
-          const date = new Date();
-          date.setHours(normalizedHours, minutes, 0, 0);
-          isoStartTime = date.toISOString();
+          // Base on PKT today
+          const pktNow = getPKTNow();
+          pktNow.setHours(normalizedHours, minutes, 0, 0);
+          isoStartTime = pktNow.toISOString();
         }
       }
 
@@ -206,19 +220,14 @@ export default function BookingConfirmScreen({ route, navigation }) {
   // ────────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      {/* ── Custom Local Header ────────────────────────────────────────── */}
-      <View style={[styles.localHeader, { paddingTop: Math.max(insets.top, 16) }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
-          <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleWrap}>
-          <Text style={styles.headerStepText}>STEP 5 OF 5</Text>
-          <Text style={styles.localHeaderTitle}>Confirm Booking</Text>
-        </View>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader
+        navigation={navigation}
+        title="Confirm Booking"
+        stepLabel="STEP 5 OF 5"
+      />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces overScrollMode="never" keyboardShouldPersistTaps="handled">
+
 
         {/* ── Provider details card (Glassmorphic) ─────────────────────── */}
         <LiquidGlass style={styles.card} radius={24}>

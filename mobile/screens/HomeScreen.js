@@ -20,22 +20,22 @@ const SUPPORTED_CITIES = ['Karachi', 'Islamabad', 'Lahore'];
 
 const SERVICES_PAGES = [
   [
-    { id: 'ac', label: 'AC Repair', icon: 'snow', urdu: 'اے سی مرمت' },
-    { id: 'electrician', label: 'Electrician', icon: 'flash', urdu: 'بجلی کا کام' },
-    { id: 'plumber', label: 'Plumber', icon: 'build', urdu: 'پلمبر' },
-    { id: 'carpenter', label: 'Carpenter', icon: 'hammer', urdu: 'بڑھئی' },
+    { id: 'ac', label: 'AC Repair', icon: 'snow-outline', urdu: 'اے سی مرمت' },
+    { id: 'electrician', label: 'Electrician', icon: 'flash-outline', urdu: 'بجلی کا کام' },
+    { id: 'plumber', label: 'Plumber', icon: 'water-outline', urdu: 'پلمبر' },
+    { id: 'carpenter', label: 'Carpenter', icon: 'hammer-outline', urdu: 'بڑھئی' },
   ],
   [
-    { id: 'painter', label: 'Painter', icon: 'brush', urdu: 'پینٹر' },
-    { id: 'cleaning', label: 'Cleaning', icon: 'sparkles', urdu: 'گھر کی صفائی' },
-    { id: 'handyman', label: 'Handyman', icon: 'construct', urdu: 'عام مرمت' },
-    { id: 'mechanic', label: 'Mechanic', icon: 'car', urdu: 'گاڑی کی سروس' },
+    { id: 'painter', label: 'Painter', icon: 'brush-outline', urdu: 'پینٹر' },
+    { id: 'cleaning', label: 'Cleaning', icon: 'sparkles-outline', urdu: 'گھر کی صفائی' },
+    { id: 'handyman', label: 'Handyman', icon: 'construct-outline', urdu: 'عام مرمت' },
+    { id: 'mechanic', label: 'Mechanic', icon: 'car-outline', urdu: 'گاڑی کی سروس' },
   ],
   [
-    { id: 'pest', label: 'Pest Control', icon: 'bug', urdu: 'پیسٹ کنٹرول' },
-    { id: 'appliance', label: 'Appliance Repair', icon: 'tv', urdu: 'آلات کی مرمت' },
-    { id: 'sanitization', label: 'Home Sanitization', icon: 'shield-checkmark', urdu: 'سینیٹائزیشن' },
-    { id: 'gardening', label: 'Gardening', icon: 'leaf', urdu: 'باغبانی' },
+    { id: 'pest', label: 'Pest Control', icon: 'bug-outline', urdu: 'پیسٹ کنٹرول' },
+    { id: 'appliance', label: 'Appliance Repair', icon: 'tv-outline', urdu: 'آلات کی مرمت' },
+    { id: 'sanitization', label: 'Sanitization', icon: 'shield-checkmark-outline', urdu: 'سینیٹائزیشن' },
+    { id: 'gardening', label: 'Gardening', icon: 'leaf-outline', urdu: 'باغبانی' },
   ]
 ];
 
@@ -136,7 +136,10 @@ export default function HomeScreen({ route, navigation }) {
   };
 
   const prefill = (label) => {
-    setText(`${label} needed in ${selectedCity}`);
+    // Do NOT append city — let location be resolved from GPS pin / UI city selector only.
+    // Appending "in Karachi" would cause the AI to extract it as a typed location,
+    // overriding the user's actual GPS coordinates.
+    setText(`${label} needed`);
   };
 
   return (
@@ -281,7 +284,7 @@ export default function HomeScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
             <View style={styles.promoRight} pointerEvents="none">
-              <Ionicons name="snow" size={88} color="rgba(14,143,70,0.08)" style={styles.snowflakeWatermark} />
+              <Ionicons name="snow-outline" size={88} color="rgba(14,143,70,0.08)" style={styles.snowflakeWatermark} />
             </View>
           </LiquidGlass>
 
@@ -297,7 +300,7 @@ export default function HomeScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
             <View style={styles.promoRight} pointerEvents="none">
-              <Ionicons name="brush" size={88} color="rgba(255,255,255,0.05)" style={styles.snowflakeWatermark} />
+              <Ionicons name="brush-outline" size={88} color="rgba(255,255,255,0.05)" style={styles.snowflakeWatermark} />
             </View>
           </LiquidGlass>
 
@@ -313,7 +316,7 @@ export default function HomeScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
             <View style={styles.promoRight} pointerEvents="none">
-              <Ionicons name="sparkles" size={88} color="rgba(14,143,70,0.06)" style={styles.snowflakeWatermark} />
+              <Ionicons name="sparkles-outline" size={88} color="rgba(14,143,70,0.06)" style={styles.snowflakeWatermark} />
             </View>
           </LiquidGlass>
 

@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-19T20-40-09",
+  "timestamp": "2026-05-19T20:40:18.363Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC256",
+    "ranked_ids": [
+      "AC256",
+      "AC014",
+      "AC201",
+      "AC069",
+      "AC036"
+    ],
+    "reasoning_log": "After analyzing the candidate providers, AC256 stands out as the overall best choice due to its high rating, excellent on-time score, low cancellation risk, and competitive base rate. Although it is slightly farther away, its strong reputation and high specialization in AC services make it the top pick. The other providers, while having some strengths, fall short in one or more areas.",
+    "multi_factor": {
+      "overall_best_id": "AC256",
+      "most_affordable_id": "AC256",
+      "closest_fastest_id": "AC014",
+      "analysis": {
+        "overall_best_id": "AC256 has the highest rating and on-time score, making it the best overall choice.",
+        "most_affordable_id": "AC256 has the lowest base rate among verified and available providers.",
+        "closest_fastest_id": "AC014 is the closest provider with available slots, making it the fastest option."
+      }
+    }
+  },
+  "durationMs": 511
+}

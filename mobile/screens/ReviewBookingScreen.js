@@ -13,10 +13,11 @@ import {
   ScrollView, Animated, Modal, ActivityIndicator, Image, Platform
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '../config';
+import { COLORS, SHADOWS, RADII } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
+import ScreenHeader from '../components/ScreenHeader';
 import { useAppContext } from '../context/AppContext';
 
 // ---------------------------------------------------------------------------
@@ -143,16 +144,14 @@ export default function ReviewBookingScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ── Custom Local Header ────────────────────────────────────────── */}
-      <View style={[styles.localHeader, { paddingTop: Math.max(insets.top, 16) }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
-          <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
-        </TouchableOpacity>
-        <Text style={styles.localHeaderTitle}>Review Booking</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader
+        navigation={navigation}
+        title="Review Booking"
+        stepLabel="STEP 4 OF 5"
+      />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces overScrollMode="never" keyboardShouldPersistTaps="handled">
+
 
         {/* ── Booking details card (Glassmorphic) ──────────────────────── */}
         <LiquidGlass style={styles.card} radius={22}>
@@ -515,7 +514,7 @@ const styles = StyleSheet.create({
   },
   quoteHeaderTitle: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 16 },
 
-  aiBadge: { backgroundColor: COLORS.primaryGlow, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  aiBadge: { backgroundColor: 'rgba(14,143,70,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   aiBadgeText: { color: COLORS.primary, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
   quoteRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },

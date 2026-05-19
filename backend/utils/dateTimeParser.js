@@ -1,20 +1,33 @@
 /**
  * Comprehensive date and time parser for booking requests
  * Handles relative dates (tomorrow, next week, etc.) and specific times (2 pm, 14:00, etc.)
+ * All dates are computed relative to Pakistan Standard Time (PKT = UTC+5).
  */
+
+/**
+ * Get the current date/time adjusted to Pakistan Standard Time (UTC+5).
+ * This ensures "tomorrow", "today" etc. are correct for Pakistani users.
+ */
+function _getPKTNow() {
+  const now = new Date();
+  // PKT = UTC+5, offset = 5*60*60*1000 ms
+  const pktOffset = 5 * 60 * 60 * 1000;
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  return new Date(utc + pktOffset);
+}
 
 /**
  * Parse a date and time string into a Date object
  * Supports:
- *   - Relative dates: "today", "tomorrow", "day after tomorrow", "next Monday", etc.
+ *   - Relative dates: "today", "tomorrow", "next month", "agla mahina", "next week", "agla hafta"
  *   - Specific dates: "May 20", "20/05/2026", "2026-05-20", etc.
- *   - Time expressions: "2 pm", "14:00", "1430", "2:30 AM", etc.
+ *   - Time expressions: "2 pm", "14:00", "9 bajay", "subah", etc.
  * 
  * @param {string} input - User input text
- * @param {Date} reference - Reference date (default: now)
+ * @param {Date} reference - Reference date (default: PKT now)
  * @returns {object|null} - { date: Date, time: string, confidence: number } or null if no parse
  */
-function parseDateTime(input = '', reference = new Date()) {
+function parseDateTime(input = '', reference = _getPKTNow()) {
   if (!input || typeof input !== 'string') return null;
 
   input = input.toLowerCase().trim();
@@ -100,16 +113,20 @@ function _chronoFallback(input, reference) {
  */
 function _detectSlot(input) {
   const lower = input.toLowerCase();
-  if (/morning|subah|subha/.test(lower)) {
+  // Morning variants: English, Roman Urdu, Urdu script
+  if (/morning|subah|subha|subhe|subhey|صبح|saver|savere/.test(lower)) {
     return { hours: 9, minutes: 0, label: '9:00 AM' };
   }
-  if (/afternoon|dopehar|dopahar|dophr/.test(lower)) {
+  // Afternoon variants
+  if (/afternoon|dopehar|dopahar|dophr|dupe?hr|دوپہر|dopaher/.test(lower)) {
     return { hours: 14, minutes: 0, label: '2:00 PM' };
   }
-  if (/evening|shaam|sham/.test(lower)) {
+  // Evening variants
+  if (/evening|shaam|sham|شام|saam|shamm/.test(lower)) {
     return { hours: 18, minutes: 0, label: '6:00 PM' };
   }
-  if (/night|raat/.test(lower)) {
+  // Night variants
+  if (/night|raat|رات|late evening|der raat/.test(lower)) {
     return { hours: 20, minutes: 0, label: '8:00 PM' };
   }
   return null;
@@ -120,25 +137,58 @@ function _detectSlot(input) {
  * @private
  */
 function _parseDate(input, reference) {
-  let date = new Date(reference);
-  let confidence = 1.0;
+  // Always anchor to PKT (Pakistan Standard Time = UTC+5)
+  const pktNow = _getPKTNow();
+  let date = new Date(pktNow);
+  date.setHours(0, 0, 0, 0);
 
-  // Check relative dates first (higher confidence if explicit match)
+  // ── Relative date keywords ───────────────────────────────────────────────────
+
+  // Tomorrow / Kal
   if (/\btomorrow\b|\bkal\b/.test(input)) {
     date.setDate(date.getDate() + 1);
     return { date: new Date(date), confidence: 0.98 };
   }
 
+  // Day after tomorrow / Parso
   if (/\bday after tomorrow\b|\bparso\b|\bparsoon\b/.test(input)) {
     date.setDate(date.getDate() + 2);
     return { date: new Date(date), confidence: 0.98 };
   }
 
+  // Today / Aaj / Ab
   if (/\btoday\b|\btonite\b|\btonight\b|\baaj\b|\bab\b/.test(input)) {
     return { date: new Date(date), confidence: 0.98 };
   }
 
-  // Check for "next [day]" pattern (e.g., "next Monday", "next Friday")
+  // Next month / Agla mahina (any variation)
+  if (/\bnext month\b|\bagla mahina\b|\baglay mahine\b|\baglay mahina\b|\bagla mah[ie]nay?\b/i.test(input)) {
+    date.setMonth(date.getMonth() + 1);
+    date.setDate(1); // First of next month as anchor
+    return { date: new Date(date), confidence: 0.90 };
+  }
+
+  // Next week / Agla hafta
+  if (/\bnext week\b|\bagla hafta\b|\baglay hafte\b|\bagla hafte\b/i.test(input)) {
+    date.setDate(date.getDate() + 7);
+    return { date: new Date(date), confidence: 0.90 };
+  }
+
+  // This week
+  if (/\bthis week\b/i.test(input)) {
+    return { date: new Date(date), confidence: 0.70 };
+  }
+
+  // Weekend → next Saturday
+  if (/\bweekend\b/i.test(input)) {
+    const currentDay = date.getDay();
+    let daysToAdd = 6 - currentDay;
+    if (daysToAdd <= 0) daysToAdd += 7;
+    date.setDate(date.getDate() + daysToAdd);
+    return { date: new Date(date), confidence: 0.80 };
+  }
+
+  // "next [weekday]" — e.g., "next Monday"
   const nextDayMatch = input.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
   if (nextDayMatch) {
     const targetDay = _getDayOfWeekNumber(nextDayMatch[1]);
@@ -149,19 +199,19 @@ function _parseDate(input, reference) {
     return { date: new Date(date), confidence: 0.95 };
   }
 
-  // Check for "[day]" patterns (e.g., "Monday", "Friday")
+  // Standalone weekday name — e.g., "Monday"
   const dayMatch = input.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
   if (dayMatch) {
     const targetDay = _getDayOfWeekNumber(dayMatch[1]);
     const currentDay = date.getDay();
     let daysToAdd = targetDay - currentDay;
     if (daysToAdd < 0) daysToAdd += 7;
-    if (daysToAdd === 0) daysToAdd = 7; // If today, they probably mean next week's same day
+    if (daysToAdd === 0) daysToAdd = 7; // If today, interpret as next occurrence
     date.setDate(date.getDate() + daysToAdd);
     return { date: new Date(date), confidence: 0.85 };
   }
 
-  // Check for "in X days" pattern
+  // "in X days" — e.g., "in 3 days"
   const inDaysMatch = input.match(/\bin\s+(\d{1,2})\s+days?\b/i);
   if (inDaysMatch) {
     const days = parseInt(inDaysMatch[1], 10);
@@ -169,48 +219,33 @@ function _parseDate(input, reference) {
     return { date: new Date(date), confidence: 0.92 };
   }
 
-  // Check for "this week/month/weekend" patterns
-  if (/\bthis week\b/i.test(input)) {
-    // Already in this week
-    return { date: new Date(date), confidence: 0.70 };
-  }
+  // ── Specific date formats ────────────────────────────────────────────────────
 
-  if (/\bweekend\b/i.test(input)) {
-    // Find next Saturday
-    const currentDay = date.getDay();
-    let daysToAdd = 6 - currentDay; // Saturday
-    if (daysToAdd <= 0) daysToAdd += 7;
-    date.setDate(date.getDate() + daysToAdd);
-    return { date: new Date(date), confidence: 0.80 };
-  }
-
-  // Check for specific date formats
-  // Format: "May 20", "20 May", "May 20 2026", etc.
-  const monthDate = input.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b/i);
+  // "May 20", "May 20 2026", "20 May", etc.
+  const monthDate = input.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b/i);
   if (monthDate) {
     const monthNum = _getMonthNumber(monthDate[1]);
     const day = parseInt(monthDate[2], 10);
-    const year = monthDate[3] ? parseInt(monthDate[3], 10) : reference.getFullYear();
+    const year = monthDate[3] ? parseInt(monthDate[3], 10) : pktNow.getFullYear();
     date = new Date(year, monthNum, day, 0, 0, 0, 0);
     return { date: new Date(date), confidence: 0.96 };
   }
 
-  // Format: "20/05", "20/05/2026", "20-05-2026", etc.
+  // "20/05", "20/05/2026", "20-05-2026"
   const numDate = input.match(/\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{4}))?\b/);
   if (numDate) {
     const day = parseInt(numDate[1], 10);
-    const month = parseInt(numDate[2], 10) - 1; // Month is 0-indexed
-    const year = numDate[3] ? parseInt(numDate[3], 10) : reference.getFullYear();
+    const month = parseInt(numDate[2], 10) - 1;
+    const year = numDate[3] ? parseInt(numDate[3], 10) : pktNow.getFullYear();
     if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
       date = new Date(year, month, day, 0, 0, 0, 0);
       return { date: new Date(date), confidence: 0.96 };
     }
   }
 
-  // If no date keyword found, assume "as soon as possible" (today or tomorrow)
-  // Only return a default if there's a time specified
+  // No date keyword found; default to today only if a time was specified
   if (_parseTime(input)) {
-    return { date: new Date(date), confidence: 0.50 }; // Low confidence for default date
+    return { date: new Date(date), confidence: 0.50 };
   }
 
   return null;

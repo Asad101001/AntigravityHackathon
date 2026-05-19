@@ -31,7 +31,7 @@ const getLanUrls = (port) => {
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
-// Rate limiting: 100 requests per 15 minutes per IP
+// Rate limiting: 100 requests per 15 minutes per IP (global)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -41,11 +41,21 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Stricter rate limit for auth routes (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15, // 15 attempts per 15 min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Only count failed attempts
+  message: { success: false, error: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+
 // Input sanitization
 app.use(sanitizeInput);
 
 // ─── Routes ──────────────────────────────────────────────────
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -108,6 +118,13 @@ app.listen(PORT, '0.0.0.0', async () => {
   await db.setupDatabase();
   if (process.env.GENERATE_API_DOCS_ON_START === 'true') generateApiDocs();
   const lanUrls = getLanUrls(PORT);
+
+  // Security check: warn if JWT_SECRET is using the insecure default
+  const jwtSecret = process.env.JWT_SECRET || process.env.ANTIGRAVITY_KEY;
+  if (!jwtSecret || jwtSecret === 'demo-secret') {
+    console.warn('\n⚠️  WARNING: JWT_SECRET is not set or is using the insecure default.');
+    console.warn('   Set a strong JWT_SECRET environment variable before deploying to production.\n');
+  }
 
   console.log(`\n🚀 Asaaniyat Backend running on http://0.0.0.0:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);

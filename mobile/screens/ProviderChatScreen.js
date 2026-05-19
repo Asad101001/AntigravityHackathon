@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { API_URL } from '../config';
 import { COLORS, RADII, SHADOWS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';

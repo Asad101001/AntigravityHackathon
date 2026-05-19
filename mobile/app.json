@@ -16,7 +16,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.asaaniyat.app",
       "config": {
-        "googleMapsApiKey": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
+        "googleMapsApiKey": "$(EXPO_PUBLIC_MAPS_API_KEY)"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Asaaniyat uses your location to find service providers near you.",
+        "NSLocationAlwaysUsageDescription": "Asaaniyat uses your location to find service providers near you."
       }
     },
     "android": {
@@ -26,9 +30,17 @@
         "backgroundColor": "#0E8F46"
       },
       "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "INTERNET",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
+          "apiKey": "$(EXPO_PUBLIC_MAPS_API_KEY)"
         }
       }
     },
@@ -45,11 +57,22 @@
         "expo-build-properties",
         {
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0E8F46",
+          "defaultChannel": "asaaniyat-service",
+          "sounds": []
+        }
+      ]
     ]
   }
 }

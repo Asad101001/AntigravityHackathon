@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-19T20-40-09",
+  "timestamp": "2026-05-19T20:40:16.186Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "AC Repair needed",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": null,
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "User mentioned AC Repair, which is a common phrase for AC Technician service"
+  },
+  "durationMs": 2820
+}

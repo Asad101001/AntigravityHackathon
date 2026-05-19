@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-19T20-40-09",
+  "timestamp": "2026-05-19T20:40:18.455Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Gulshan Home AC Technician Ayesha",
+    "time_slot": "10:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1779223218394",
+    "confirmation_message": "Booking confirmed! Gulshan Home AC Technician Ayesha arrives 21/05/2026 at 10:00 AM. Contact: 0323-1102947. Booking ID: BK_1779223218394",
+    "scheduled_time": "2026-05-21T05:00:00.000Z",
+    "time_slot": "10:00 AM"
+  },
+  "durationMs": 64
+}

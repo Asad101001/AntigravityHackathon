@@ -68,12 +68,21 @@ class LLMIntentParserAgent extends BaseAgent {
       const location = locationResolution.location;
       let time = parsed.time_preference || null;
       
-      // Enhanced date/time parsing: try to extract specific time if not already in time_preference
-      if (!time || !time.includes('_')) {
-        const parsedDateTime = parseDateTime(userText);
-        if (parsedDateTime) {
-          // Build a more specific time_preference string
-          time = _buildTimePreferenceString(userText, parsedDateTime);
+      // Enhanced date/time parsing: the LLM may give a coarse time_preference like "tomorrow".
+      // We try to extract a more specific slot using parseDateTime from user text.
+      // Always run this regardless of what the LLM returned — it handles specific times like "10 AM"
+      // and relative dates like "next month" that the LLM might express loosely.
+      const parsedDateTime = parseDateTime(userText);
+      if (parsedDateTime) {
+        const enhanced = _buildTimePreferenceString(userText, parsedDateTime);
+        if (enhanced) {
+          // Only override if the enhanced string is more specific than what LLM gave
+          // (i.e., it has a time component like _1000 vs just "tomorrow")
+          const hasSpecificTime = enhanced.includes('_') && /\d{3,4}$/.test(enhanced);
+          const llmIsVague = !time || !time.includes('_') || /^(tomorrow|today|weekend|week)$/.test(time);
+          if (hasSpecificTime || llmIsVague) {
+            time = enhanced;
+          }
         }
       }
       
@@ -212,49 +221,44 @@ function _buildTimePreferenceString(userText, parsedDateTime) {
   if (!parsedDateTime) return null;
 
   let prefix = '';
-  userText = userText.toLowerCase();
+  const lowerText = userText.toLowerCase();
 
-  // Determine date prefix
-  if (/\btomorrow\b|\bkal\b/.test(userText)) {
+  // Determine date prefix from user text keywords
+  if (/\btomorrow\b|\bkal\b/.test(lowerText)) {
     prefix = 'tomorrow';
-  } else if (/\b(today|tonight|tonite|aaj|ab)\b/.test(userText)) {
+  } else if (/\b(today|tonight|tonite|aaj|ab)\b/.test(lowerText)) {
     prefix = 'today';
-  } else if (/day after tomorrow|\bparso\b|\bparsoon\b/.test(userText)) {
+  } else if (/day after tomorrow|\bparso\b|\bparsoon\b/.test(lowerText)) {
     prefix = 'day_after_tomorrow';
+  } else if (/\bnext month\b|\bagla mahina\b|\baglay mahine\b/i.test(lowerText)) {
+    prefix = 'next_month';
+  } else if (/\bnext week\b|\bagla hafta\b|\baglay hafte\b/i.test(lowerText)) {
+    prefix = 'next_week';
   } else {
-    // Fallback based on date
-    const now = new Date();
-    const tomorrow = new Date(now);
+    // Determine prefix from parsed date vs PKT now
+    const pktNow = new Date();
+    // PKT = UTC+5
+    const pktOffset = 5 * 60 * 60 * 1000;
+    const utc = pktNow.getTime() + (pktNow.getTimezoneOffset() * 60 * 1000);
+    const localNow = new Date(utc + pktOffset);
+    const todayStr = localNow.toDateString();
+    const tomorrow = new Date(localNow);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    if (parsedDateTime.date.toDateString() === now.toDateString()) {
+    const tomorrowStr = tomorrow.toDateString();
+
+    if (parsedDateTime.date.toDateString() === todayStr) {
       prefix = 'today';
-    } else if (parsedDateTime.date.toDateString() === tomorrow.toDateString()) {
+    } else if (parsedDateTime.date.toDateString() === tomorrowStr) {
       prefix = 'tomorrow';
     } else {
-      // Just return the parsed time with time only
-      return `specific_time_${parsedDateTime.timeIn24H.replace(':', '')}`;
+      // Use ISO date prefix for specific future dates
+      const dateStr = parsedDateTime.date.toISOString().slice(0, 10).replace(/-/g, '');
+      return `specific_date_${dateStr}_${parsedDateTime.timeIn24H.replace(':', '')}`;
     }
   }
 
-  // Determine time slot suffix
-  const hours = parsedDateTime.date.getHours();
-  let suffix = '';
-
-  if (hours >= 5 && hours < 12) {
-    suffix = '_morning';
-  } else if (hours >= 12 && hours < 17) {
-    suffix = '_afternoon';
-  } else if (hours >= 17 && hours < 21) {
-    suffix = '_evening';
-  } else if (hours >= 21 || hours < 5) {
-    suffix = '_night';
-  }
-
-  // Include specific time if it's precise
-  if (parsedDateTime.timeIn24H !== '09:00') {
-    suffix = `_${parsedDateTime.timeIn24H.replace(':', '')}`;
-  }
+  // Always include specific time in suffix — never skip any hour value
+  const suffix = `_${parsedDateTime.timeIn24H.replace(':', '')}`;
 
   return prefix + suffix;
 }

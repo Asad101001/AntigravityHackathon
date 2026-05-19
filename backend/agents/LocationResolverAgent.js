@@ -39,27 +39,30 @@ class LocationResolverAgent extends BaseAgent {
     const rawLocation = this._usableParsedLocation(context.location);
     const userText = String(context.user_text || '');
 
-    let typedFallback = null;
-    if (rawLocation) {
-      const typedResolution = await this._resolveTyped(rawLocation, explicitCity, userText);
-      // If it resolved to a real neighborhood, local match, or geocoding coordinates (not a fallback)
-      if (typedResolution && typedResolution.output && !typedResolution.output.fallback && typedResolution.output.source !== 'explicit_city_area_fallback') {
-        return typedResolution;
-      }
-      typedFallback = typedResolution;
-    }
-
+    // ── Priority 1: GPS pin always wins when valid coordinates are present ──────
+    // We must try GPS BEFORE text-typed location to avoid "in Karachi" in the
+    // user text contaminating the location with a city-center fallback.
     const pinResolution = await this._resolvePinnedCoordinates(context, explicitCity, rawLocation, userText);
     if (pinResolution) return pinResolution;
 
-    if (typedFallback) {
-      return typedFallback;
+    // ── Priority 2: Try to resolve the typed/parsed location string ─────────────
+    if (rawLocation) {
+      const typedResolution = await this._resolveTyped(rawLocation, explicitCity, userText);
+      if (typedResolution && typedResolution.output && !typedResolution.output.fallback && typedResolution.output.source !== 'explicit_city_area_fallback') {
+        return typedResolution;
+      }
+      // Keep typed fallback available if city/explicit match only
+      if (typedResolution) {
+        return typedResolution;
+      }
     }
 
+    // ── Priority 3: Frontend-selected city ─────────────────────────────────────
     if (explicitCity) {
       return this._cityResult(explicitCity.city, 'explicit_city', `Frontend selected city "${explicitCity.city}". No typed area or GPS pin was provided, so city-level coordinates were used.`);
     }
 
+    // ── Priority 4: City extracted from request text ────────────────────────────
     const inferredCity = this._extractCityFromText(userText);
     if (inferredCity) {
       return this._cityResult(inferredCity.city, 'city_text_match', `Detected city "${inferredCity.city}" from request text.`);

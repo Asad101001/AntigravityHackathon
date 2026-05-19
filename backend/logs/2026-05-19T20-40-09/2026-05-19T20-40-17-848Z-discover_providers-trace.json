@@ -1,0 +1,195 @@
+{
+  "run_id": "2026-05-19T20-40-09",
+  "timestamp": "2026-05-19T20:40:17.848Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.9496406,
+      "lng": 67.1078203
+    },
+    "service_type": "AC Technician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a29d5",
+        "id": "AC014",
+        "name": "Gulshan Home AC Technician Ayesha",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.926,
+        "lng": 67.0953,
+        "distance_km": 3.86,
+        "rating": 4.3,
+        "reviews_count": 161,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0323-1102947",
+        "response_time_min": 12,
+        "verified": true,
+        "specialization": [
+          "inverter_ac",
+          "coil_cleaning",
+          "compressor_check"
+        ],
+        "base_rate_pkr": 2162,
+        "on_time_score": 90,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.92,
+        "distance_text": "3.9 km",
+        "duration_text": "12 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ac7",
+        "id": "AC256",
+        "name": "North Nazimabad Rapid AC Technician Hassan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "North Nazimabad",
+        "lat": 24.9361,
+        "lng": 67.0454,
+        "distance_km": 9.44,
+        "rating": 4.8,
+        "reviews_count": 88,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0325-3019345",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "coil_cleaning",
+          "compressor_check",
+          "inverter_ac"
+        ],
+        "base_rate_pkr": 1309,
+        "on_time_score": 98,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in North Nazimabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.47,
+        "distance_text": "9.4 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29eb",
+        "id": "AC036",
+        "name": "Bahadurabad Prime AC Technician Rizwan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Bahadurabad",
+        "lat": 24.8893,
+        "lng": 67.0657,
+        "distance_km": 14.16,
+        "rating": 4.1,
+        "reviews_count": 90,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0345-1277165",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "compressor_check",
+          "inverter_ac",
+          "coil_cleaning"
+        ],
+        "base_rate_pkr": 1575,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid ac technician option for Bahadurabad; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 7.94,
+        "distance_text": "14.2 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a90",
+        "id": "AC201",
+        "name": "Nazimabad Fix AC Technician Imran",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Nazimabad",
+        "lat": 24.9124,
+        "lng": 67.0322,
+        "distance_km": 11.24,
+        "rating": 4.4,
+        "reviews_count": 177,
+        "available_slots": [
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0350-2583800",
+        "response_time_min": 24,
+        "verified": true,
+        "specialization": [
+          "gas_refill",
+          "installation",
+          "split_ac"
+        ],
+        "base_rate_pkr": 2076,
+        "on_time_score": 93,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Nazimabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 8.68,
+        "distance_text": "11.2 km",
+        "duration_text": "24 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0c",
+        "id": "AC069",
+        "name": "PECHS Clean AC Technician Zahid",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8761,
+        "lng": 67.0644,
+        "distance_km": 15.39,
+        "rating": 4.7,
+        "reviews_count": 72,
+        "available_slots": [
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0378-1538492",
+        "response_time_min": 29,
+        "verified": true,
+        "specialization": [
+          "gas_refill",
+          "installation",
+          "split_ac"
+        ],
+        "base_rate_pkr": 1395,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in PECHS, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 9.28,
+        "distance_text": "15.4 km",
+        "duration_text": "29 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 1632
+}

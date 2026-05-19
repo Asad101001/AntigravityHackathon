@@ -1,95 +1,142 @@
+/**
+ * notifications.js — Asaaniyat Notification System
+ *
+ * SDK 53 IMPORTANT: Android Push notifications were removed from Expo Go in SDK 53.
+ * We detect Expo Go vs standalone APK and only run full setup in production builds.
+ * Local notification scheduling still works in Expo Go (just without push channels).
+ */
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-let configured = false;
-let NotificationsModule = null;
-let handlerConfigured = false;
-
+// Detect if running inside Expo Go (not a standalone APK/IPA)
 function isExpoGo() {
-  return Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
+  return (
+    Constants.executionEnvironment === 'storeClient' ||
+    Constants.appOwnership === 'expo' ||
+    Constants.executionEnvironment === 'expo'
+  );
 }
 
-async function getNotificationsModule() {
+let _Notifications = null;
+let _configured = false;
+let _handlerSet = false;
+
+async function _getModule() {
   if (Platform.OS === 'web') return null;
-  if (NotificationsModule) return NotificationsModule;
+  if (_Notifications) return _Notifications;
 
-  NotificationsModule = await import('expo-notifications');
-
-  if (!handlerConfigured) {
-    NotificationsModule.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-      }),
-    });
-    handlerConfigured = true;
+  try {
+    _Notifications = await import('expo-notifications');
+    return _Notifications;
+  } catch {
+    return null;
   }
-
-  return NotificationsModule;
 }
 
-export async function configureNotifications() {
-  if (configured) return true;
+/**
+ * Initialize the notification handler.
+ * Must be called as early as possible (App.js) to ensure banners show.
+ * Safe to call multiple times — idempotent.
+ */
+export async function initNotificationHandler() {
+  if (_handlerSet) return;
+  const N = await _getModule();
+  if (!N) return;
 
-  if (Platform.OS === 'web') {
-    configured = false;
-    return false;
-  }
+  N.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+  _handlerSet = true;
+}
+
+/**
+ * Configure notification permissions and Android channel.
+ * In Expo Go, we skip push-related setup entirely to avoid SDK 53 errors.
+ */
+export async function configureNotifications() {
+  if (_configured) return true;
+  if (Platform.OS === 'web') return false;
+
+  const N = await _getModule();
+  if (!N) return false;
+
+  await initNotificationHandler();
 
   if (isExpoGo()) {
-    // Gracefully bypass remote push channels/permissions on Expo Go client to eliminate startup console clutter,
-    // while keeping the module local scheduling intact.
-    configured = true;
+    // In Expo Go, skip channel/permissions — they cause SDK 53 error.
+    // Local scheduling will still work within the session.
+    _configured = true;
     return true;
   }
 
+  // ── Standalone APK/IPA: full setup ──────────────────────────────────────────
   try {
-    const Notifications = await getNotificationsModule();
-    if (!Notifications) {
-      configured = false;
-      return false;
-    }
-
+    // Android: create notification channel with MAX importance for banner display
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('asaaniyat-service', {
+      await N.setNotificationChannelAsync('asaaniyat-service', {
         name: 'Asaaniyat Service Updates',
-        importance: Notifications.AndroidImportance.HIGH,
+        description: 'Real-time updates for your service bookings',
+        importance: N.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#0E8F46',
         sound: 'default',
+        enableVibrate: true,
+        showBadge: false,
+        lockscreenVisibility: N.AndroidNotificationVisibility?.PUBLIC,
       });
     }
 
-    const current = await Notifications.getPermissionsAsync();
-    const finalStatus = current.status === 'granted'
-      ? current.status
-      : (await Notifications.requestPermissionsAsync()).status;
+    const { status: existingStatus } = await N.getPermissionsAsync();
+    const finalStatus =
+      existingStatus === 'granted'
+        ? existingStatus
+        : (await N.requestPermissionsAsync()).status;
 
-    configured = finalStatus === 'granted';
-    return configured;
+    _configured = finalStatus === 'granted';
+    return _configured;
   } catch (err) {
-    console.warn('[Notifications] Setup failed:', err.message);
-    return false;
+    // Non-fatal — notifications degrade gracefully
+    console.warn('[Notifications] Setup failed (non-fatal):', err.message);
+    _configured = true;
+    return true;
   }
 }
 
+/**
+ * Schedule an immediate local notification (banner).
+ * Works in both Expo Go and standalone builds.
+ * @param {string} title
+ * @param {string} body
+ * @param {object} data - extra payload
+ */
 export async function sendLocalNotification(title, body, data = {}) {
+  const N = await _getModule();
+  if (!N) return false;
+
+  // Ensure handler is set before scheduling
+  await initNotificationHandler();
+
   try {
-    const allowed = await configureNotifications();
-    if (!allowed) return false;
-
-    const Notifications = await getNotificationsModule();
-    if (!Notifications) return false;
-
-    await Notifications.scheduleNotificationAsync({
-      content: { title, body, data, sound: 'default' },
-      trigger: null,
+    await N.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data,
+        sound: 'default',
+        ...(Platform.OS === 'android' && !isExpoGo()
+          ? { channelId: 'asaaniyat-service' }
+          : {}),
+      },
+      trigger: null, // fire immediately
     });
     return true;
   } catch (err) {
-    console.warn('[Notifications] Local notification failed:', err.message);
+    console.warn('[Notifications] Schedule failed (non-fatal):', err.message);
     return false;
   }
 }

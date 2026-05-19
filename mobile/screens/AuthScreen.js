@@ -1,36 +1,74 @@
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+/**
+ * AuthScreen.js — Premium Login & Registration
+ * Glassmorphic design using actual app assets (icon.png)
+ * Consistent with Asaaniyat LiquidGlass design language.
+ */
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config';
+import { COLORS, RADII, SHADOWS } from '../theme';
 import { useAuth } from '../context/AuthContext';
+
+const ICON = require('../assets/icon.png');
 
 export default function AuthScreen() {
   const { login, register } = useAuth();
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [city, setCity] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const cardAnim = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(0.94)).current;
+  const modeAnim = useRef(new Animated.Value(0)).current;
+
   const isRegister = mode === 'register';
-  const title = useMemo(() => (isRegister ? 'Create your account' : 'Welcome back'), [isRegister]);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(cardAnim, { toValue: 1, duration: 500, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      Animated.spring(cardScale, { toValue: 1, damping: 16, stiffness: 160, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  useEffect(() => {
+    setError(null);
+    Animated.spring(modeAnim, { toValue: isRegister ? 1 : 0, damping: 18, stiffness: 200, useNativeDriver: false }).start();
+  }, [mode]);
 
   const submit = async () => {
     setError(null);
-    if (!email.trim() || !password.trim()) {
-      setError('Email and password are required.');
-      return;
-    }
-    if (isRegister && !city.trim()) {
-      setError('City is required.');
-      return;
-    }
-    if (isRegister && password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
+
+    if (!email.trim()) { setError('Email address is required.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Please enter a valid email address.'); return; }
+    if (!password.trim()) { setError('Password is required.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+
+    if (isRegister) {
+      if (!city.trim()) { setError('Please enter your city.'); return; }
+      if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
     }
 
     setLoading(true);
@@ -41,93 +79,422 @@ export default function AuthScreen() {
         await login({ email: email.trim(), password });
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Authentication failed');
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Authentication failed. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.shell}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-        <View style={styles.card}>
-          <View style={styles.logo}><Ionicons name="flash" size={28} color="#FFFFFF" /></View>
-          <Text style={styles.brand}>Asaaniyat</Text>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>Log in to continue or create a new account to start booking services securely.</Text>
+    <View style={[styles.shell, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      {/* Ambient gradient layers */}
+      <View style={styles.ambientTop} />
+      <View style={styles.ambientBottom} />
+      <View style={styles.ambientCircle} />
 
-          <View style={styles.segmentRow}>
-            <Pressable onPress={() => setMode('login')} style={[styles.segment, !isRegister && styles.segmentActive]}>
-              <Text style={[styles.segmentText, !isRegister && styles.segmentTextActive]}>Login</Text>
-            </Pressable>
-            <Pressable onPress={() => setMode('register')} style={[styles.segment, isRegister && styles.segmentActive]}>
-              <Text style={[styles.segmentText, isRegister && styles.segmentTextActive]}>Register</Text>
-            </Pressable>
-          </View>
-
-          {isRegister ? (
-            <View style={styles.field}>
-              <Text style={styles.label}>Display name</Text>
-              <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} placeholder="Your name" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.kav}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <Animated.View style={[
+            styles.card,
+            { opacity: cardAnim, transform: [{ scale: cardScale }] }
+          ]}>
+            {/* ── Logo & Branding ─────────────────────────────────────── */}
+            <View style={styles.brandRow}>
+              <View style={styles.logoWrap}>
+                <Image source={ICON} style={styles.logoImage} resizeMode="contain" />
+              </View>
+              <View style={styles.brandText}>
+                <Text style={styles.brand}>Asaaniyat</Text>
+                <Text style={styles.brandUrdu}>آسانیات</Text>
+              </View>
             </View>
-          ) : null}
 
-          {isRegister ? (
-            <View style={styles.field}>
-              <Text style={styles.label}>City</Text>
-              <TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="Islamabad" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
+            <Text style={styles.tagline}>Premium Home Services, at Your Command.</Text>
+
+            {/* ── Mode Switcher ────────────────────────────────────────── */}
+            <View style={styles.segmentRow}>
+              <Pressable
+                onPress={() => setMode('login')}
+                style={[styles.segment, !isRegister && styles.segmentActive]}
+                android_ripple={{ color: 'rgba(14,143,70,0.1)', borderless: false }}
+              >
+                <Ionicons
+                  name={isRegister ? 'log-in-outline' : 'log-in'}
+                  size={14}
+                  color={!isRegister ? '#FFFFFF' : COLORS.textSecondary}
+                  style={{ marginRight: 5 }}
+                />
+                <Text style={[styles.segmentText, !isRegister && styles.segmentTextActive]}>Log In</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setMode('register')}
+                style={[styles.segment, isRegister && styles.segmentActive]}
+                android_ripple={{ color: 'rgba(14,143,70,0.1)', borderless: false }}
+              >
+                <Ionicons
+                  name={isRegister ? 'person-add' : 'person-add-outline'}
+                  size={14}
+                  color={isRegister ? '#FFFFFF' : COLORS.textSecondary}
+                  style={{ marginRight: 5 }}
+                />
+                <Text style={[styles.segmentText, isRegister && styles.segmentTextActive]}>Register</Text>
+              </Pressable>
             </View>
-          ) : null}
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="name@example.com" placeholderTextColor={COLORS.textMuted} autoCapitalize="none" keyboardType="email-address" />
-          </View>
+            {/* ── Form Fields ──────────────────────────────────────────── */}
+            {isRegister && (
+              <InputField
+                label="Display Name"
+                icon="person-outline"
+                value={displayName}
+                onChangeText={setDisplayName}
+                placeholder="Your full name"
+                autoCapitalize="words"
+              />
+            )}
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="Minimum 8 characters" placeholderTextColor={COLORS.textMuted} secureTextEntry />
-          </View>
+            {isRegister && (
+              <InputField
+                label="City"
+                icon="location-outline"
+                value={city}
+                onChangeText={setCity}
+                placeholder="Karachi, Lahore, Islamabad..."
+                autoCapitalize="words"
+              />
+            )}
 
-          {isRegister ? (
-            <View style={styles.field}>
-              <Text style={styles.label}>Confirm password</Text>
-              <TextInput style={styles.input} value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Repeat password" placeholderTextColor={COLORS.textMuted} secureTextEntry />
+            <InputField
+              label="Email Address"
+              icon="mail-outline"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="name@example.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+
+            <InputField
+              label="Password"
+              icon="lock-closed-outline"
+              value={password}
+              onChangeText={setPassword}
+              placeholder={isRegister ? 'Minimum 8 characters' : 'Your password'}
+              secureTextEntry={!showPassword}
+              rightIcon={showPassword ? 'eye-off-outline' : 'eye-outline'}
+              onRightIconPress={() => setShowPassword(v => !v)}
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+            />
+
+            {isRegister && (
+              <InputField
+                label="Confirm Password"
+                icon="shield-checkmark-outline"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Repeat your password"
+                secureTextEntry={!showPassword}
+              />
+            )}
+
+            {/* ── Error Banner ─────────────────────────────────────────── */}
+            {error ? (
+              <View style={styles.errorBanner}>
+                <Ionicons name="warning-outline" size={16} color="#DC2626" style={{ marginRight: 8, flexShrink: 0 }} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            {/* ── Submit Button ────────────────────────────────────────── */}
+            <TouchableOpacity
+              style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+              onPress={submit}
+              disabled={loading}
+              activeOpacity={0.84}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Ionicons
+                    name={isRegister ? 'person-add' : 'log-in'}
+                    size={18}
+                    color="#FFFFFF"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={styles.submitBtnText}>
+                    {isRegister ? 'Create Account' : 'Log In'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* ── Footer note ─────────────────────────────────────────── */}
+            <View style={styles.footerRow}>
+              <Ionicons name="shield-checkmark-outline" size={12} color={COLORS.textMuted} style={{ marginRight: 5 }} />
+              <Text style={styles.footerNote}>
+                Your session is encrypted and remembered securely on this device.
+              </Text>
             </View>
-          ) : null}
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={submit} disabled={loading} activeOpacity={0.86}>
-            {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{isRegister ? 'Create account' : 'Log in'}</Text>}
-          </TouchableOpacity>
-
-          <Text style={styles.note}>Your session is remembered securely on this device for next time.</Text>
-        </View>
+          </Animated.View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
 
+function InputField({
+  label, icon, value, onChangeText, placeholder,
+  secureTextEntry, keyboardType, autoCapitalize, autoComplete,
+  rightIcon, onRightIconPress,
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <View style={inputStyles.wrap}>
+      <Text style={inputStyles.label}>{label}</Text>
+      <View style={[inputStyles.inputRow, focused && inputStyles.inputRowFocused]}>
+        <Ionicons name={icon} size={17} color={focused ? COLORS.primary : COLORS.textMuted} style={inputStyles.icon} />
+        <TextInput
+          style={inputStyles.input}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.textMuted}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize ?? 'none'}
+          autoComplete={autoComplete}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+        />
+        {rightIcon && (
+          <TouchableOpacity onPress={onRightIconPress} style={inputStyles.rightBtn} activeOpacity={0.7}>
+            <Ionicons name={rightIcon} size={17} color={COLORS.textMuted} />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const inputStyles = StyleSheet.create({
+  wrap: { marginBottom: 14 },
+  label: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+    marginBottom: 6,
+    letterSpacing: 0.3,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+    borderRadius: RADII.md,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    gap: 8,
+  },
+  inputRowFocused: {
+    borderColor: COLORS.primary,
+    backgroundColor: '#F5FBF7',
+  },
+  icon: { flexShrink: 0 },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.textPrimary,
+    paddingVertical: 12,
+  },
+  rightBtn: {
+    padding: 4,
+    flexShrink: 0,
+  },
+});
+
 const styles = StyleSheet.create({
-  shell: { flex: 1, backgroundColor: COLORS.bg, padding: 20, justifyContent: 'center' },
-  flex: { flex: 1, justifyContent: 'center' },
-  card: { borderRadius: 28, backgroundColor: '#FFFFFF', padding: 24, borderWidth: 1, borderColor: COLORS.border, shadowColor: COLORS.primary, shadowOpacity: 0.12, shadowRadius: 24, elevation: 4 },
-  logo: { width: 60, height: 60, borderRadius: 18, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  brand: { color: COLORS.primary, fontSize: 13, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
-  title: { marginTop: 8, fontSize: 28, fontWeight: '900', color: COLORS.textPrimary },
-  subtitle: { marginTop: 8, fontSize: 14, lineHeight: 21, color: COLORS.textSecondary },
-  segmentRow: { flexDirection: 'row', backgroundColor: COLORS.bgCardHover, borderRadius: 18, padding: 4, marginTop: 18, marginBottom: 16 },
-  segment: { flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center' },
-  segmentActive: { backgroundColor: COLORS.primary },
-  segmentText: { color: COLORS.textSecondary, fontWeight: '800' },
+  shell: {
+    flex: 1,
+    backgroundColor: '#F5FBF7',
+  },
+
+  // Ambient layers
+  ambientTop: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: '50%',
+    backgroundColor: '#EFF6FF',
+    opacity: 0.7,
+  },
+  ambientBottom: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    height: '50%',
+    backgroundColor: '#EAF8EF',
+    opacity: 0.65,
+  },
+  ambientCircle: {
+    position: 'absolute',
+    top: -120, right: -80,
+    width: 320, height: 320,
+    borderRadius: 160,
+    backgroundColor: 'rgba(14,143,70,0.06)',
+  },
+
+  kav: { flex: 1 },
+
+  scroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+
+  // Card
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+    ...SHADOWS.glass,
+  },
+
+  // Brand
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 14,
+  },
+  logoWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#EAF8EF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.14)',
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 40,
+    height: 40,
+  },
+  brandText: { flex: 1 },
+  brand: {
+    color: COLORS.primary,
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  brandUrdu: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  tagline: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '700',
+    marginBottom: 18,
+  },
+
+  // Segment
+  segmentRow: {
+    flexDirection: 'row',
+    backgroundColor: '#ECF8F1',
+    borderRadius: RADII.md,
+    padding: 4,
+    marginBottom: 20,
+    gap: 4,
+  },
+  segment: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: RADII.sm,
+  },
+  segmentActive: {
+    backgroundColor: COLORS.primary,
+    ...SHADOWS.card,
+  },
+  segmentText: {
+    color: COLORS.textSecondary,
+    fontWeight: '800',
+    fontSize: 13,
+  },
   segmentTextActive: { color: '#FFFFFF' },
-  field: { marginBottom: 12 },
-  label: { marginBottom: 6, color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
-  input: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 13, color: COLORS.textPrimary, fontSize: 15, backgroundColor: '#FFFFFF' },
-  button: { marginTop: 10, borderRadius: 18, backgroundColor: COLORS.primary, paddingVertical: 15, alignItems: 'center' },
-  buttonDisabled: { opacity: 0.7 },
-  buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
-  error: { color: COLORS.danger, marginTop: 4, marginBottom: 6, fontWeight: '700' },
-  note: { marginTop: 12, color: COLORS.textMuted, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+
+  // Error
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(220,38,38,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(220,38,38,0.14)',
+    borderRadius: RADII.md,
+    padding: 12,
+    marginBottom: 14,
+  },
+  errorText: {
+    flex: 1,
+    color: '#DC2626',
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+
+  // Submit
+  submitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: RADII.lg,
+    paddingVertical: 15,
+    marginTop: 6,
+    ...SHADOWS.card,
+  },
+  submitBtnDisabled: { opacity: 0.72 },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+
+  // Footer
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(14,143,70,0.06)',
+  },
+  footerNote: {
+    flex: 1,
+    color: COLORS.textMuted,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
 });

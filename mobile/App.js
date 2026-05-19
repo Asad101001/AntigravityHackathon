@@ -24,12 +24,17 @@ import AuthScreen from './screens/AuthScreen';
 import AppHeader from './components/AppHeader';
 import Sidebar from './components/Sidebar';
 import LiquidGlass from './components/LiquidGlass';
+import { ToastProvider } from './components/Toast';
 import { COLORS } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
-import { configureNotifications } from './notifications';
+import { initNotificationHandler, configureNotifications } from './notifications';
 import { AppContextProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+
+// Initialize notification handler as early as possible
+// This must run before any notification is scheduled
+void initNotificationHandler();
 
 const Stack = createNativeStackNavigator();
 
@@ -257,7 +262,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AuthGate />
+        <ToastProvider>
+          <AuthGate />
+        </ToastProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

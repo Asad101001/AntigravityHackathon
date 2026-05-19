@@ -2,23 +2,33 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config';
+import { COLORS, RADII, SHADOWS } from '../theme';
 import { addSessionBooking } from '../sessionBookings';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
+import ScreenHeader from '../components/ScreenHeader';
+import { useToast } from '../components/Toast';
+
+function getPKTNow() {
+  const now = new Date();
+  const pktOffset = 5 * 60 * 60 * 1000; // UTC+5
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  return new Date(utc + pktOffset);
+}
 
 function normalizeBookingStartTime(value) {
   try {
-    if (!value) return new Date().toISOString();
+    if (!value) return getPKTNow().toISOString();
 
     const directDate = new Date(value);
     if (!Number.isNaN(directDate.getTime())) {
       return directDate.toISOString();
     }
 
-    const timeMatch = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    // Handle time-only strings like '10 AM', '10:30 PM', 'Today 4:00 PM'
+    const timeMatch = String(value).trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
     if (timeMatch) {
       const hours = Number(timeMatch[1]);
       const minutes = Number(timeMatch[2] || '0');
@@ -28,16 +38,18 @@ function normalizeBookingStartTime(value) {
       if (period === 'PM' && hours < 12) normalizedHours += 12;
       if (period === 'AM' && hours === 12) normalizedHours = 0;
 
-      const date = new Date();
-      date.setHours(normalizedHours, minutes, 0, 0);
-      return date.toISOString();
+      // Use PKT-aware "today" so date is correct for Pakistan timezone
+      const pktNow = getPKTNow();
+      pktNow.setHours(normalizedHours, minutes, 0, 0);
+      return pktNow.toISOString();
     }
 
-    return new Date().toISOString();
+    return getPKTNow().toISOString();
   } catch (err) {
-    return new Date().toISOString();
+    return getPKTNow().toISOString();
   }
 }
+
 
 function formatAppointmentLabel(value, fallback) {
   try {
@@ -79,8 +91,10 @@ export default function ConfirmationScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { setActiveJob } = useAppContext();
   const { user } = useAuth();
+  const toast = useToast();
   const provider = fullResult.provider || {};
   const [savedBooking, setSavedBooking] = useState(fullResult.booking || null);
+  const [existingBooking, setExistingBooking] = useState(null);
 
   const appointmentLabel = formatAppointmentLabel(
     fullResult.scheduled_time || fullResult.output?.scheduled_time || fullResult.booking?.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
@@ -137,12 +151,37 @@ export default function ConfirmationScreen({ route, navigation }) {
 
       if (response.data.success) {
         setSavedBooking(response.data.booking || null);
-        console.log('Booking saved to database:', response.data.booking._id);
       } else {
-        console.warn('Booking save returned non-success payload:', response.data);
+        console.warn('[Confirmation] Booking save non-success:', response.data);
       }
     } catch (error) {
-      console.error('Failed to save booking to database:', error);
+      const status = error?.response?.status;
+      const data = error?.response?.data;
+
+      if (status === 409 && data?.error === 'duplicate_booking') {
+        // Duplicate booking — show friendly banner with action
+        const existing = data.existing_booking;
+        setExistingBooking(existing);
+        toast.showWarning(
+          'You already have a booking with this provider at this time.',
+          {
+            duration: 8000,
+            action: {
+              label: 'View',
+              onPress: () => {
+                // Navigate to Bookings tab to see existing booking
+                navigation.navigate('Bookings');
+              },
+            },
+          }
+        );
+      } else if (status === 401) {
+        toast.showError('Session expired. Please log in again.');
+      } else if (status >= 500) {
+        toast.showWarning('Could not save booking to cloud. Your session booking is still active.');
+      } else {
+        console.warn('[Confirmation] Booking save failed:', error.message);
+      }
     }
   };
 
@@ -158,14 +197,24 @@ export default function ConfirmationScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ── Local Menu Header ────────────────────────────────────────── */}
-      <View style={[styles.localHeader, { paddingTop: Math.max(insets.top, 16) }]}>
-        <TouchableOpacity style={styles.menuButton} activeOpacity={0.8}>
-          <Ionicons name="menu-outline" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
-        <Text style={styles.localHeaderTitle}>Booking Confirmed</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      {/* Ambient backgrounds */}
+      <View style={styles.ambientTop} />
+      <View style={styles.ambientBottom} />
+
+      <ScreenHeader
+        navigation={navigation}
+        title="Booking Confirmed"
+        noBorder
+        right={
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Home')}
+            style={styles.homeBtn}
+            activeOpacity={0.78}
+          >
+            <Ionicons name="home-outline" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Success Circle */}
@@ -445,4 +494,33 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '900',
   },
+
+  // Ambient backgrounds
+  ambientTop: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: '40%',
+    backgroundColor: '#EFF6FF',
+    opacity: 0.5,
+  },
+  ambientBottom: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    height: '30%',
+    backgroundColor: '#EAF8EF',
+    opacity: 0.45,
+  },
+
+  // Home button in header right slot
+  homeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+  },
 });
+

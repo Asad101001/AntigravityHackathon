@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-19T20-40-09",
+  "timestamp": "2026-05-19T20:40:16.211Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.9496406,
+      "lng": 67.1078203,
+      "label": "Gulzar E Hijri Scheme 33, Karachi City"
+    },
+    "parsed_location": null,
+    "user_text": "AC Repair needed"
+  },
+  "output": {
+    "lat": 24.9496406,
+    "lng": 67.1078203,
+    "area_name": "Gulzar-e-Hijri Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 19
+}
