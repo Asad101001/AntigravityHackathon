@@ -22,6 +22,7 @@
     },
     "android": {
       "package": "com.asaaniyat.app",
+      "edgeToEdgeEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0E8F46"
@@ -51,7 +52,8 @@
             "usesCleartextTraffic": true,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "minSdkVersion": 24
+            "minSdkVersion": 24,
+            "edgeToEdgeEnabled": false
           }
         }
       ],
