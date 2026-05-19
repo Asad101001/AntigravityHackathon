@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -67,6 +67,7 @@ export default function ConfirmationScreen({ route, navigation }) {
   const { setActiveJob } = useAppContext();
   const { user } = useAuth();
   const provider = fullResult.provider || {};
+  const [savedBooking, setSavedBooking] = useState(fullResult.booking || null);
 
   const appointmentLabel = formatAppointmentLabel(
     fullResult.scheduled_time || fullResult.output?.scheduled_time || fullResult.booking?.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
@@ -122,6 +123,7 @@ export default function ConfirmationScreen({ route, navigation }) {
       const response = await apiClient.post('/bookings', bookingData);
 
       if (response.data.success) {
+        setSavedBooking(response.data.booking || null);
         console.log('Booking saved to database:', response.data.booking._id);
       } else {
         console.warn('Booking save returned non-success payload:', response.data);
@@ -228,8 +230,8 @@ export default function ConfirmationScreen({ route, navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.secondaryButton} 
-          onPress={() => navigation.navigate('ProviderChat', { fullResult })}
+          style={styles.secondaryButton}
+          onPress={() => navigation.navigate('ProviderChat', { fullResult, booking: savedBooking || fullResult.booking || null })}
           activeOpacity={0.8}
         >
           <Text style={styles.secondaryButtonText}>Go to Chat</Text>

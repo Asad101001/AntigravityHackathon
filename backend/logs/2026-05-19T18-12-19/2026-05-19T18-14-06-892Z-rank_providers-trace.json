@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-19T18-12-19",
+  "timestamp": "2026-05-19T18:14:06.892Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Based on the provided constraints, we selected AC069 as the overall best provider due to its excellent rating, low cancellation risk, high on-time score, and reasonable base rate. AC179 was a close second, offering a slightly lower base rate and equally impressive ratings, but was ranked third due to its slightly farther distance. AC036 and AC124 were ranked lower due to their lower ratings and higher cancellation risks, respectively. AC234 was ranked last due to its unverified profile and higher base rate.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "AC069 was chosen as the overall best provider due to its excellent rating, low cancellation risk, high on-time score, and reasonable base rate.",
+        "most_affordable_id": "AC179 offered the lowest base rate of 1262 PKR, making it the most affordable option.",
+        "closest_fastest_id": "AC069 had the smallest distance of 4.32 km, making it the closest/fastest option."
+      }
+    }
+  },
+  "durationMs": 718
+}

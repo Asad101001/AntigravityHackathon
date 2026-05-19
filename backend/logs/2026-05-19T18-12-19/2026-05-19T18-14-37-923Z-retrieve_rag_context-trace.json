@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-19T18-12-19",
+  "timestamp": "2026-05-19T18:14:37.923Z",
+  "agent": "retrieve_rag_context",
+  "action": "retrieve_rag_context",
+  "input": {
+    "query": "Show technician profile provider: PECHS Clean AC Technician Zahid type: AC Technician"
+  },
+  "output": {
+    "chunk_count": 0,
+    "chunks": []
+  },
+  "durationMs": 707
+}

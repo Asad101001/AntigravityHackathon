@@ -101,6 +101,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             ...fullResult,
             provider,
             booking_id: response.data.booking?._id || fullResult.booking_id,
+            booking: response.data.booking || fullResult.booking || null,
             total: fullResult.quote_pkr || null,
             booking_saved: true,
           },
@@ -112,6 +113,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             ...fullResult,
             provider,
             booking_id: fullResult.booking_id,
+            booking: fullResult.booking || null,
             total: fullResult.quote_pkr || null,
           },
         });
@@ -127,6 +129,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             ...fullResult,
             provider,
             booking_id: fullResult.booking_id,
+            booking: fullResult.booking || null,
             total: fullResult.quote_pkr || null,
           },
         });
