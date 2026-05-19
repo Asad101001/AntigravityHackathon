@@ -63,7 +63,7 @@ const QUICK_REPLIES = [
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
-  const { registerScroll } = useTabBarVisibility();
+  const { registerScroll, showTabBar } = useTabBarVisibility();
   const [activeBooking, setActiveBooking] = useState(getActiveBooking());
   const [input, setInput] = useState('');
   
@@ -280,6 +280,8 @@ export default function ChatScreen() {
           style={styles.messageList}
           contentContainerStyle={styles.messageContent}
           onScroll={registerScroll}
+          onScrollBeginDrag={showTabBar}
+          onTouchStart={showTabBar}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -321,21 +323,6 @@ export default function ChatScreen() {
             </View>
           )}
         </ScrollView>
-
-        {/* Composer bottom drawer */}
-        <LiquidGlass style={styles.composer} contentStyle={styles.composerInner} strong radius={RADII.xl}>
-          <TextInput
-            style={styles.input}
-            placeholder="Message Asaaniyat agent..."
-            placeholderTextColor={COLORS.textMuted}
-            value={input}
-            onChangeText={setInput}
-            multiline
-          />
-          <TouchableOpacity style={[styles.send, !input.trim() && styles.sendDisabled]} onPress={send} disabled={!input.trim()} activeOpacity={0.84}>
-            <Ionicons name="arrow-up" size={19} color="#FFFFFF" />
-          </TouchableOpacity>
-        </LiquidGlass>
       </View>
 
       {/* Booking Selection Modal */}
@@ -506,7 +493,7 @@ const styles = StyleSheet.create({
 
   // Message area
   messageList: { flex: 1 },
-  messageContent: { gap: 14, paddingVertical: 14 },
+  messageContent: { gap: 14, paddingTop: 14, paddingBottom: 110 },
   
   // Message bubbles containers
   bubbleContainer: {

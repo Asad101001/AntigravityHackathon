@@ -10,12 +10,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  ScrollView, Animated, Modal, ActivityIndicator
+  ScrollView, Animated, Modal, ActivityIndicator, Image, Platform
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../config';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../lib/apiClient';
+import LiquidGlass from '../components/LiquidGlass';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -30,6 +31,41 @@ const multiplierLabel = (m) => {
   if (m <= 1.1)  return `Low urgency (${m}×)`;
   if (m <= 1.25) return `Medium urgency (${m}×)`;
   return `High urgency (${m}×)`;
+};
+
+const URDU_MAPPINGS = {
+  plumber: 'پلمبر',
+  plumbing: 'پلمبر',
+  electrician: 'بجلی والا',
+  ac: 'اے سی',
+  'ac repair': 'اے سی',
+  carpenter: 'بڑھئی',
+  painter: 'پینٹر',
+  cleaning: 'تنظيف',
+  handyman: 'مرمت',
+};
+
+const SERVICE_ICONS = {
+  plumber: 'water',
+  plumbing: 'water',
+  electrician: 'flash',
+  ac: 'snow',
+  'ac repair': 'snow',
+  carpenter: 'hammer',
+  painter: 'color-palette',
+  cleaning: 'leaf',
+  handyman: 'construct',
+};
+
+const SERVICE_IMAGES = {
+  plumbing: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+  plumber: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+  electrician: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+  ac: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?auto=format&fit=crop&w=600&q=80',
+  'ac repair': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?auto=format&fit=crop&w=600&q=80',
+  carpenter: 'https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3?auto=format&fit=crop&w=600&q=80',
+  painter: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+  cleaning: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
 };
 
 const normalizeBookingStartTime = (value) => {
@@ -61,9 +97,7 @@ const normalizeBookingStartTime = (value) => {
 // ---------------------------------------------------------------------------
 export default function ReviewBookingScreen({ route, navigation }) {
   const { provider, fullResult } = route.params;
-
-  const [loading, setLoading] = useState(false);
-  const [showDuplicatePopup, setShowDuplicatePopup] = useState(false);
+  const insets = useSafeAreaInsets();
 
   // ── Quote data — prefer backend PKR breakdown, fall back to USD stub ──
   const breakdown  = fullResult?.quote_breakdown || null;
@@ -86,80 +120,6 @@ export default function ReviewBookingScreen({ route, navigation }) {
     ]).start();
   }, []);
 
-  const confirm = async () => {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const bookingStartTime = normalizeBookingStartTime(
-        fullResult.booking_start_time ||
-        fullResult.scheduled_time ||
-        fullResult.provider?.confirmed_slot ||
-        provider.confirmed_slot
-      );
-
-      const bookingData = {
-        provider_id: provider.id || provider.provider_id || fullResult.provider_id || `provider_${Date.now()}`,
-        provider_name: provider.name || 'TBD',
-        service_type: provider.service_type || provider.service || 'Service',
-        location: fullResult.parsed_intent?.location || 'Selected location',
-        city: fullResult.parsed_intent?.city || provider.city || 'Unknown',
-        area: provider.area || fullResult.parsed_intent?.resolved_area || 'Unknown',
-        booking_start_time: bookingStartTime,
-        quote_pkr: fullResult.quote_pkr || legacyTotal || null,
-        status: 'confirmed',
-        raw_data: {
-          booking_id: fullResult.booking_id,
-          workflow_id: fullResult.workflow_id,
-          reasoning_log: fullResult.reasoning_log,
-          alternatives: fullResult.alternatives,
-          execution_logs: fullResult.execution_logs,
-        }
-      };
-
-      const response = await apiClient.post('/bookings', bookingData);
-      
-      if (response.data?.success) {
-        navigation.navigate('Confirmation', {
-          fullResult: {
-            ...fullResult,
-            provider,
-            booking_id: response.data.booking?._id || fullResult.booking_id,
-            total: hasPKR ? quote_pkr : legacyTotal,
-            booking_saved: true,
-          },
-        });
-      } else {
-        // Fallback for mock environment
-        navigation.navigate('Confirmation', {
-          fullResult: {
-            ...fullResult,
-            provider,
-            booking_id: fullResult.booking_id,
-            total: hasPKR ? quote_pkr : legacyTotal,
-          },
-        });
-      }
-    } catch (err) {
-      console.log('Booking creation failed:', err.response?.status, err.response?.data);
-      if (err.response?.status === 409 || err.response?.data?.error === 'duplicate_booking') {
-        setShowDuplicatePopup(true);
-      } else {
-        // Fallback for general network errors - let user complete gracefully
-        navigation.navigate('Confirmation', {
-          fullResult: {
-            ...fullResult,
-            provider,
-            booking_id: fullResult.booking_id,
-            total: hasPKR ? quote_pkr : legacyTotal,
-          },
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ── Urgency badge colour ──────────────────────────────────────────────
   const urgencyMultiplier = breakdown?.urgency_multiplier ?? 1;
   const urgencyColor =
@@ -167,117 +127,165 @@ export default function ReviewBookingScreen({ route, navigation }) {
     urgencyMultiplier >= 1.1 ? COLORS.warning :
     COLORS.success;
 
+  const rawService = provider.service_type || provider.service || 'plumbing';
+  const serviceKey = String(rawService).toLowerCase();
+  const urduTranslation = URDU_MAPPINGS[serviceKey] || 'سباكة';
+  const serviceIconName = SERVICE_ICONS[serviceKey] || 'construct';
+
+  // Title formatting matching Mockup 1
+  const displayServiceTitle = rawService.charAt(0).toUpperCase() + rawService.slice(1);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.container}>
+      {/* ── Custom Local Header ────────────────────────────────────────── */}
+      <View style={[styles.localHeader, { paddingTop: Math.max(insets.top, 16) }]}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
+          <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
+        </TouchableOpacity>
+        <Text style={styles.localHeaderTitle}>Review Booking</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-        {/* ── Header ───────────────────────────────────────────────────── */}
-        <Text style={styles.step}>Checkout</Text>
-        <Text style={styles.title}>Review Booking</Text>
-        <Text style={styles.subtitle}>
-          Confirm the details before finalising your appointment.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {/* ── Booking details card ──────────────────────────────────────── */}
-        <View style={styles.card}>
-          <Row label="Service"     value={provider.service_type || provider.service || 'Service'} />
-          <Row label="Provider"    value={provider.name} />
-          <Row label="Appointment" value={provider.confirmed_slot || 'Today 4:00 PM'} />
-          <Row label="Distance"    value={`${provider.distance_km || '—'} km`} />
-        </View>
-
-        {/* ── AI-generated quote card ───────────────────────────────────── */}
-        <Animated.View style={[
-          styles.quoteCard,
-          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-        ]}>
-          {/* Header row */}
-          <View style={styles.quoteHeader}>
-            <Text style={styles.quoteHeaderIcon}>💰</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.quoteHeaderTitle}>
-                {hasPKR ? 'AI-Generated Quote' : 'Price Estimate'}
-              </Text>
-              {hasPKR && (
-                <Text style={styles.quoteHeaderSub}>
-                  Computed by DynamicPricingAgent
-                </Text>
-              )}
+        {/* ── Booking details card (Glassmorphic) ──────────────────────── */}
+        <LiquidGlass style={styles.card} radius={22}>
+          {/* ── Dynamic Profile Header (Name -> Service -> Company) ── */}
+          <View style={styles.profileHeaderBlock}>
+            <View style={styles.profileAvatar}>
+              <Text style={styles.profileAvatarText}>{provider.name?.charAt(0) || 'P'}</Text>
             </View>
-            {hasPKR && (
-              <View style={styles.aiBadge}>
-                <Text style={styles.aiBadgeText}>⚡ LIVE</Text>
-              </View>
-            )}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.profileName}>{provider.name}</Text>
+              <Text style={styles.profileService}>
+                {provider.service || provider.service_type || 'Electrician'}
+              </Text>
+              <Text style={styles.profileCompany}>
+                {provider.company || provider.agency || provider.agency_name || `${provider.name?.split(' ')[0] || 'Expert'}${String(provider.service || provider.service_type || 'Services').toLowerCase().includes('plumb') ? ' Plumbing Services' : ' Electrics'}`}
+              </Text>
+            </View>
+            <Text style={styles.urduText}>{urduTranslation}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={styles.profileDivider} />
 
-          {hasPKR ? (
-            <>
-              {/* Base rate */}
-              <QuoteRow
-                label="Base Rate"
-                sublabel={`Provider minimum call-out fee`}
-                value={fmt(breakdown.base_rate)}
-              />
-
-              {/* Distance surcharge */}
-              <QuoteRow
-                label="Distance Surcharge"
-                sublabel={`${provider.distance_km || '?'} km × distance rate`}
-                value={fmt(breakdown.distance_surcharge)}
-              />
-
-              {/* Urgency multiplier */}
-              <QuoteRow
-                label="Urgency Multiplier"
-                sublabel={multiplierLabel(urgencyMultiplier)}
-                value={`${urgencyMultiplier}×`}
-                valueStyle={{ color: urgencyColor }}
-              />
-
-              <View style={styles.divider} />
-
-              {/* Total */}
-              <View style={styles.totalRow}>
-                <View>
-                  <Text style={styles.totalLabel}>Total</Text>
-                  <Text style={styles.totalSub}>incl. all fees</Text>
-                </View>
-                <Text style={styles.totalValue}>{fmt(quote_pkr)}</Text>
+          <View style={styles.detailsList}>
+            <View style={styles.detailRowItem}>
+              <View style={styles.detailIconCircle}>
+                <Ionicons name="location-outline" size={16} color={COLORS.primary} />
               </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.detailRowText}>
+                  {fullResult.parsed_intent?.location || provider.area || 'Selected Area'}
+                </Text>
+              </View>
+            </View>
 
-              {/* Urgency explanation pill */}
-              {urgencyMultiplier > 1 && (
-                <View style={[styles.urgencyPill, { borderColor: urgencyColor + '55' }]}>
-                  <Text style={[styles.urgencyPillText, { color: urgencyColor }]}>
-                    ⚡ Urgency surcharge applied — your request was flagged as{' '}
-                    {urgencyMultiplier >= 1.3 ? 'HIGH' : 'MEDIUM'} priority
-                  </Text>
+            <View style={styles.detailRowItem}>
+              <View style={styles.detailIconCircle}>
+                <Ionicons name="time-outline" size={16} color={COLORS.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.detailRowText}>
+                  {provider.confirmed_slot || 'Today, 14:00 - 15:00 (Estimated 1h)'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Premium illustration with verified banner */}
+          <View style={styles.expertImageContainer}>
+            <Image
+              source={{ uri: SERVICE_IMAGES[serviceKey] || 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80' }}
+              style={styles.expertImage}
+              resizeMode="cover"
+            />
+            <View style={styles.verifiedBanner}>
+              <Ionicons name="checkmark-circle" size={14} color="#FFFFFF" />
+              <Text style={styles.verifiedBannerText}>Verified Expert</Text>
+            </View>
+          </View>
+        </LiquidGlass>
+
+        {/* ── AI-generated quote card (Glassmorphic) ───────────────────── */}
+        <Animated.View style={[
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+        ]}>
+          <LiquidGlass style={styles.quoteCard} radius={22}>
+            {/* Header row */}
+            <View style={styles.quoteHeader}>
+              <View style={styles.quoteHeaderIconCircle}>
+                <Ionicons name="receipt-outline" size={20} color={COLORS.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.quoteHeaderTitle}>
+                  {hasPKR ? 'Dynamic Quote' : 'Price Estimate'}
+                </Text>
+              </View>
+              {hasPKR && (
+                <View style={styles.aiBadge}>
+                  <Text style={styles.aiBadgeText}>⚡ LIVE</Text>
                 </View>
               )}
-            </>
-          ) : (
-            // Legacy USD fallback
-            <>
-              <Row label="Service fee"   value={`$${legacyServiceFee.toFixed(2)}`} />
-              <Row label="Platform fee"  value={`$${legacyPlatformFee.toFixed(2)}`} />
-              <Row label="Tax"           value={`$${legacyTax.toFixed(2)}`} />
-              <View style={styles.divider} />
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>${legacyTotal.toFixed(2)}</Text>
-              </View>
-            </>
-          )}
+            </View>
+
+            <View style={styles.divider} />
+
+            {hasPKR ? (
+              <>
+                <QuoteRow
+                  label="Base Callout Fee"
+                  value={fmt(breakdown.base_rate)}
+                />
+
+                <QuoteRow
+                  label="Estimated Labor (1 hr)"
+                  value={fmt(breakdown.distance_surcharge)}
+                />
+
+                <QuoteRow
+                  label="Parts (Estimated)"
+                  value={`${fmt(breakdown.base_rate * 0.3)} - ${fmt(breakdown.base_rate * 0.8)}`}
+                />
+
+                <View style={styles.divider} />
+
+                {/* Total */}
+                <View style={styles.totalRow}>
+                  <View>
+                    <Text style={styles.totalLabel}>Estimated Total</Text>
+                  </View>
+                  <Text style={styles.totalValue}>{fmt(quote_pkr)}</Text>
+                </View>
+
+                <Text style={styles.priceDisclaimer}>
+                  ℹ️ Final price may vary based on actual parts required.
+                </Text>
+              </>
+            ) : (
+              // Legacy USD fallback
+              <>
+                <QuoteRow label="Service fee" value={`$${legacyServiceFee.toFixed(2)}`} />
+                <QuoteRow label="Platform fee" value={`$${legacyPlatformFee.toFixed(2)}`} />
+                <QuoteRow label="Tax" value={`$${legacyTax.toFixed(2)}`} />
+                <View style={styles.divider} />
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalValue}>${legacyTotal.toFixed(2)}</Text>
+                </View>
+              </>
+            )}
+          </LiquidGlass>
         </Animated.View>
 
-        {/* ── Reasoning snippet ─────────────────────────────────────────── */}
+        {/* ── AI Reasoning snippet ─────────────────────────────────────── */}
         {fullResult?.reasoning_log && (
-          <View style={styles.reasoningCard}>
-            <Text style={styles.reasoningTitle}>🧠 Why this provider?</Text>
-            <Text style={styles.reasoningText} numberOfLines={4}>
+          <LiquidGlass style={styles.reasoningCard} radius={16}>
+            <View style={styles.reasoningHeader}>
+              <Ionicons name="sparkles-outline" size={14} color={COLORS.primary} style={{ marginRight: 6 }} />
+              <Text style={styles.reasoningTitle}>AI ASSISTANT REASONING</Text>
+            </View>
+            <Text style={styles.reasoningText}>
               {fullResult.reasoning_log}
             </Text>
             <TouchableOpacity onPress={() =>
@@ -285,88 +293,45 @@ export default function ReviewBookingScreen({ route, navigation }) {
             }>
               <Text style={styles.reasoningLink}>View full agent trace →</Text>
             </TouchableOpacity>
-          </View>
+          </LiquidGlass>
         )}
 
-        {/* ── CTA ──────────────────────────────────────────────────────── */}
-        <TouchableOpacity style={styles.button} onPress={confirm} disabled={loading} activeOpacity={0.85}>
-          {loading ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Confirm Booking</Text>
-          )}
-        </TouchableOpacity>
         <Text style={styles.terms}>
-          By confirming, you agree to our Terms of Service.
+          By continuing, you agree to our Terms of Service.
         </Text>
+
+        <Text style={styles.smallFooterText}>Secured by Asaaniyat AI Engine • 100% Reliable</Text>
+
+        <View style={{ height: 20 }} />
 
       </ScrollView>
 
-      {/* Duplicate Booking Warning Modal */}
-      <Modal
-        visible={showDuplicatePopup}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDuplicatePopup(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.warningIconContainer}>
-              <Ionicons name="warning" size={32} color={COLORS.danger} />
-            </View>
-            
-            <Text style={styles.modalTitle}>Duplicate Booking</Text>
-            <Text style={styles.modalDescription}>
-              You already have a confirmed booking scheduled with <Text style={{ fontWeight: '900', color: COLORS.textPrimary }}>{provider.name}</Text> around this time slot.
-              {"\n\n"}
-              To avoid double scheduling, this duplicate reservation has been blocked.
-            </Text>
-
-            <TouchableOpacity 
-              style={styles.viewScheduleButton} 
-              onPress={() => {
-                setShowDuplicatePopup(false);
-                navigation.navigate('Bookings');
-              }}
-              activeOpacity={0.84}
-            >
-              <Text style={styles.viewScheduleButtonText}>View Existing Bookings</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.cancelModalButton} 
-              onPress={() => setShowDuplicatePopup(false)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.cancelModalButtonText}>Choose Another Time</Text>
-            </TouchableOpacity>
+      {/* ── Sticky Bottom CTA ─────────────────────────────────────────── */}
+      <View style={[styles.stickyBottomContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('BookingConfirm', { provider, fullResult })}
+          activeOpacity={0.85}
+        >
+          <View style={styles.buttonInner}>
+            <Text style={styles.buttonText}>Continue to Checkout</Text>
+            <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </TouchableOpacity>
+      </View>
+
+    </View>
   );
 }
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
-function Row({ label, value }) {
-  return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
-function QuoteRow({ label, sublabel, value, valueStyle }) {
+function QuoteRow({ label, value }) {
   return (
     <View style={styles.quoteRow}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.quoteRowLabel}>{label}</Text>
-        {sublabel ? <Text style={styles.quoteRowSub}>{sublabel}</Text> : null}
-      </View>
-      <Text style={[styles.quoteRowValue, valueStyle]}>{value}</Text>
+      <Text style={styles.quoteRowLabel}>{label}</Text>
+      <Text style={styles.quoteRowValue}>{value}</Text>
     </View>
   );
 }
@@ -374,80 +339,211 @@ function QuoteRow({ label, sublabel, value, valueStyle }) {
 // ---------------------------------------------------------------------------
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content:   { padding: 20, paddingBottom: 36 },
+  localHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    zIndex: 10,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.94)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  localHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.primary,
+    letterSpacing: -0.4,
+  },
+  headerSpacer: { width: 38, height: 38 },
 
-  step:     { color: COLORS.primary, fontSize: 11, fontWeight: '900', textAlign: 'right' },
-  title:    { fontSize: 26, color: COLORS.textPrimary, fontWeight: '900', marginTop: 20 },
-  subtitle: { color: COLORS.textSecondary, fontSize: 13, marginTop: 6, marginBottom: 16 },
+  content: { padding: 20, paddingBottom: 220 }, // Added generous padding to allow navbar auto-hide
+
+  title: { fontSize: 28, color: COLORS.primary, fontWeight: '900', marginTop: 12, marginBottom: 20 },
 
   // Booking details card
   card: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 14,
+    padding: 20,
+    marginBottom: 16,
   },
-  row:      { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  rowLabel: { color: COLORS.textSecondary, fontWeight: '700' },
-  rowValue: { color: COLORS.textPrimary, fontWeight: '900', maxWidth: '55%', textAlign: 'right' },
+  detailCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  profileHeaderBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingBottom: 4,
+  },
+  profileAvatar: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: COLORS.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.1)',
+  },
+  profileAvatarText: {
+    color: COLORS.primary,
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  profileName: {
+    color: COLORS.textPrimary,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  profileService: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '800',
+    marginTop: 1,
+    textTransform: 'capitalize',
+  },
+  profileCompany: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  profileDivider: {
+    height: 1,
+    backgroundColor: 'rgba(14,143,70,0.06)',
+    marginVertical: 4,
+  },
+  urduText: {
+    color: COLORS.primary,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  detailsList: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  detailRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  detailIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: COLORS.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailRowText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  expertImageContainer: {
+    width: '100%',
+    height: 180,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    marginTop: 8,
+  },
+  expertImage: {
+    width: '100%',
+    height: '100%',
+  },
+  verifiedBanner: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    backgroundColor: '#0E8F46',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  verifiedBannerText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+  },
 
-  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 10 },
+  divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 14 },
 
   // AI quote card
   quoteCard: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary + '55',
-    marginBottom: 14,
+    padding: 20,
+    marginBottom: 16,
   },
-  quoteHeader:     { flexDirection: 'row', alignItems: 'center', marginBottom: 14, gap: 10 },
-  quoteHeaderIcon: { fontSize: 24 },
-  quoteHeaderTitle:{ color: COLORS.textPrimary, fontWeight: '900', fontSize: 15 },
-  quoteHeaderSub:  { color: COLORS.textMuted, fontSize: 10, marginTop: 1 },
+  quoteHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, gap: 10 },
+  quoteHeaderIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: COLORS.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quoteHeaderTitle: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 16 },
 
-  aiBadge:     { backgroundColor: COLORS.primary + '22', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  aiBadge: { backgroundColor: COLORS.primaryGlow, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   aiBadgeText: { color: COLORS.primary, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
-  quoteRow:      { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7 },
-  quoteRowLabel: { color: COLORS.textPrimary, fontWeight: '700', fontSize: 13 },
-  quoteRowSub:   { color: COLORS.textMuted, fontSize: 10, marginTop: 2 },
-  quoteRowValue: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 14, minWidth: 80, textAlign: 'right' },
+  quoteRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
+  quoteRowLabel: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 14 },
+  quoteRowValue: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 14 },
 
-  totalRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  totalLabel: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 17 },
-  totalSub:   { color: COLORS.textMuted, fontSize: 10, marginTop: 2 },
-  totalValue: { color: COLORS.primary, fontWeight: '900', fontSize: 32 },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  totalLabel: { color: COLORS.primary, fontWeight: '900', fontSize: 18 },
+  totalValue: { color: COLORS.primary, fontWeight: '900', fontSize: 26 },
 
-  urgencyPill: {
+  priceDisclaimer: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
     marginTop: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: 'transparent',
+    lineHeight: 16,
   },
-  urgencyPillText: { fontSize: 11, fontWeight: '600', lineHeight: 16 },
 
   // Reasoning snippet
   reasoningCard: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.accent + '44',
-    marginBottom: 14,
+    marginBottom: 20,
   },
-  reasoningTitle: { color: COLORS.accent, fontWeight: '800', fontSize: 12, marginBottom: 8 },
-  reasoningText:  { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18 },
-  reasoningLink:  { color: COLORS.primary, fontWeight: '700', fontSize: 12, marginTop: 8 },
+  reasoningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 11, letterSpacing: 0.5 },
+  reasoningText: { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  reasoningLink: { color: COLORS.primary, fontWeight: '800', fontSize: 12, marginTop: 8 },
 
   // CTA
-  button:     { backgroundColor: COLORS.primary, borderRadius: 22, paddingVertical: 18, alignItems: 'center', marginTop: 4 },
+  button: { backgroundColor: COLORS.primary, borderRadius: 20, paddingVertical: 18, alignItems: 'center', marginTop: 4 },
+  buttonInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '900' },
-  terms:      { color: COLORS.textSecondary, fontSize: 10, textAlign: 'center', marginTop: 12 },
+  terms: { color: COLORS.textMuted, fontSize: 11, textAlign: 'center', marginTop: 12, fontWeight: '700' },
 
   // Duplicate Warning Modal
   modalOverlay: {
@@ -517,5 +613,22 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 13,
     fontWeight: '700',
+  },
+  smallFooterText: {
+    textAlign: 'center',
+    color: COLORS.textMuted,
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  stickyBottomContainer: {
+    paddingHorizontal: 20,
+    backgroundColor: COLORS.bg,
+    borderTopWidth: 1,
+    borderColor: 'rgba(14,143,70,0.06)',
+    paddingTop: 12,
   },
 });

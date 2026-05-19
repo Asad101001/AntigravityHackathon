@@ -38,6 +38,13 @@ export async function configureNotifications() {
     return false;
   }
 
+  if (isExpoGo()) {
+    // Gracefully bypass remote push channels/permissions on Expo Go client to eliminate startup console clutter,
+    // while keeping the module local scheduling intact.
+    configured = true;
+    return true;
+  }
+
   try {
     const Notifications = await getNotificationsModule();
     if (!Notifications) {

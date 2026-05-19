@@ -81,7 +81,8 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
     }).start();
   }, [translateY, visible]);
 
-  if (currentRouteName === 'Splash') return null;
+  const MAIN_TABS = ['Home', 'Bookings', 'Chat'];
+  if (!MAIN_TABS.includes(currentRouteName)) return null;
 
   return (
     <Animated.View
@@ -172,26 +173,34 @@ function AppNavigator() {
           <StatusBar style="dark" />
           <Stack.Navigator
             initialRouteName="Splash"
-            screenOptions={({ navigation, route }) => ({
-              headerTransparent: true,
-              headerShadowVisible: false,
-              headerBackVisible: false,
-              header: ({ back }) => (
-                <View style={styles.headerFrame} pointerEvents="box-none">
-                  <AppHeader
-                    navigation={navigation}
-                    routeName={ROUTE_LABELS[route.name] || route.name}
-                    canGoBack={!['Home', 'Bookings', 'Chat'].includes(route.name)}
-                    onProfilePress={() => setSidebarVisible(true)}
-                  />
-                </View>
-              ),
+            screenOptions={{
+              headerShown: false,
               contentStyle: { backgroundColor: COLORS.bg },
               animation: 'slide_from_right',
-            })}
+            }}
           >
             <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false, animation: 'fade' }} />
-            <Stack.Screen name="Home" component={HomeScreen} options={{ animation: 'fade' }} />
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={({ navigation, route }) => ({
+                headerShown: true,
+                headerTransparent: true,
+                headerShadowVisible: false,
+                headerBackVisible: false,
+                header: () => (
+                  <View style={styles.headerFrame} pointerEvents="box-none">
+                    <AppHeader
+                      navigation={navigation}
+                      routeName="Home"
+                      canGoBack={false}
+                      onProfilePress={() => setSidebarVisible(true)}
+                    />
+                  </View>
+                ),
+                animation: 'fade',
+              })}
+            />
             <Stack.Screen name="Bookings" component={BookingsScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="OrderStatus" component={OrderStatusScreen} />
