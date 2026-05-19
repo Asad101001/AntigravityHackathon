@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config';
@@ -7,12 +7,10 @@ import { addSessionBooking } from '../sessionBookings';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../lib/apiClient';
+import LiquidGlass from '../components/LiquidGlass';
 
 function normalizeBookingStartTime(value) {
   if (!value) return new Date().toISOString();
-
-  // Prefer values that already look like full timestamps or Date objects.
-  // If the value is a booking object with a nested time, callers should pass that nested value.
 
   const directDate = new Date(value);
   if (!Number.isNaN(directDate.getTime())) {
@@ -50,6 +48,18 @@ function formatAppointmentLabel(value, fallback) {
   });
 }
 
+const SERVICE_ICONS = {
+  plumber: 'water-outline',
+  plumbing: 'water-outline',
+  electrician: 'flash-outline',
+  ac: 'snow-outline',
+  'ac repair': 'snow-outline',
+  carpenter: 'hammer-outline',
+  painter: 'color-palette-outline',
+  cleaning: 'leaf-outline',
+  handyman: 'construct-outline',
+};
+
 export default function ConfirmationScreen({ route, navigation }) {
   const { fullResult } = route.params;
   const scale = useRef(new Animated.Value(0.7)).current;
@@ -57,6 +67,7 @@ export default function ConfirmationScreen({ route, navigation }) {
   const { setActiveJob } = useAppContext();
   const { user } = useAuth();
   const provider = fullResult.provider || {};
+
   const appointmentLabel = formatAppointmentLabel(
     fullResult.scheduled_time || fullResult.output?.scheduled_time || fullResult.booking?.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
     provider.confirmed_slot || 'Appointment scheduled'
@@ -117,52 +128,306 @@ export default function ConfirmationScreen({ route, navigation }) {
       }
     } catch (error) {
       console.error('Failed to save booking to database:', error);
-      // Don't alert user - the booking was confirmed, just couldn't save to DB
-      // In production, implement retry logic or local queuing
     }
   };
 
+  const rawService = provider.service_type || provider.service || 'plumbing';
+  const serviceKey = String(rawService).toLowerCase();
+  const serviceIconName = SERVICE_ICONS[serviceKey] || 'construct-outline';
+  const displayServiceTitle = rawService.charAt(0).toUpperCase() + rawService.slice(1);
+
+  // Hex or short hash for unique Booking ID
+  const displayBookingId = fullResult.booking_id 
+    ? String(fullResult.booking_id).slice(-6).toUpperCase() 
+    : 'AS-' + Math.floor(1000 + Math.random() * 9000);
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <View style={styles.content}>
-        <Animated.View style={[styles.successCircle, { transform: [{ scale }] }]}>
-          <Ionicons name="checkmark-circle-outline" size={58} color={COLORS.primary} />
-        </Animated.View>
-        <Text style={styles.title}>Booking{`\n`}Confirmed</Text>
-        <Text style={styles.copy}>Your service has been successfully scheduled. Our professional is already preparing for your visit.</Text>
-
-        <View style={styles.card}>
-          <Detail label="Technician" value={provider.name || 'TBD'} />
-          <Detail label="Service details" value={provider.service_type || provider.service || 'Service'} />
-          <Detail label="Appointment time" value={appointmentLabel} />
-          <Detail label="Booking ID" value={fullResult.booking_id || 'N/A'} />
-        </View>
-
-        <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('ProviderChat', { fullResult })}>
-          <Ionicons name="chatbubble-outline" size={18} color="#fff" />
-          <Text style={styles.chatText}>Go to Chat</Text>
+    <View style={styles.container}>
+      {/* ── Local Menu Header ────────────────────────────────────────── */}
+      <View style={[styles.localHeader, { paddingTop: Math.max(insets.top, 16) }]}>
+        <TouchableOpacity style={styles.menuButton} activeOpacity={0.8}>
+          <Ionicons name="menu-outline" size={24} color={COLORS.primary} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.popToTop()}><Text style={styles.link}>View Schedule</Text></TouchableOpacity>
+        <Text style={styles.localHeaderTitle}>Booking Confirmed</Text>
+        <View style={styles.headerSpacer} />
       </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Success Circle */}
+        <Animated.View style={[styles.successCircle, { transform: [{ scale }] }]}>
+          <Ionicons name="checkmark-circle" size={64} color={COLORS.primary} />
+        </Animated.View>
+
+        <Text style={styles.copy}>
+          Your request has been successfully scheduled. A professional will be assigned shortly.
+        </Text>
+
+        {/* ── Booking Summary Card (Glassmorphic) ────────────────────── */}
+        <LiquidGlass style={styles.summaryCard} radius={24}>
+          <View style={styles.summaryCardHeader}>
+            <View>
+              <Text style={styles.bookingIdLabel}>BOOKING ID</Text>
+              <Text style={styles.bookingIdValue}>#{displayBookingId}</Text>
+            </View>
+            <View style={styles.scheduledBadge}>
+              <Text style={styles.scheduledBadgeText}>SCHEDULED</Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* Service Row */}
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryIconCircle}>
+              <Ionicons name={serviceIconName} size={20} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.summaryRowLabel}>SERVICE</Text>
+              <Text style={styles.summaryRowValue}>{displayServiceTitle}</Text>
+              <Text style={styles.summaryRowSub}>Pipe repair and general maintenance</Text>
+            </View>
+          </View>
+
+          {/* Date & Time Row */}
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryIconCircle}>
+              <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.summaryRowLabel}>DATE & TIME</Text>
+              <Text style={styles.summaryRowValue}>
+                {appointmentLabel.includes(',') ? appointmentLabel.split(',')[0] : appointmentLabel}
+              </Text>
+              {appointmentLabel.includes(',') && (
+                <Text style={styles.summaryRowSub}>
+                  {appointmentLabel.split(',')[1]?.trim()}
+                </Text>
+              )}
+            </View>
+          </View>
+        </LiquidGlass>
+
+        {/* ── Professional Details Status Card (Glassmorphic) ───────── */}
+        <LiquidGlass style={styles.proCard} radius={20}>
+          <View style={styles.proRow}>
+            <View style={styles.proAvatar}>
+              <Ionicons name="person-outline" size={22} color={COLORS.textSecondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.proTitle}>Assigning...</Text>
+              <Text style={styles.proSubtitle}>
+                We are matching you with a top-rated expert.
+              </Text>
+            </View>
+          </View>
+        </LiquidGlass>
+
+        {/* ── Primary Action CTAs ─────────────────────────────────────── */}
+        <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.popToTop()} activeOpacity={0.84}>
+          <Text style={styles.primaryButtonText}>View Schedule</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.secondaryButton} 
+          onPress={() => navigation.navigate('ProviderChat', { fullResult })}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryButtonText}>Go to Chat</Text>
+        </TouchableOpacity>
+
+      </ScrollView>
     </View>
   );
 }
 
-function Detail({ label, value }) {
-  return <View style={styles.detail}><Text style={styles.detailLabel}>{label}</Text><Text style={styles.detailValue}>{value}</Text></View>;
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center' },
-  successCircle: { width: 112, height: 112, borderRadius: 56, backgroundColor: COLORS.bgCard, alignItems: 'center', justifyContent: 'center', marginBottom: 24, shadowColor: COLORS.primary, shadowOpacity: 0.14, shadowRadius: 24, elevation: 4 },
-  title: { textAlign: 'center', fontSize: 32, fontWeight: '900', color: COLORS.textPrimary, lineHeight: 38 },
-  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, fontSize: 13, marginTop: 14, marginBottom: 24 },
-  card: { width: '100%', backgroundColor: COLORS.bgCard, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: COLORS.border, marginBottom: 24 },
-  detail: { paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
-  detailLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
-  detailValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900', marginTop: 4 },
-  chatButton: { width: '100%', backgroundColor: COLORS.accent, borderRadius: 22, flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 16, marginBottom: 16 },
-  chatText: { color: '#fff', fontWeight: '900', fontSize: 16 },
-  link: { color: COLORS.primary, fontWeight: '800' }
+  localHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    zIndex: 10,
+  },
+  menuButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.94)',
+  },
+  localHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.primary,
+    letterSpacing: -0.4,
+  },
+  headerSpacer: { width: 38, height: 38 },
+
+  content: { paddingHorizontal: 24, paddingVertical: 12, alignItems: 'center', paddingBottom: 150 },
+
+  successCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(14,143,70,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  title: { fontSize: 28, fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
+  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, fontSize: 13, marginTop: 10, marginBottom: 24, fontWeight: '700', paddingHorizontal: 12 },
+
+  // Summary Card
+  summaryCard: {
+    width: '100%',
+    padding: 18,
+    marginBottom: 16,
+  },
+  summaryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bookingIdLabel: {
+    color: COLORS.textMuted,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  bookingIdValue: {
+    color: COLORS.textPrimary,
+    fontSize: 20,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  scheduledBadge: {
+    backgroundColor: 'rgba(47,128,237,0.08)',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(47,128,237,0.14)',
+  },
+  scheduledBadgeText: {
+    color: '#2F80ED',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 14 },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  summaryIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: COLORS.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryRowLabel: {
+    color: COLORS.textMuted,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  summaryRowValue: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  summaryRowSub: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+
+  // Pro Card
+  proCard: {
+    width: '100%',
+    padding: 14,
+    marginBottom: 24,
+  },
+  proRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  proAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.08)',
+  },
+  proTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  proSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+
+  // Buttons
+  primaryButton: {
+    width: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  secondaryButton: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+  },
+  secondaryButtonText: {
+    color: COLORS.primary,
+    fontSize: 15,
+    fontWeight: '900',
+  },
 });

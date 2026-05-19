@@ -31,11 +31,13 @@ export default function AppHeader({ navigation, routeName, canGoBack, onProfileP
         <TouchableOpacity style={styles.circleButton} onPress={handleBackPress} activeOpacity={0.82}>
           <Ionicons name="chevron-back" size={20} color={COLORS.primary} />
         </TouchableOpacity>
-      ) : (
+      ) : routeName === 'Home' ? (
         <TouchableOpacity style={styles.avatarButton} onPress={onProfilePress} activeOpacity={0.84}>
           <Text style={styles.avatarLetter}>A</Text>
           <View style={styles.onlineDot} />
         </TouchableOpacity>
+      ) : (
+        <View style={styles.circleSpacer} />
       )}
 
       {/* Center: Simplified logo with subtext marker */}

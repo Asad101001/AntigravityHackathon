@@ -329,13 +329,6 @@ function _parseTime(input) {
       }
     }
 
-    return null;
-  }
-
-  let hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2] || '0', 10);
-  const period = (match[3] || '').toUpperCase().replace(/\./g, '');
-
     // Check for time periods: morning, afternoon, evening, night
     // Support both "subah" and "subha" spellings
     if (/\bmorning\b|subah?|سبح|pehle|pehli/i.test(input)) {
@@ -350,6 +343,8 @@ function _parseTime(input) {
     if (/\bnight\b|raat|رات|late|randaat/i.test(input)) {
       return { hours: 20, minutes: 0, label: '8:00 PM', confidence: 0.85 };
     }
+
+    return null;
   }
 
   return null;
