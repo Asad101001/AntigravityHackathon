@@ -15,6 +15,7 @@ import { API_URL } from '../config';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
 import LiquidGlass from '../components/LiquidGlass';
+import { useAppContext } from '../context/AppContext';
 
 // Pipeline definition — each step has rotating narration lines that simulate the agent "thinking aloud"
 const PIPELINE = [
@@ -114,6 +115,7 @@ const NARRATION_TICK_MS = 200;
 
 export default function LoadingScreen({ route, navigation }) {
   const { userText, userLocation, locationSource, city } = route.params;
+  const { cacheExecutionLogs } = useAppContext();
 
   const [currentStep, setCurrentStep] = useState(0);   // 0-based pipeline index
   const [narrationIdx, setNarrationIdx] = useState(0); // which sub-message
@@ -217,6 +219,11 @@ export default function LoadingScreen({ route, navigation }) {
       apiDoneRef.current   = true;
 
       if (response.data?.success) {
+        // Cache execution_logs by booking_id so navigation params stay lean
+        if (response.data?.booking_id && response.data?.execution_logs) {
+          cacheExecutionLogs(response.data.booking_id, response.data.execution_logs);
+        }
+
         void sendLocalNotification(
           'Provider match found',
           `${response.data.provider?.name || 'A provider'} is ready for your ${response.data.provider?.service || 'service'} request.`,
@@ -247,12 +254,17 @@ export default function LoadingScreen({ route, navigation }) {
 
   const resolveNavigation = (data) => {
     if (!data) return;
-    if (data.success === false && data.error_type === 'low_confidence') {
-      navigation.replace('IntentConfirm', { parsedIntent: data.parsed || {}, fullResult: data });
-    } else if (data.success === false) {
-      setError(data.message || 'No providers found. Try a different area.');
+
+    // Strip execution_logs from params — they are cached in AppContext
+    const sanitizedResult = { ...data };
+    delete sanitizedResult.execution_logs;
+
+    if (sanitizedResult.success === false && sanitizedResult.error_type === 'low_confidence') {
+      navigation.replace('IntentConfirm', { parsedIntent: sanitizedResult.parsed || {}, fullResult: sanitizedResult });
+    } else if (sanitizedResult.success === false) {
+      setError(sanitizedResult.message || 'No providers found. Try a different area.');
     } else {
-      navigation.replace('IntentConfirm', { parsedIntent: data.parsed_intent, fullResult: data });
+      navigation.replace('IntentConfirm', { parsedIntent: sanitizedResult.parsed_intent, fullResult: sanitizedResult });
     }
   };
 
@@ -263,8 +275,25 @@ export default function LoadingScreen({ route, navigation }) {
           <Ionicons name="warning" size={48} color={COLORS.danger} style={{ marginBottom: 16 }} />
           <Text style={styles.errorTitle}>Something went wrong</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Text style={styles.retryButtonText}>← Go Back & Try Again</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setError(null);
+              apiDoneRef.current = false;
+              apiResultRef.current = null;
+              currentStepRef.current = 0;
+              narrationIdxRef.current = 0;
+              setCurrentStep(0);
+              setNarrationIdx(0);
+              setComplete(false);
+              void callAPI();
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.retryButtonText}>↺ Retry Matching Request</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.retryButton, { backgroundColor: 'transparent', marginTop: 8 }]} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+            <Text style={[styles.retryButtonText, { color: COLORS.textSecondary }]}>← Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

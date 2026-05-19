@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, API_URL } from '../config';
 import apiClient from '../lib/apiClient';
+import { useAppContext } from '../context/AppContext';
 
 // ---------------------------------------------------------------------------
 // Agent metadata map
@@ -36,8 +37,15 @@ const AGENT_META = {
 
 // ---------------------------------------------------------------------------
 export default function AgentTraceScreen({ route }) {
-  const [logs, setLogs]           = useState(route?.params?.executionLogs || []);
-  const [loading, setLoading]     = useState(!route?.params?.executionLogs);
+  const { executionLogsCache } = useAppContext();
+
+  // Resolve bookingId or direct logs from params
+  const bookingId = route?.params?.bookingId || null;
+  const cachedLogs = bookingId ? (executionLogsCache[bookingId] || []) : [];
+  const initialLogs = route?.params?.executionLogs || cachedLogs;
+
+  const [logs, setLogs]           = useState(initialLogs);
+  const [loading, setLoading]     = useState(!initialLogs.length);
   const [expandedId, setExpandedId] = useState(null);
 
   // reasoning_log passed directly, or we'll extract it from logs
@@ -49,11 +57,11 @@ export default function AgentTraceScreen({ route }) {
   const heroSlide = useRef(new Animated.Value(-12)).current;
 
   useEffect(() => {
-    if (!route?.params?.executionLogs) {
-      fetchLogs();
-    } else {
-      extractReasoning(route.params.executionLogs);
+    if (initialLogs.length > 0) {
+      extractReasoning(initialLogs);
       animateHero();
+    } else {
+      fetchLogs();
     }
   }, []);
 

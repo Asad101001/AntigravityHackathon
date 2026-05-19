@@ -139,8 +139,15 @@ export default function BookingsScreen({ navigation }) {
           const statusColor = getStatusColor(booking.status);
           const statusIcon = getStatusIcon(booking.status);
           const createdAt = new Date(booking.created_at);
-          const dateStr = createdAt.toLocaleDateString('en-PK', { month: 'short', day: 'numeric', year: 'numeric' });
-          const timeStr = createdAt.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+          let dateStr = 'N/A';
+          let timeStr = 'N/A';
+          try {
+            dateStr = createdAt.toLocaleDateString('en-PK', { month: 'short', day: 'numeric', year: 'numeric' });
+            timeStr = createdAt.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+          } catch (_) {
+            dateStr = createdAt.toDateString();
+            timeStr = `${createdAt.getHours()}:${String(createdAt.getMinutes()).padStart(2, '0')}`;
+          }
 
           return (
             <LiquidGlass key={booking._id} style={styles.bookingCard} contentStyle={styles.bookingContent}>

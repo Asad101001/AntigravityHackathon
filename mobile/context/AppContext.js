@@ -5,10 +5,13 @@ const AppContext = createContext({
   activeJob: null,
   setActiveJob: () => {},
   triggerBookingConfirmedNotification: async () => false,
+  executionLogsCache: {},
+  cacheExecutionLogs: () => {},
 });
 
 export function AppContextProvider({ children }) {
   const [activeJob, setActiveJobState] = useState(null);
+  const [executionLogsCache, setExecutionLogsCache] = useState({});
   const lastNotifiedJobId = useRef(null);
 
   useEffect(() => {
@@ -22,6 +25,11 @@ export function AppContextProvider({ children }) {
       `${job.provider || 'Your provider'} is assigned for ${job.service || 'your service'}${job.area ? ` in ${job.area}` : ''}.`,
       { booking_id: job.id, event: 'booking_confirmed', status: job.status || 'confirmed' }
     );
+  }, []);
+
+  const cacheExecutionLogs = useCallback((bookingId, logs) => {
+    if (!bookingId || !logs) return;
+    setExecutionLogsCache(prev => ({ ...prev, [bookingId]: logs }));
   }, []);
 
   const setActiveJob = useCallback((jobOrUpdater) => {
@@ -40,7 +48,9 @@ export function AppContextProvider({ children }) {
     activeJob,
     setActiveJob,
     triggerBookingConfirmedNotification,
-  }), [activeJob, setActiveJob, triggerBookingConfirmedNotification]);
+    executionLogsCache,
+    cacheExecutionLogs,
+  }), [activeJob, setActiveJob, triggerBookingConfirmedNotification, executionLogsCache, cacheExecutionLogs]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

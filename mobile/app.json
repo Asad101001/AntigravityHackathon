@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Asaaniyat",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,18 +10,27 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0E8F46"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.asaaniyat.app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
+      }
     },
     "android": {
       "package": "com.asaaniyat.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0E8F46"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

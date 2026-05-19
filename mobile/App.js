@@ -29,6 +29,7 @@ import { TabBarVisibilityContext } from './components/TabBarVisibility';
 import { configureNotifications } from './notifications';
 import { AppContextProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const Stack = createNativeStackNavigator();
 
@@ -245,9 +246,11 @@ export default function App() {
 
     if (!user) return <AuthScreen />;
     return (
-      <AppContextProvider>
-        <AppNavigator />
-      </AppContextProvider>
+      <ErrorBoundary>
+        <AppContextProvider>
+          <AppNavigator />
+        </AppContextProvider>
+      </ErrorBoundary>
     );
   }
 

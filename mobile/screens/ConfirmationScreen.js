@@ -10,42 +10,55 @@ import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
 
 function normalizeBookingStartTime(value) {
-  if (!value) return new Date().toISOString();
+  try {
+    if (!value) return new Date().toISOString();
 
-  const directDate = new Date(value);
-  if (!Number.isNaN(directDate.getTime())) {
-    return directDate.toISOString();
+    const directDate = new Date(value);
+    if (!Number.isNaN(directDate.getTime())) {
+      return directDate.toISOString();
+    }
+
+    const timeMatch = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    if (timeMatch) {
+      const hours = Number(timeMatch[1]);
+      const minutes = Number(timeMatch[2] || '0');
+      const period = (timeMatch[3] || '').toUpperCase();
+
+      let normalizedHours = hours;
+      if (period === 'PM' && hours < 12) normalizedHours += 12;
+      if (period === 'AM' && hours === 12) normalizedHours = 0;
+
+      const date = new Date();
+      date.setHours(normalizedHours, minutes, 0, 0);
+      return date.toISOString();
+    }
+
+    return new Date().toISOString();
+  } catch (err) {
+    return new Date().toISOString();
   }
-
-  const timeMatch = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
-  if (timeMatch) {
-    const hours = Number(timeMatch[1]);
-    const minutes = Number(timeMatch[2] || '0');
-    const period = (timeMatch[3] || '').toUpperCase();
-
-    let normalizedHours = hours;
-    if (period === 'PM' && hours < 12) normalizedHours += 12;
-    if (period === 'AM' && hours === 12) normalizedHours = 0;
-
-    const date = new Date();
-    date.setHours(normalizedHours, minutes, 0, 0);
-    return date.toISOString();
-  }
-
-  return new Date().toISOString();
 }
 
 function formatAppointmentLabel(value, fallback) {
-  if (!value) return fallback;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
-  return date.toLocaleString('en-PK', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  try {
+    if (!value) return fallback;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    try {
+      return date.toLocaleString('en-PK', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (localeError) {
+      // Fallback if locale is unsupported by JavaScriptCore/Hermes
+      return date.toString();
+    }
+  } catch (err) {
+    return fallback;
+  }
 }
 
 const SERVICE_ICONS = {
