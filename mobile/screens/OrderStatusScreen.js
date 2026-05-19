@@ -108,7 +108,7 @@ export default function OrderStatusScreen({ route, navigation }) {
         </View>
         <View style={styles.divider} />
         <View style={styles.infoRow}>
-          <Ionicons name="info-circle-outline" size={18} color={statusColor} />
+          <Ionicons name="information-circle-outline" size={18} color={statusColor} />
           <View style={styles.infoCopy}>
             <Text style={styles.infoLabel}>Current Status</Text>
             <Text style={[styles.infoValue, { color: statusColor }]}>
