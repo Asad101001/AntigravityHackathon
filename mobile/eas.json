@@ -8,6 +8,10 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://asaaniyat-backend-525519819889.asia-south1.run.app",
+        "EXPO_PUBLIC_MAPS_API_KEY": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
       }
     },
     "production": {}
