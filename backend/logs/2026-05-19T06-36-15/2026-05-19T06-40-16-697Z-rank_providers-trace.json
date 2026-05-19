@@ -1,0 +1,29 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:40:16.697Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL254",
+    "ranked_ids": [
+      "EL254",
+      "EL089",
+      "EL199",
+      "EL144",
+      "EL034"
+    ],
+    "reasoning_log": "Based on the given constraints, the overall best electrician for the job is EL254, Gulshan Home Electrician Danish, due to its high rating, low cancellation risk, and excellent on-time score. Although it is slightly farther away, its exceptional quality and reliability make it the top choice. The most affordable option is EL199, Gulshan Pros Electrician Farhan, with a base rate of 975 PKR. However, it has a slightly lower on-time score compared to EL254. The closest/fastest option is EL089, Gulzar-e-Hijri Comfort Electrician Imran, with a distance of 3.27 km and an available slot.",
+    "multi_factor": {
+      "overall_best_id": "EL254",
+      "most_affordable_id": "EL199",
+      "closest_fastest_id": "EL089",
+      "analysis": "The overall best electrician is chosen based on a weighted trade-off of distance, rating, availability, on-time score, and cancellation risk. The most affordable option is the provider with the lowest base rate that is still verified and has available slots. The closest/fastest option is the provider with the smallest distance and available slots."
+    }
+  },
+  "durationMs": 936
+}

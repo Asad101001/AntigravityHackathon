@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:38:05.377Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Electrician needed kal subah 10 AM",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "today_morning_10am",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User requested an electrician for tomorrow morning at 10 AM"
+  },
+  "durationMs": 1017
+}

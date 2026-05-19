@@ -21,13 +21,26 @@ class LLMIntentParserAgent extends BaseAgent {
       return this.fallback.execute(context);
     }
 
+    let serviceTypesString = 'Electrician|Plumber|AC Technician|Carpenter|Painter|Handyman|Maid|Car Mechanic|Cleaning Lady|Hairdresser|Salon';
+    try {
+      const keywords = await db.getKeywordsCatalog();
+      if (keywords && keywords.services) {
+        const serviceTypes = Object.values(keywords.services).map(s => s.canonical);
+        if (serviceTypes.length) {
+          serviceTypesString = serviceTypes.join('|');
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[LLMIntentParser] Database getKeywordsCatalog failed:', dbErr.message);
+    }
+
     const system = [
       'You are a multilingual intent parser for a Pakistani home-services booking app.',
       'The user may write in English, Roman Urdu, or Urdu script.',
       'Extract the booking intent and return ONLY a valid JSON object — no markdown, no explanation, no preamble.',
       'JSON schema:',
       '{',
-      '  "service_type": string | null,  // canonical: Electrician|Plumber|AC Technician|Carpenter|Painter|Handyman|Maid|Car Mechanic|Cleaning Lady|Hairdresser|Salon',
+      `  "service_type": string | null,  // canonical: ${serviceTypesString}`,
       '  "location": string | null,       // area or city name as written by user',
       '  "time_preference": string | null, // e.g. "today_morning","tomorrow","tomorrow_afternoon","today_2pm","today_now","weekend". IMPORTANT: If user mentions a specific time like "2pm" or "14:00", include it in the time_preference (e.g., "tomorrow_2pm" not just "tomorrow")',
       '  "urgency_level": "high" | "low",  // high if user uses urgent/abhi/foran/emergency/jaldi',
@@ -200,11 +213,11 @@ function _buildTimePreferenceString(userText, parsedDateTime) {
   userText = userText.toLowerCase();
 
   // Determine date prefix
-  if (/\btomorrow\b/.test(userText)) {
+  if (/\btomorrow\b|\bkal\b/.test(userText)) {
     prefix = 'tomorrow';
-  } else if (/\b(today|tonight|tonite)\b/.test(userText)) {
+  } else if (/\b(today|tonight|tonite|aaj|ab)\b/.test(userText)) {
     prefix = 'today';
-  } else if (/day after tomorrow/.test(userText)) {
+  } else if (/day after tomorrow|\bparso\b|\bparsoon\b/.test(userText)) {
     prefix = 'day_after_tomorrow';
   } else {
     // Fallback based on date

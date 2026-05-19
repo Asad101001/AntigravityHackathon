@@ -6,8 +6,9 @@
 
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView
+  View, Text, TouchableOpacity, StyleSheet, ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../config';
 
 export default function IntentConfirmScreen({ route, navigation }) {

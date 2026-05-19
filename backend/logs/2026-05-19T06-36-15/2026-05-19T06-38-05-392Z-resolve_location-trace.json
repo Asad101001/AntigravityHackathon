@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-19T06-36-15",
+  "timestamp": "2026-05-19T06:38:05.392Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.9498793,
+      "lng": 67.1075582,
+      "label": "Gulzar E Hijri Scheme 33, Karachi City"
+    },
+    "parsed_location": null,
+    "user_text": "Electrician needed kal subah 10 AM"
+  },
+  "output": {
+    "lat": 24.9498793,
+    "lng": 67.1075582,
+    "area_name": "Gulzar-e-Hijri Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 9
+}

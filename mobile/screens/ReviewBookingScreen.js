@@ -10,8 +10,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Animated, Modal, ActivityIndicator
+  ScrollView, Animated, Modal, ActivityIndicator
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../config';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../lib/apiClient';

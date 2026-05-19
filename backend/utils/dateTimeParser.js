@@ -26,8 +26,25 @@ function parseDateTime(input = '', reference = new Date()) {
   if (!dateResult) return null;
 
   // Parse time from input
-  const timeResult = _parseTime(input);
-  if (!timeResult) return null;
+  let timeResult = _parseTime(input);
+  if (!timeResult) {
+    const slotMatch = _detectSlot(input);
+    if (slotMatch) {
+      timeResult = {
+        hours: slotMatch.hours,
+        minutes: slotMatch.minutes,
+        label: slotMatch.label,
+        confidence: 0.80
+      };
+    } else {
+      timeResult = {
+        hours: 9,
+        minutes: 0,
+        label: '9:00 AM',
+        confidence: 0.50
+      };
+    }
+  }
 
   // Combine date and time
   const resultDate = new Date(dateResult.date.getTime()); // Create a copy
@@ -44,6 +61,27 @@ function parseDateTime(input = '', reference = new Date()) {
 }
 
 /**
+ * Helper to detect time slot from Roman Urdu or English keywords
+ * @private
+ */
+function _detectSlot(input) {
+  const lower = input.toLowerCase();
+  if (/morning|subah|subha/.test(lower)) {
+    return { hours: 9, minutes: 0, label: '9:00 AM' };
+  }
+  if (/afternoon|dopehar|dopahar|dophr/.test(lower)) {
+    return { hours: 14, minutes: 0, label: '2:00 PM' };
+  }
+  if (/evening|shaam|sham/.test(lower)) {
+    return { hours: 18, minutes: 0, label: '6:00 PM' };
+  }
+  if (/night|raat/.test(lower)) {
+    return { hours: 20, minutes: 0, label: '8:00 PM' };
+  }
+  return null;
+}
+
+/**
  * Parse only the date part (without time)
  * @private
  */
@@ -52,17 +90,17 @@ function _parseDate(input, reference) {
   let confidence = 1.0;
 
   // Check relative dates first (higher confidence if explicit match)
-  if (/\btomorrow\b/.test(input)) {
+  if (/\btomorrow\b|\bkal\b/.test(input)) {
     date.setDate(date.getDate() + 1);
     return { date: new Date(date), confidence: 0.98 };
   }
 
-  if (/\bday after tomorrow\b/.test(input)) {
+  if (/\bday after tomorrow\b|\bparso\b|\bparsoon\b/.test(input)) {
     date.setDate(date.getDate() + 2);
     return { date: new Date(date), confidence: 0.98 };
   }
 
-  if (/\btoday\b|\btonite\b|\btonight\b/.test(input)) {
+  if (/\btoday\b|\btonite\b|\btonight\b|\baaj\b|\bab\b/.test(input)) {
     return { date: new Date(date), confidence: 0.98 };
   }
 
@@ -170,6 +208,47 @@ function _parseTime(input) {
         };
       }
     }
+
+    // Try Urdu / Roman Urdu "baje" format: e.g., "7 baje", "8 baje"
+    const bajeRegex = /\b(\d{1,2})\s*(?:baje|bajah)\b/i;
+    const bajeMatch = input.match(bajeRegex);
+    if (bajeMatch) {
+      let hours = parseInt(bajeMatch[1], 10);
+      let minutes = 0;
+      
+      const lowerInput = input.toLowerCase();
+      let isPM = false;
+      
+      if (/dopehar|dopahar|dophr|shaam|sham|raat|evening|night|afternoon/.test(lowerInput)) {
+        isPM = true;
+      } else if (/subah|subha|morning/.test(lowerInput)) {
+        isPM = false;
+      } else {
+        if (hours >= 1 && hours <= 7) {
+          isPM = true; // default 1-7 to PM
+        } else if (hours >= 8 && hours <= 11) {
+          isPM = false; // default 8-11 to AM
+        } else if (hours === 12) {
+          isPM = true;
+        }
+      }
+      
+      if (isPM && hours !== 12) {
+        hours += 12;
+      } else if (!isPM && hours === 12) {
+        hours = 0;
+      }
+      
+      if (hours >= 0 && hours < 24) {
+        return {
+          hours,
+          minutes,
+          label: _formatTime12H(hours, minutes),
+          confidence: 0.90
+        };
+      }
+    }
+
     return null;
   }
 

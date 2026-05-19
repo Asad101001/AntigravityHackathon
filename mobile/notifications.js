@@ -18,7 +18,6 @@ async function getNotificationsModule() {
   if (!handlerConfigured) {
     NotificationsModule.setNotificationHandler({
       handleNotification: async () => ({
-        shouldShowAlert: true,
         shouldShowBanner: true,
         shouldShowList: true,
         shouldPlaySound: true,

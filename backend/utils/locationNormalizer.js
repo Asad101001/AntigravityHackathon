@@ -83,7 +83,8 @@ async function findLocationCandidate(input = '', options = {}) {
       const score = similarity(phrase, item.normalized);
       const tokenBoost = locationTokens(item.normalized).some(token => locationTokens(phrase).includes(token)) ? 0.08 : 0;
       const confidence = Math.min(1, score + tokenBoost);
-      if (!best || confidence > best.confidence) {
+      const shouldReplace = !best || confidence > best.confidence || (confidence === best.confidence && !item.cityOnly && best.cityOnly);
+      if (shouldReplace) {
         best = { ...item, matched_query: phrase, confidence: Math.round(confidence * 100) / 100 };
       }
     }
