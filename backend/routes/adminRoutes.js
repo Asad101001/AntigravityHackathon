@@ -69,53 +69,68 @@ router.get('/dashboard-stats', async (req, res) => {
     ]).toArray();
 
     // Recent bookings
-    const recentBookings = await bookingsCollection
+    const recentBookingsRaw = await bookingsCollection
       .find({})
-      .sort({ createdAt: -1 })
+      .sort({ created_at: -1, createdAt: -1 })
       .limit(10)
       .toArray();
 
-    // Active users (users with bookings in last 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const activeUsersCount = await bookingsCollection.aggregate([
-      {
-        $match: { createdAt: { $gte: thirtyDaysAgo } }
-      },
-      {
-        $group: { _id: '$user_id' }
-      },
-      {
-        $count: 'count'
-      }
-    ]).toArray();
+    const recentBookings = await Promise.all(recentBookingsRaw.map(async (booking) => {
+      try {
+        if (booking.user_id) {
+          const user = await usersCollection.findOne({ _id: booking.user_id });
+          if (user) {
+            booking.user_name = user.displayName;
+          }
+        }
+      } catch (err) {}
+      return booking;
+    }));
 
-    // Revenue stats (sum of booking amounts)
-    const bookingStats = await bookingsCollection.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: { $toDouble: '$amount_pkr' } },
-          avgAmount: { $avg: { $toDouble: '$amount_pkr' } },
-          maxAmount: { $max: { $toDouble: '$amount_pkr' } },
-          minAmount: { $min: { $toDouble: '$amount_pkr' } }
+    // Process Active Users and Revenue in JS to handle string dates and commas
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const allBookings = await bookingsCollection.find({}).toArray();
+    
+    let activeUserIds = new Set();
+    let totalRevenue = 0;
+    let maxAmount = 0;
+    let minAmount = Infinity;
+
+    allBookings.forEach(b => {
+      // Check active users
+      let d = new Date(b.created_at || b.createdAt);
+      if (!isNaN(d.getTime()) && d >= thirtyDaysAgo && b.user_id) {
+        activeUserIds.add(b.user_id.toString());
+      }
+      
+      // Check revenue
+      let amtStr = b.quote_pkr || b.amount_pkr;
+      if (amtStr) {
+        let amt = parseFloat(amtStr.toString().replace(/,/g, ''));
+        if (!isNaN(amt)) {
+          totalRevenue += amt;
+          if (amt > maxAmount) maxAmount = amt;
+          if (amt < minAmount) minAmount = amt;
         }
       }
-    ]).toArray();
+    });
+
+    if (minAmount === Infinity) minAmount = 0;
 
     const stats = {
       totalUsers,
       totalBookings,
       totalChats,
-      activeUsers: activeUsersCount[0]?.count || 0,
+      activeUsers: activeUserIds.size,
       bookingsByStatus: bookingsByStatus.reduce((acc, item) => {
         acc[item._id || 'unknown'] = item.count;
         return acc;
       }, {}),
-      revenue: bookingStats[0] || {
-        totalAmount: 0,
-        avgAmount: 0,
-        maxAmount: 0,
-        minAmount: 0
+      revenue: {
+        totalAmount: totalRevenue,
+        avgAmount: totalBookings > 0 ? totalRevenue / totalBookings : 0,
+        maxAmount: maxAmount,
+        minAmount: minAmount
       },
       recentBookings
     };
@@ -262,21 +277,33 @@ router.get('/analytics/bookings-by-day', async (req, res) => {
     const mongoDb = await db.getDb();
     const bookingsCollection = mongoDb.collection(db.COLLECTIONS.bookings);
 
+    const allBookings = await bookingsCollection.find({}).toArray();
+    
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dayMap = {};
 
-    const data = await bookingsCollection.aggregate([
-      { $match: { createdAt: { $gte: thirtyDaysAgo } } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          count: { $sum: 1 },
-          revenue: { $sum: { $toDouble: '$amount_pkr' } }
+    allBookings.forEach(b => {
+      let d = new Date(b.created_at || b.createdAt);
+      if (!isNaN(d.getTime()) && d >= thirtyDaysAgo) {
+        let dateStr = d.toISOString().split('T')[0];
+        
+        let amtStr = b.quote_pkr || b.amount_pkr;
+        let amt = 0;
+        if (amtStr) {
+          amt = parseFloat(amtStr.toString().replace(/,/g, '')) || 0;
         }
-      },
-      { $sort: { _id: 1 } }
-    ]).toArray();
+
+        if (!dayMap[dateStr]) dayMap[dateStr] = { count: 0, revenue: 0 };
+        dayMap[dateStr].count += 1;
+        dayMap[dateStr].revenue += amt;
+      }
+    });
+
+    const data = Object.keys(dayMap).map(k => ({
+      _id: k,
+      count: dayMap[k].count,
+      revenue: dayMap[k].revenue
+    })).sort((a, b) => a._id.localeCompare(b._id));
 
     res.json({ success: true, data });
   } catch (error) {
@@ -294,16 +321,27 @@ router.get('/analytics/service-types', async (req, res) => {
     const mongoDb = await db.getDb();
     const bookingsCollection = mongoDb.collection(db.COLLECTIONS.bookings);
 
-    const data = await bookingsCollection.aggregate([
-      {
-        $group: {
-          _id: '$service_type',
-          count: { $sum: 1 },
-          revenue: { $sum: { $toDouble: '$amount_pkr' } }
-        }
-      },
-      { $sort: { count: -1 } }
-    ]).toArray();
+    const allBookings = await bookingsCollection.find({}).toArray();
+    
+    const serviceMap = {};
+    allBookings.forEach(b => {
+      let type = b.service_type || 'Unknown';
+      let amtStr = b.quote_pkr || b.amount_pkr;
+      let amt = 0;
+      if (amtStr) {
+        amt = parseFloat(amtStr.toString().replace(/,/g, '')) || 0;
+      }
+
+      if (!serviceMap[type]) serviceMap[type] = { count: 0, revenue: 0 };
+      serviceMap[type].count += 1;
+      serviceMap[type].revenue += amt;
+    });
+
+    const data = Object.keys(serviceMap).map(k => ({
+      _id: k,
+      count: serviceMap[k].count,
+      revenue: serviceMap[k].revenue
+    })).sort((a, b) => b.count - a.count);
 
     res.json({ success: true, data });
   } catch (error) {
@@ -321,16 +359,27 @@ router.get('/analytics/top-cities', async (req, res) => {
     const mongoDb = await db.getDb();
     const bookingsCollection = mongoDb.collection(db.COLLECTIONS.bookings);
 
-    const data = await bookingsCollection.aggregate([
-      {
-        $group: {
-          _id: '$city',
-          count: { $sum: 1 },
-          revenue: { $sum: { $toDouble: '$amount_pkr' } }
-        }
-      },
-      { $sort: { count: -1 } }
-    ]).toArray();
+    const allBookings = await bookingsCollection.find({}).toArray();
+    
+    const cityMap = {};
+    allBookings.forEach(b => {
+      let city = b.city || 'Unknown';
+      let amtStr = b.quote_pkr || b.amount_pkr;
+      let amt = 0;
+      if (amtStr) {
+        amt = parseFloat(amtStr.toString().replace(/,/g, '')) || 0;
+      }
+
+      if (!cityMap[city]) cityMap[city] = { count: 0, revenue: 0 };
+      cityMap[city].count += 1;
+      cityMap[city].revenue += amt;
+    });
+
+    const data = Object.keys(cityMap).map(k => ({
+      _id: k,
+      count: cityMap[k].count,
+      revenue: cityMap[k].revenue
+    })).sort((a, b) => b.count - a.count);
 
     res.json({ success: true, data });
   } catch (error) {

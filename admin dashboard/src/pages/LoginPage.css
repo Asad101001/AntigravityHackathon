@@ -8,39 +8,19 @@
   justify-content: center;
   min-height: 100vh;
   overflow: hidden;
-  background: linear-gradient(145deg, var(--green-900) 0%, var(--green-800) 40%, var(--green-700) 100%);
-  background-size: 200% 200%;
-  animation: gradshift 18s ease infinite;
+  background: url('/admin_login_bg.png') center center/cover no-repeat;
   padding: 1.5rem;
+}
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 /* Decorative background blobs */
 .login-blob {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(60px);
-}
-
-.login-blob-1 {
-  width: 520px; height: 520px;
-  background: radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%);
-  top: -160px; left: -120px;
-  animation: float 10s ease-in-out infinite;
-}
-
-.login-blob-2 {
-  width: 380px; height: 380px;
-  background: radial-gradient(circle, rgba(14,143,70,0.14) 0%, transparent 70%);
-  bottom: -80px; right: -80px;
-  animation: float 13s ease-in-out infinite reverse;
-}
-
-.login-blob-3 {
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(118,75,162,0.10) 0%, transparent 70%);
-  top: 55%; right: 15%;
-  animation: float 8s ease-in-out 2s infinite;
+  display: none;
 }
 
 /* ── Login card ── */

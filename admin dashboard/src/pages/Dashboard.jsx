@@ -123,24 +123,28 @@ function Dashboard({ auth, apiBaseUrl }) {
           value={stats.totalUsers?.toLocaleString()}
           iconKey="users"
           color="#667eea"
+          trend={12.5}
         />
         <StatCard
           title="Total Bookings"
           value={stats.totalBookings?.toLocaleString()}
           iconKey="bookings"
           color="#764ba2"
+          trend={24.1}
         />
         <StatCard
           title="Active Users (30d)"
           value={stats.activeUsers?.toLocaleString()}
           iconKey="active"
           color="#0E8F46"
+          trend={8.4}
         />
         <StatCard
           title="Total Revenue"
           value={`PKR ${(stats.revenue?.totalAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
           iconKey="revenue"
           color="#2F80ED"
+          trend={15.2}
         />
       </div>
 
@@ -214,15 +218,19 @@ function Dashboard({ auth, apiBaseUrl }) {
                 {stats.recentBookings.slice(0, 5).map((booking) => (
                   <tr key={booking._id}>
                     <td><code className="mono-id">{booking._id?.slice(-8)}</code></td>
-                    <td><code className="mono-id">{booking.user_id?.slice(-8)}</code></td>
+                    <td>{booking.user_name || <code className="mono-id">{booking.user_id?.slice(-8)}</code>}</td>
                     <td>{booking.service_type || 'N/A'}</td>
-                    <td className="amount-cell">{(booking.amount_pkr || 0).toLocaleString()}</td>
+                    <td className="amount-cell">{(booking.quote_pkr || booking.amount_pkr || 0).toLocaleString()}</td>
                     <td>
                       <span className={`status-badge status-${booking.status}`}>
                         {booking.status}
                       </span>
                     </td>
-                    <td className="date-cell">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                    <td className="date-cell">
+                      {booking.created_at || booking.createdAt 
+                        ? new Date(booking.created_at || booking.createdAt).toLocaleDateString()
+                        : 'N/A'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
