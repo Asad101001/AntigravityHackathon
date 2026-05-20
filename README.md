@@ -1,256 +1,140 @@
-# Asaaniyat — AI Service Orchestrator for Pakistan's Informal Economy
+<div align="center">
+  <h1>🛠️ Asaaniyat (عسانیت)</h1>
+  <p><b>AI Service Orchestrator for Pakistan's Informal Economy</b></p>
+  <p><i>Google Antigravity Hackathon · Challenge 2</i></p>
 
-> **Google Antigravity Hackathon · Challenge 2**
+  <p>
+    <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native" />
+    <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
+    <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js" />
+    <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  </p>
+</div>
 
-A mobile-first agentic AI application that connects users with informal service providers (electricians, plumbers, AC technicians, carpenters, painters) across Pakistan. Users describe their needs in **Urdu, Roman Urdu, or English**, and an 8-agent pipeline autonomously finds, ranks, prices, books, and follows up with the best provider.
+<br />
+
+## 🌟 Overview
+
+**Asaaniyat** is a mobile-first, agentic AI platform designed to bridge the gap between users and informal service providers (electricians, plumbers, AC technicians, carpenters, painters, and handymen) across Pakistan. 
+
+By leveraging an advanced **8-Agent AI Pipeline**, users can simply describe their needs in **Urdu, Roman Urdu, or English**. The system autonomously parses the intent, discovers local providers, ranks them, calculates a dynamic price, and securely books the service—all within seconds.
 
 ---
 
-## 🏗 Architecture
+## ✨ Key Features
 
-```
-┌──────────────────────────────────────────┐
-│         React Native + Expo App          │
-│  (7 screens, dark glassmorphism UI)      │
-└──────────────┬───────────────────────────┘
-               │ REST API
-┌──────────────▼───────────────────────────┐
-│         Node.js + Express Backend        │
-│  ┌─────────────────────────────────────┐ │
-│  │  Antigravity Orchestrator Engine    │ │
-│  │  ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐    │ │
-│  │  │ 1 │→│ 2 │→│ 3 │→│ 4 │→│ 5 │→   │ │
-│  │  └───┘ └───┘ └───┘ └───┘ └───┘    │ │
-│  │  IntPrs LocRes PrvDsc PrvRnk DecMkr│ │
-│  │  ┌───┐ ┌───┐                       │ │
-│  │  │ 6 │→│ 7 │→│ 8 │ → Complete      │ │
-│  │  └───┘ └───┘ └───┘                 │ │
-│  │  Price BkExec FlwMgr               │ │
-│  └─────────────────────────────────────┘ │
-└──────────────┬───────────────────────────┘
-               │
-┌──────────────▼───────────────────────────┐
-│     Firebase (Simulated in Demo Mode)    │
-│  Firestore: bookings, providers, notifs  │
-│  FCM: push notifications                │
-└──────────────────────────────────────────┘
-```
+- **Multilingual Intent Parsing**: Supports English, Urdu, and Roman Urdu natural language inputs.
+- **Agentic Orchestration**: An 8-stage AI pipeline manages the entire booking lifecycle transparently without user intervention.
+- **Geospatial Provider Discovery**: Matches users with service providers based on real-time distance and area caching.
+- **Intelligent RAG Chat**: Built-in Provider-Chat system powered by Retrieval-Augmented Generation (Groq/Gemini fallbacks) to handle user queries dynamically.
+- **Dark Glassmorphism UI**: A highly polished, native-feeling mobile interface with fluid animations and real-time agent trace visualization.
 
-## 🤖 8-Agent Pipeline (Antigravity Orchestrated)
+---
 
-| # | Agent | Responsibility | I/O |
-|---|-------|---------------|-----|
-| 1 | **IntentParser** | Extract service, location, time from raw text (Urdu/Roman Urdu/English) | Text → parsed intent |
-| 2 | **LocationResolver** | Convert area name to lat/lng from cached coordinate map | Area → coordinates |
-| 3 | **ProviderDiscoverer** | Filter 300 mock providers by service + location within the search radius | Service + location → provider list |
-| 4 | **ProviderRanker** | Score providers across distance, rating, availability, response time, risk, and sentiment | List → ranked list |
-| 5 | **DecisionMaker** | Apply hard constraints (verified, slots, distance), select best, explain why | Ranked → selected + reasoning |
-| 6 | **DynamicPricing** | Generate a PKR quote with distance and urgency adjustments | Provider + context → quote |
-| 7 | **BookingExecutor** | Write booking to the demo store, generate confirmation ID | Provider + slot → booking |
-| 8 | **FollowUpManager** | Schedule reminders and feedback follow-up | Booking → reminders |
+## 🤖 The 8-Agent Pipeline
 
-All agents share a single context object managed by the Antigravity orchestrator. Each agent reads from context and writes its output back. No agent calls another directly.
+The core intelligence of Asaaniyat is driven by an Antigravity orchestrator managing 8 decoupled agents. They share a unified context, ensuring deterministic and traceable execution.
 
-## 📱 Mobile App Screens
+| Step | Agent | Responsibility | Input → Output |
+| :---: | :--- | :--- | :--- |
+| **1** | `IntentParser` | Extracts the core service, location, and preferred time from raw multilingual text. | *Raw Text* → `Parsed Intent` |
+| **2** | `LocationResolver` | Converts neighborhood strings (e.g., "G-11/2") into precise geographic coordinates. | *Area String* → `Lat/Lng` |
+| **3** | `ProviderDiscoverer` | Filters the database of providers using geospatial queries within an adaptive radius. | *Service + Location* → `Provider List` |
+| **4** | `ProviderRanker` | Multi-factor scoring based on distance, historical rating, availability, and sentiment. | *Provider List* → `Ranked List` |
+| **5** | `DecisionMaker` | Applies hard business constraints (verified status, slot availability) to select the absolute best match. | *Ranked List* → `Selected Provider` |
+| **6** | `DynamicPricing` | Generates a transparent cost estimation adjusted for distance and urgency. | *Provider + Context* → `PKR Quote` |
+| **7** | `BookingExecutor` | Finalizes the transaction, simulates payment logic, and commits to the database. | *Quote + Provider* → `Booking ID` |
+| **8** | `FollowUpManager` | Schedules future feedback prompts and automated reminders via simulated FCM. | *Booking ID* → `Scheduled Events` |
 
-1. **Home** — Text input + quick-select service buttons (with Urdu labels)
-2. **Intent Confirm** — Parsed intent display with confidence meter & edit option
-3. **Loading** — Animated 8-step pipeline progress with real API progress
-4. **Provider Results** — Top 3 providers with scores, breakdowns, recommended badge
-5. **Booking Confirm** — Provider details, time slot, reminder preview
-6. **Confirmation** — Success with booking ID, contact, share option
-7. **Agent Trace** — Expandable logs for all 8 agents with timeline visualization
+---
 
-## 🌍 Pakistan Coverage
+## 🚀 Quick Start (Local Development)
 
-- **Islamabad**: G-6 to G-15, F-6 to F-11, I-8, I-9
-- **Lahore**: DHA, Defence, Gulberg, Johar Town, Model Town
-- **Karachi**: Clifton, Defence, Saddar, PECHS, Gulshan
-- **300 pre-seeded mock providers** across all cities
-- **6 service types**: Electrician, Plumber, AC Technician, Carpenter, Painter, Handyman
+To run the entire stack locally, you will need two separate terminal windows.
 
-## 2026 Agentic Refinement Update
+### 1. Backend API Server (Node.js)
 
-- Light mint React Native Expo UI inspired by the supplied Stitch-style booking screens.
-- Tokenized intent parsing with fuzzy location resolution for variants such as `Gulshan-e-Iqbal`, `gulshan e iqbal`, and `gulshan`.
-- Optional map-picked coordinates are sent to the backend and used for haversine distance provider discovery.
-- Agentic provider chat is available through a local RAG pipeline with Groq primary, Gemini fallback, and no-key demo mode.
-- Runtime API-doc generation is disabled by default; set `GENERATE_API_DOCS_ON_START=true` only when you intentionally want timestamped API docs.
+The backend houses the Antigravity orchestrator, MongoDB database, and REST API.
 
-### Optional AI keys
-
-Copy `backend/.env.example` to `backend/.env` and add keys only if you want live model responses:
-
-```bash
-GROQ_API_KEY=your_groq_key
-GEMINI_API_KEY=your_gemini_key
-```
-
-If no keys are provided, the RAG/chat endpoints still work with deterministic local demo replies, so a fresh clone remains runnable.
-
-## 🚀 Quick Start
-
-### Backend
 ```bash
 cd backend
 npm install
-npm start
-# Server runs on http://localhost:3001
+npm run dev
 ```
 
-### Mobile App
+> **Note on LLM Integration:** The backend functions perfectly in "Demo Mode" without any API keys. If you wish to enable the live RAG chat and dynamic reasoning, copy `backend/.env.example` to `backend/.env` and insert your `GROQ_API_KEY` or `GEMINI_API_KEY`.
+
+### 2. Mobile Application (React Native / Expo)
+
+The frontend is built with Expo SDK 54 and automatically attempts to connect to your local backend.
+
 ```bash
 cd mobile
 npm install
 npx expo start
-# Scan QR code with Expo Go app
 ```
 
-The mobile app now derives the backend URL automatically from Expo's LAN host during development and uses port `3001`, matching the Express backend. For EAS/standalone builds where Expo does not provide a dev host, set `EXPO_PUBLIC_API_BASE_URL` before starting/building, for example:
+> **Network Requirement:** Ensure your mobile device (running the Expo Go app) and your development machine are connected to the same Wi-Fi network. The app will auto-resolve the LAN IP address to connect to the Node.js server.
+
+### 3. Admin Dashboard (Vite / React)
+
+A separate web interface for managing providers and viewing system analytics.
 
 ```bash
-EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:3001 npx expo start
-```
-
-
-### Windows local testing checklist
-
-Your backend log should show the same LAN IP as Expo, but on API port `3001`. For example, if Expo prints `exp://192.168.100.24:8081`, the backend should print `http://192.168.100.24:3001`, and the app will call `http://192.168.100.24:3001/api`.
-
-Use two terminals:
-
-```powershell
-# Terminal 1
-cd D:\Desktop\hackathonMVP\backend
+cd "admin dashboard"
 npm install
-npm start
+npm run dev
 ```
-
-```powershell
-# Terminal 2
-cd D:\Desktop\hackathonMVP\mobile
-npm install
-npx expo start
-```
-
-If you want to test in the browser, install the web packages once, then run web:
-
-```powershell
-cd D:\Desktop\hackathonMVP\mobile
-npx expo install react-dom react-native-web
-npx expo start --web
-```
-
-If your phone cannot connect to the backend, force the API URL before starting Expo:
-
-```powershell
-cd D:\Desktop\hackathonMVP\mobile
-$env:EXPO_PUBLIC_API_BASE_URL="http://192.168.100.24:3001"
-npx expo start
-```
-
-You can also override only the API port if needed:
-
-```powershell
-$env:EXPO_PUBLIC_API_PORT="3001"
-npx expo start
-```
-
-
-### Browser URLs that matter
-
-- Do **not** open `http://0.0.0.0:3001` in Chrome. `0.0.0.0` is a bind address for the server, not a browser destination.
-- Open the backend status page at `http://localhost:3001/` or health JSON at `http://localhost:3001/health`.
-- Open the frontend through Expo at the URL Expo prints, for example `http://localhost:8082` if Metro switches from `8081` to `8082`.
-- If web bundling fails, stop Expo with `Ctrl+C`, run `npm install`, then restart with `npx expo start --web`.
-
-### Test the API
-```bash
-# PowerShell
-Invoke-RestMethod -Uri "http://localhost:3001/api/service-request" -Method POST -ContentType "application/json" -Body '{"user_text": "Electrician chahiye G-11 mein kal subah", "user_id": "test_user"}'
-```
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/service-request` | Main pipeline — runs all 8 agents |
-| `POST` | `/api/chaos/simulate` | Simulate provider cancellation and re-route to a replacement |
-| `POST` | `/api/chat/message` | Run grounded provider-chat response generation |
-| `GET`  | `/api/chat/:booking_id` | Get stored chat history |
-| `POST` | `/api/rag/ingest` | Add local RAG context chunks |
-| `POST` | `/api/rag/query` | Query local RAG context chunks |
-| `POST` | `/api/booking/confirm` | Confirm/cancel a booking |
-| `GET`  | `/api/booking/:id` | Get booking details |
-| `POST` | `/api/booking/:id/feedback` | Submit rating (1-5) |
-| `GET`  | `/api/logs` | Return persisted agent trace logs |
-
-## 🛡 Error Handling
-
-- **Low confidence (<0.6)**: Shows clarification prompt with suggestions
-- **Location unknown**: Asks user to specify city/area
-- **No providers**: Expands search radius (5km → 10km) or suggests alternatives
-- **Booking write failure**: Retries 3× with exponential backoff
-- **Input sanitization**: 500 char limit, HTML/control char stripping, rate limiting (100 req/15min)
-
-## 📁 Project Structure
-```
-hackathonMVP/
-├── backend/
-│   ├── server.js              # Express server
-│   ├── agents/
-│   │   ├── BaseAgent.js       # Abstract base class
-│   │   ├── IntentParserAgent.js
-│   │   ├── LocationResolverAgent.js
-│   │   ├── ProviderDiscovererAgent.js
-│   │   ├── ProviderRankerAgent.js
-│   │   ├── LLMRankerAgent.js
-│   │   ├── DecisionMakerAgent.js
-│   │   ├── DynamicPricingAgent.js
-│   │   ├── BookingExecutorAgent.js
-│   │   └── FollowUpManagerAgent.js
-│   ├── orchestrator/
-│   │   └── AntigravityOrchestrator.js  # Central 8-agent coordinator
-│   ├── routes/
-│   │   └── serviceRoutes.js     # API endpoints
-│   ├── data/
-│   │   ├── providers.json       # 300 mock providers
-│   │   ├── coordinates.json     # Area → lat/lng cache
-│   │   └── keywords.json        # Trilingual keyword dictionary
-│   └── middleware/
-│       └── sanitize.js          # Input sanitization
-├── mobile/
-│   ├── App.js                   # Navigation + 7 screens
-│   ├── config.js                # Colors, API URL, constants
-│   └── screens/
-│       ├── HomeScreen.js
-│       ├── IntentConfirmScreen.js
-│       ├── LoadingScreen.js
-│       ├── ProviderResultsScreen.js
-│       ├── BookingConfirmScreen.js
-│       ├── ConfirmationScreen.js
-│       └── AgentTraceScreen.js
-└── README.md
-```
-
-## 🏆 Hackathon Criteria Coverage
-
-| Criterion | Weight | Coverage |
-|-----------|--------|----------|
-| Antigravity Usage | 25% | Central orchestrator managing all 8 agents with trace emission |
-| Agentic Workflow | 20% | 8-agent sequential pipeline with shared context |
-| Decision Quality | 20% | Multi-factor scoring with visible reasoning per provider |
-| Action Simulation | 15% | Firestore booking + FCM notification scheduling |
-| Implementation | 10% | Clean Node.js + React Native, proper error handling |
-| Innovation + UX | 10% | Pakistan-specific (Urdu/Roman Urdu), realistic scenario |
-
-## 📋 Assumptions
-
-- Provider data is hardcoded (no live API calls per query)
-- Firebase runs in demo mode (in-memory storage) without credentials
-- Coordinates are cached for all supported areas
-- The app is designed for demo/hackathon evaluation, not production deployment
 
 ---
 
-*Built for the Google Antigravity Hackathon — Challenge 2 — AI Service Orchestrator for Pakistan's Informal Economy*
+## 📡 Core API Reference
+
+The backend exposes a clean REST interface. By default, it runs on `http://localhost:3001`.
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/service-request` | Executes the main 8-Agent pipeline to fulfill a user request. |
+| `POST` | `/api/chat/message` | Sends a message to the RAG pipeline for grounded provider chat. |
+| `POST` | `/api/chaos/simulate` | Simulates a provider cancellation, triggering the re-routing agents. |
+| `GET` | `/api/booking/:id` | Retrieves detailed information for a specific booking. |
+| `GET` | `/api/logs` | Fetches the raw JSON trace logs of the agent pipeline execution. |
+| `GET` | `/health` | Returns the server status, active version, and uptime. |
+
+---
+
+## 📁 Repository Structure
+
+```text
+Asaaniyat/
+├── backend/                  # Express server & Antigravity 8-Agent Orchestrator
+│   ├── agents/               # Individual Agent logic classes
+│   ├── orchestrator/         # Pipeline control flow
+│   ├── data/                 # Mock databases (Providers, Coordinates)
+│   └── routes/               # API Endpoints
+├── mobile/                   # React Native (Expo SDK 54) Application
+│   ├── assets/               # Image resources
+│   └── screens/              # UI Views (Home, Loading, Provider Results, etc.)
+├── admin dashboard/          # React/Vite Admin Single Page Application
+├── docs/                     # Additional architectural diagrams and assets
+└── tests/                    # Unit and integration test suites
+```
+
+---
+
+## 📖 Deep Dive Documentation
+
+For a more granular look at how the system is built, tested, and deployed, please refer to the dedicated documentation files:
+
+- 🏗️ **[System Architecture (ARCHITECTURE.md)](./ARCHITECTURE.md)** — Core backend structure, 8-Agent pipeline logic, and database schemas.
+- 🎨 **[UI/UX Design & Theming (DESIGN.md)](./DESIGN.md)** — "Dark Glassmorphism" aesthetic, color tokens, and frontend component design.
+- 🧪 **[Quality Assurance (QA.md)](./QA.md)** — Test cases, pipeline verification, and security checklists.
+- ☁️ **[Deployment Guide (DEPLOYMENT.md)](./DEPLOYMENT.md)** — Step-by-step instructions for Google Cloud Run and Expo EAS.
+- 📊 **[Admin Dashboard Guide](./admin%20dashboard/ADMIN_DASHBOARD_README.md)** — Operations and setup for the admin panel.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for the <b>Google Antigravity Hackathon</b></p>
+</div>

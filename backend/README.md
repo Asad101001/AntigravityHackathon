@@ -3,7 +3,7 @@
 <p>
   <img src="https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white" />
   <img src="https://img.shields.io/badge/Express.js-404D59?style=flat-square" />
-  <img src="https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white" />
 </p>
 
 This is the core intelligence server for the Asaaniyat platform. It houses the **Antigravity Orchestrator Engine**, which manages an 8-agent AI pipeline to parse natural language service requests, discover local providers, calculate dynamic pricing, and execute bookings.
