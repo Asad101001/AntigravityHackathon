@@ -13,7 +13,7 @@ function App() {
   const [auth, setAuth] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://asaaniyat-backend-525519819889.asia-south1.run.app';
 
   // Check if user is logged in
   useEffect(() => {

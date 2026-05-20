@@ -1,0 +1,195 @@
+{
+  "run_id": "2026-05-20T10-23-39",
+  "timestamp": "2026-05-20T10:24:38.082Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859847889541065,
+      "lng": 67.07362358409206
+    },
+    "service_type": "Cleaning Lady"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2aa0",
+        "id": "CL217",
+        "name": "PECHS Rescue Cleaning Samina",
+        "service": "Cleaning Lady",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8706,
+        "lng": 67.0589,
+        "distance_km": 3.81,
+        "rating": 4.5,
+        "reviews_count": 61,
+        "available_slots": [
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0366-2710504",
+        "response_time_min": 11,
+        "verified": true,
+        "specialization": [
+          "deep_cleaning",
+          "move_in_cleaning",
+          "kitchen_degreasing"
+        ],
+        "base_rate_pkr": 1567,
+        "on_time_score": 45,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Verified documents are on file. Good technical skill, but recent cancellation risk is high during peak hours around PECHS.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 1.91,
+        "distance_text": "3.8 km",
+        "duration_text": "11 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ad7",
+        "id": "CL272",
+        "name": "PECHS Express Cleaning Shazia",
+        "service": "Cleaning Lady",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8717,
+        "lng": 67.06,
+        "distance_km": 4.78,
+        "rating": 3.8,
+        "reviews_count": 149,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0341-3146049",
+        "response_time_min": 13,
+        "verified": true,
+        "specialization": [
+          "bathroom_cleaning",
+          "post_renovation_cleaning",
+          "floor_scrubbing"
+        ],
+        "base_rate_pkr": 1000,
+        "on_time_score": 80,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid cleaning lady option for PECHS; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 1.9,
+        "distance_text": "4.8 km",
+        "duration_text": "13 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a7f",
+        "id": "CL184",
+        "name": "Bahadurabad Fix Cleaning Nadia",
+        "service": "Cleaning Lady",
+        "city": "Karachi",
+        "area": "Bahadurabad",
+        "lat": 24.8838,
+        "lng": 67.0701,
+        "distance_km": 5.04,
+        "rating": 4.8,
+        "reviews_count": 79,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0333-2449177",
+        "response_time_min": 14,
+        "verified": true,
+        "specialization": [
+          "post_renovation_cleaning",
+          "floor_scrubbing",
+          "bathroom_cleaning"
+        ],
+        "base_rate_pkr": 1647,
+        "on_time_score": 94,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Bahadurabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.69,
+        "distance_text": "5.0 km",
+        "duration_text": "14 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a48",
+        "id": "CL129",
+        "name": "DHA Rescue Cleaning Farah",
+        "service": "Cleaning Lady",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8028,
+        "lng": 67.0711,
+        "distance_km": 11.85,
+        "rating": 4.4,
+        "reviews_count": 168,
+        "available_slots": [
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0358-2013632",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "move_in_cleaning",
+          "kitchen_degreasing",
+          "deep_cleaning"
+        ],
+        "base_rate_pkr": 913,
+        "on_time_score": 89,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.35,
+        "distance_text": "11.8 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a11",
+        "id": "CL074",
+        "name": "DHA Prime Cleaning Kiran",
+        "service": "Cleaning Lady",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8017,
+        "lng": 67.07,
+        "distance_km": 11.99,
+        "rating": 2.5,
+        "reviews_count": 21,
+        "available_slots": [
+          "08:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0383-1578087",
+        "response_time_min": 23,
+        "verified": false,
+        "specialization": [
+          "bathroom_cleaning",
+          "post_renovation_cleaning",
+          "floor_scrubbing"
+        ],
+        "base_rate_pkr": 1480,
+        "on_time_score": 58,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.48,
+        "distance_text": "12.0 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 16072
+}

@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-20T10-23-39",
+  "timestamp": "2026-05-20T10:28:40.696Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "AC Repair needed at 2pm",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "today_1400",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "User requested AC Repair at 2pm, implying a standard service request with no specific location or urgency."
+  },
+  "durationMs": 1528
+}

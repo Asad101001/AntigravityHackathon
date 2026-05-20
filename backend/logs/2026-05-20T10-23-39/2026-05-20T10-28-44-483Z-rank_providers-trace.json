@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-20T10-23-39",
+  "timestamp": "2026-05-20T10:28:44.483Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Based on the given constraints, we selected AC069 as the overall best provider due to its excellent rating, low cancellation risk, and high on-time score. Although AC179 is cheaper, AC069's overall performance outweighs the cost difference. AC036 and AC124 have lower ratings and higher cancellation risks, respectively, making them less desirable options. AC234 is the farthest provider, but its rating and on-time score are not as strong as the top two options.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "AC069's excellent rating, low cancellation risk, and high on-time score make it the best choice.",
+        "most_affordable_id": "AC179 is the cheapest verified provider with available slots.",
+        "closest_fastest_id": "AC069 is the closest and fastest provider with available slots."
+      }
+    }
+  },
+  "durationMs": 1120
+}

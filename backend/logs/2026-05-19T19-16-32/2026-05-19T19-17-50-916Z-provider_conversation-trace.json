@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-19T19-16-32",
+  "timestamp": "2026-05-19T19:17:50.916Z",
+  "agent": "provider_conversation",
+  "action": "provider_conversation",
+  "input": {
+    "booking_id": "BK_1779214464171_sle3x2",
+    "message": "How quickly can you arrive?"
+  },
+  "output": {
+    "reply": "I don't have specific information about that right now. Could you clarify?",
+    "provider": "local_fallback",
+    "usage": null,
+    "rag_chunks_used": 0
+  },
+  "durationMs": 607
+}

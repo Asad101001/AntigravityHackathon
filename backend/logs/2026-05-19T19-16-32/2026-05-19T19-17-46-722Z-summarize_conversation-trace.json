@@ -1,0 +1,14 @@
+{
+  "run_id": "2026-05-19T19-16-32",
+  "timestamp": "2026-05-19T19:17:46.723Z",
+  "agent": "summarize_conversation",
+  "action": "summarize_conversation",
+  "input": {
+    "booking_id": "BK_1779214464171_sle3x2",
+    "messages": 30
+  },
+  "output": {
+    "summary": " will confirm it before proceeding.\nuser: why is your price so high\nassistant: The price of PKR 2,043 is due to the complexity of the services included in the quote, such as thorough AC maintenance, gas refilling, and any necessary repairs to ensure your system runs efficiently. I'll be providing you with a detailed breakdown of the work done once I arrive.\nuser: How quickly can you arrive?\nassistant: We're running slightly behind schedule due to traffic, but I'll be at your location by 4:30 pm at the latest. I'll make sure to arrive as soon as possible to ensure your AC is serviced efficiently.\nuser: Show technician profile\nassistant: Assalamu alaikum, I'm Zahid, a certified AC Technician serving PECHS, Karachi. I've been providing top-notch services for over 5 years, ensuring your air conditioning systems run efficiently and effectively. \n\nHere's a quick glance at my profile:\n\n- Name: Zahid\n- Profession: AC Technician\n- Experience: 5+ years\n- Location: PECHS, Karachi\n- Service Area: Karachi and surrounding areas\n- Specialization: Air Conditioning Repair, Installation, and Maintenance\n\nWould you like to proceed with the scheduled appointment at Tariq Road Karachi today at 4:00 pm?"
+  },
+  "durationMs": 300
+}

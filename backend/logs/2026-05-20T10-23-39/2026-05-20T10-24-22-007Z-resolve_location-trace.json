@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-20T10-23-39",
+  "timestamp": "2026-05-20T10:24:22.007Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859847889541065,
+      "lng": 67.07362358409206,
+      "label": "Karachi, Pakistan"
+    },
+    "parsed_location": null,
+    "user_text": "Cleaning needed at 2pm"
+  },
+  "output": {
+    "lat": 24.859847889541065,
+    "lng": 67.07362358409206,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 9
+}

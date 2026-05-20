@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-20T10-23-39",
+  "timestamp": "2026-05-20T10:24:21.996Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Cleaning needed at 2pm",
+  "output": {
+    "service_type": "Cleaning Lady",
+    "location": null,
+    "time_preference": "today_1400",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "User requested cleaning service at 2pm, assuming today's date."
+  },
+  "durationMs": 1525
+}
