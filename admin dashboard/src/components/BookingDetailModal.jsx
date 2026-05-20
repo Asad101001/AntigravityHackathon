@@ -1,5 +1,15 @@
 import { useState } from 'react';
+import {
+  X, RefreshCw, Trash2, Star, CheckCircle, Clock, XCircle, AlertCircle
+} from 'lucide-react';
 import './BookingDetailModal.css';
+
+const STATUS_META = {
+  pending:   { Icon: Clock,        color: '#D97706' },
+  confirmed: { Icon: AlertCircle,  color: '#2F80ED' },
+  completed: { Icon: CheckCircle,  color: '#0E8F46' },
+  cancelled: { Icon: XCircle,      color: '#DC2626' },
+};
 
 function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, formatDate }) {
   const [selectedStatus, setSelectedStatus] = useState(booking.status);
@@ -10,8 +20,7 @@ function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, format
       alert('Please select a different status');
       return;
     }
-    
-    if (window.confirm(`Update booking status to ${selectedStatus}?`)) {
+    if (window.confirm(`Update booking status to "${selectedStatus}"?`)) {
       setIsUpdating(true);
       try {
         await onStatusUpdate(booking._id, selectedStatus);
@@ -27,125 +36,155 @@ function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, format
     }
   };
 
-  // Helper to get nested values
-  const getValue = (obj, path, fallback = 'N/A') => {
+  const getValue = (obj, path, fallback = '—') => {
     const value = path.split('.').reduce((current, prop) => current?.[prop], obj);
     return value && value !== '' ? value : fallback;
   };
 
+  const { Icon: StatusIcon, color: statusColor } = STATUS_META[booking.status] || STATUS_META.pending;
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
 
+        {/* Close */}
+        <button className="modal-close" onClick={onClose} aria-label="Close">
+          <X size={16} strokeWidth={2.5} />
+        </button>
+
+        {/* Header */}
         <div className="modal-header">
-          <h2>Booking Details</h2>
-          <p className="booking-id">ID: {booking._id}</p>
+          <div className="modal-header-top">
+            <div className="modal-status-icon" style={{ background: `${statusColor}22`, borderColor: `${statusColor}44` }}>
+              <StatusIcon size={18} strokeWidth={1.75} color={statusColor} />
+            </div>
+            <div>
+              <h2>Booking Details</h2>
+              <p className="booking-id">#{booking._id}</p>
+            </div>
+          </div>
+          <span className={`modal-status-badge status-${booking.status}`}>{booking.status}</span>
         </div>
 
+        {/* Body */}
         <div className="modal-body">
+
+          {/* Booking Info */}
           <section className="detail-section">
             <h3>Booking Information</h3>
             <div className="detail-grid">
               <div className="detail-item">
-                <label>Service Type:</label>
+                <label>Service Type</label>
                 <span>{getValue(booking, 'service_type')}</span>
               </div>
               <div className="detail-item">
-                <label>City:</label>
+                <label>City</label>
                 <span>{getValue(booking, 'city')}</span>
               </div>
               <div className="detail-item">
-                <label>Area:</label>
+                <label>Area</label>
                 <span>{getValue(booking, 'area')}</span>
               </div>
               <div className="detail-item">
-                <label>Amount:</label>
-                <span className="amount">PKR {getValue(booking, 'quote_pkr') || getValue(booking, 'amount_pkr') || '0'}</span>
+                <label>Amount</label>
+                <span className="amount">
+                  PKR {(getValue(booking, 'quote_pkr') || getValue(booking, 'amount_pkr') || 0).toLocaleString()}
+                </span>
               </div>
               <div className="detail-item">
-                <label>Booking Time:</label>
+                <label>Booking Time</label>
                 <span>{formatDate(getValue(booking, 'booking_start_time') || getValue(booking, 'createdAt'))}</span>
               </div>
               <div className="detail-item">
-                <label>Created Date:</label>
+                <label>Created</label>
                 <span>{formatDate(getValue(booking, 'created_at') || getValue(booking, 'createdAt'))}</span>
               </div>
               {booking.completedAt && (
                 <div className="detail-item">
-                  <label>Completed Date:</label>
+                  <label>Completed</label>
                   <span>{formatDate(booking.completedAt)}</span>
                 </div>
               )}
               {booking.location && (
                 <div className="detail-item full-width">
-                  <label>Location:</label>
+                  <label>Location</label>
                   <span>{getValue(booking, 'location')}</span>
                 </div>
               )}
             </div>
           </section>
 
+          {/* Recipient */}
           <section className="detail-section">
-            <h3>Recipient Information</h3>
+            <h3>Recipient</h3>
             <div className="detail-grid">
               <div className="detail-item">
-                <label>User ID:</label>
-                <span className="id-value">{getValue(booking, 'user_id')}</span>
+                <label>User ID</label>
+                <code className="id-value">{getValue(booking, 'user_id')}</code>
               </div>
               <div className="detail-item">
-                <label>User Name:</label>
+                <label>Name</label>
                 <span>{getValue(booking, 'user_name')}</span>
               </div>
               <div className="detail-item">
-                <label>User Email:</label>
+                <label>Email</label>
                 <span>{getValue(booking, 'user_email')}</span>
               </div>
               <div className="detail-item">
-                <label>User Phone:</label>
+                <label>Phone</label>
                 <span>{getValue(booking, 'user_phone')}</span>
               </div>
               <div className="detail-item full-width">
-                <label>User Address:</label>
+                <label>Address</label>
                 <span>{getValue(booking, 'user_address')}</span>
               </div>
             </div>
           </section>
 
+          {/* Provider */}
           <section className="detail-section">
-            <h3>Provider Information</h3>
+            <h3>Service Provider</h3>
             <div className="detail-grid">
               <div className="detail-item">
-                <label>Provider ID:</label>
-                <span className="id-value">{getValue(booking, 'provider_id')}</span>
+                <label>Provider ID</label>
+                <code className="id-value">{getValue(booking, 'provider_id')}</code>
               </div>
               <div className="detail-item">
-                <label>Provider Name:</label>
+                <label>Name</label>
                 <span>{getValue(booking, 'provider_name')}</span>
               </div>
               <div className="detail-item">
-                <label>Service Type:</label>
+                <label>Service</label>
                 <span>{getValue(booking, 'provider_service') || getValue(booking, 'service_type')}</span>
               </div>
               <div className="detail-item">
-                <label>Provider Phone:</label>
+                <label>Phone</label>
                 <span>{getValue(booking, 'provider_phone')}</span>
               </div>
               <div className="detail-item">
-                <label>Provider Rating:</label>
-                <span className="rating">⭐ {getValue(booking, 'provider_rating')}</span>
+                <label>Rating</label>
+                <span className="rating">
+                  <Star size={13} strokeWidth={2} fill="currentColor" style={{ marginRight: 3 }} />
+                  {getValue(booking, 'provider_rating')}
+                </span>
               </div>
               <div className="detail-item">
-                <label>Service Area:</label>
+                <label>Area</label>
                 <span>{getValue(booking, 'provider_area') || getValue(booking, 'area')}</span>
               </div>
               <div className="detail-item">
-                <label>Response Time:</label>
+                <label>Response Time</label>
                 <span>{getValue(booking, 'provider_response_time')} min</span>
               </div>
               <div className="detail-item">
-                <label>Verified:</label>
-                <span>{getValue(booking, 'provider_verified') ? '✓ Yes' : '✗ No'}</span>
+                <label>Verified</label>
+                <span className={getValue(booking, 'provider_verified') ? 'verified-yes' : 'verified-no'}>
+                  {getValue(booking, 'provider_verified') ? (
+                    <><CheckCircle size={13} strokeWidth={2} /> Verified</>
+                  ) : (
+                    <><XCircle size={13} strokeWidth={2} /> Unverified</>
+                  )}
+                </span>
               </div>
             </div>
           </section>
@@ -157,22 +196,14 @@ function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, format
             </section>
           )}
 
-          {booking.raw_data && (
-            <section className="detail-section">
-              <h3>Additional Details</h3>
-              <div className="raw-data">
-                <pre>{JSON.stringify(booking.raw_data, null, 2)}</pre>
-              </div>
-            </section>
-          )}
-
+          {/* Status manager */}
           <section className="detail-section">
-            <h3>Status Management</h3>
+            <h3>Update Status</h3>
             <div className="status-manager">
               <div className="status-selector">
-                <label>Current Status:</label>
-                <select 
-                  value={selectedStatus} 
+                <label>Change status to</label>
+                <select
+                  value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className={`status-select status-${selectedStatus}`}
                 >
@@ -182,15 +213,16 @@ function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, format
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
-              {selectedStatus !== booking.status && (
-                <button 
-                  className="btn-update-status"
-                  onClick={handleStatusChange}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? 'Updating...' : 'Update Status'}
-                </button>
-              )}
+              <button
+                className="btn-update-status"
+                onClick={handleStatusChange}
+                disabled={isUpdating || selectedStatus === booking.status}
+              >
+                {isUpdating
+                  ? <><span className="btn-spinner-sm" /> Updating…</>
+                  : <><RefreshCw size={14} strokeWidth={2} /> Apply</>
+                }
+              </button>
             </div>
           </section>
 
@@ -200,18 +232,24 @@ function BookingDetailModal({ booking, onClose, onDelete, onStatusUpdate, format
               <p className="notes-text">{booking.notes}</p>
             </section>
           )}
+
+          {booking.raw_data && (
+            <section className="detail-section">
+              <h3>Raw Data</h3>
+              <div className="raw-data">
+                <pre>{JSON.stringify(booking.raw_data, null, 2)}</pre>
+              </div>
+            </section>
+          )}
         </div>
 
+        {/* Footer */}
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose}>
-            Close
+            <X size={14} strokeWidth={2.5} /> Close
           </button>
-          <button 
-            className="btn-danger" 
-            onClick={handleDelete}
-            title="Delete this booking permanently"
-          >
-            🗑️ Delete Booking
+          <button className="btn-danger" onClick={handleDelete}>
+            <Trash2 size={14} strokeWidth={2} /> Delete Booking
           </button>
         </div>
       </div>

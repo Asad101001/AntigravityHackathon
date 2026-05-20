@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import StatCard from '../components/StatCard';
 import './Dashboard.css';
 
@@ -9,13 +13,12 @@ function Dashboard({ auth, apiBaseUrl }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  useEffect(() => { fetchStats(); }, []);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
+      setError('');
       console.log('Fetching dashboard stats from:', `${apiBaseUrl}/api/admin/dashboard-stats`);
       const response = await axios.get(`${apiBaseUrl}/api/admin/dashboard-stats`, {
         headers: { Authorization: `Bearer ${auth.token}` }
@@ -41,22 +44,40 @@ function Dashboard({ auth, apiBaseUrl }) {
   };
 
   if (loading) {
-    return <div className="dashboard-loading">Loading dashboard...</div>;
+    return (
+      <div className="page-loading">
+        <div className="page-spinner" />
+        <span>Loading dashboard…</span>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="dashboard-error">{error}</div>;
+    return (
+      <div className="page-error">
+        <AlertCircle size={20} strokeWidth={1.75} />
+        <span>{error}</span>
+        <button className="btn-retry" onClick={fetchStats}>
+          <RefreshCw size={14} strokeWidth={2} /> Retry
+        </button>
+      </div>
+    );
   }
 
   if (!stats) {
-    return <div className="dashboard-error">No data available</div>;
+    return (
+      <div className="page-error">
+        <AlertCircle size={20} strokeWidth={1.75} />
+        <span>No data available</span>
+      </div>
+    );
   }
 
   const statusColors = {
-    pending: '#FFA500',
-    confirmed: '#4CAF50',
-    completed: '#2196F3',
-    cancelled: '#f44336'
+    pending:   '#D97706',
+    confirmed: '#2F80ED',
+    completed: '#0E8F46',
+    cancelled: '#DC2626',
   };
 
   const statusData = Object.entries(stats.bookingsByStatus || {}).map(([status, count]) => ({
@@ -65,90 +86,117 @@ function Dashboard({ auth, apiBaseUrl }) {
     fill: statusColors[status] || '#9C27B0'
   }));
 
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="chart-tooltip">
+          {label && <p className="tooltip-label">{label}</p>}
+          {payload.map((entry, i) => (
+            <p key={i} style={{ color: entry.color || entry.fill }}>
+              {entry.name}: <strong>{entry.value}</strong>
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="dashboard-container">
-      <h2>Dashboard Overview</h2>
+      {/* Page title */}
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Dashboard Overview</h2>
+          <p className="page-subtitle">Real-time platform performance metrics</p>
+        </div>
+        <button className="btn-refresh" onClick={fetchStats} title="Refresh">
+          <RefreshCw size={15} strokeWidth={2} />
+          Refresh
+        </button>
+      </div>
 
+      {/* KPI Stats */}
       <div className="stats-grid">
         <StatCard
           title="Total Users"
-          value={stats.totalUsers}
-          icon="👥"
+          value={stats.totalUsers?.toLocaleString()}
+          iconKey="users"
           color="#667eea"
         />
         <StatCard
           title="Total Bookings"
-          value={stats.totalBookings}
-          icon="📅"
+          value={stats.totalBookings?.toLocaleString()}
+          iconKey="bookings"
           color="#764ba2"
         />
         <StatCard
           title="Active Users (30d)"
-          value={stats.activeUsers}
-          icon="⚡"
-          color="#f093fb"
+          value={stats.activeUsers?.toLocaleString()}
+          iconKey="active"
+          color="#0E8F46"
         />
         <StatCard
           title="Total Revenue"
-          value={`PKR ${stats.revenue.totalAmount?.toFixed(0) || 0}`}
-          icon="💰"
-          color="#4facfe"
+          value={`PKR ${(stats.revenue?.totalAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+          iconKey="revenue"
+          color="#2F80ED"
         />
       </div>
 
+      {/* Charts */}
       <div className="charts-container">
         <div className="chart-card">
-          <h3>Bookings by Status</h3>
+          <h3 className="chart-title">Bookings by Status</h3>
           {statusData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={statusData}
-                  cx="50%"
-                  cy="50%"
+                  cx="50%" cy="50%"
                   labelLine={false}
                   label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
+                  outerRadius={90}
+                  innerRadius={40}
                   dataKey="value"
+                  paddingAngle={3}
                 >
                   {statusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend iconType="circle" iconSize={8} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p>No booking data</p>
+            <p className="chart-empty">No booking data available</p>
           )}
         </div>
 
         <div className="chart-card">
-          <h3>Revenue Metrics (PKR)</h3>
+          <h3 className="chart-title">Revenue Metrics <span className="chart-subtitle">PKR</span></h3>
           <div className="metrics-box">
-            <div className="metric-item">
-              <span className="metric-label">Total:</span>
-              <span className="metric-value">{stats.revenue.totalAmount?.toFixed(2)}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">Average:</span>
-              <span className="metric-value">{stats.revenue.avgAmount?.toFixed(2)}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">Maximum:</span>
-              <span className="metric-value">{stats.revenue.maxAmount?.toFixed(2)}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">Minimum:</span>
-              <span className="metric-value">{stats.revenue.minAmount?.toFixed(2)}</span>
-            </div>
+            {[
+              { label: 'Total',   val: stats.revenue?.totalAmount },
+              { label: 'Average', val: stats.revenue?.avgAmount   },
+              { label: 'Maximum', val: stats.revenue?.maxAmount   },
+              { label: 'Minimum', val: stats.revenue?.minAmount   },
+            ].map(({ label, val }) => (
+              <div className="metric-item" key={label}>
+                <span className="metric-label">{label}</span>
+                <span className="metric-value">
+                  {val != null ? val.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
+      {/* Recent Bookings */}
       <div className="recent-bookings">
-        <h3>Recent Bookings</h3>
+        <h3 className="chart-title">Recent Bookings</h3>
         {stats.recentBookings && stats.recentBookings.length > 0 ? (
           <div className="bookings-table">
             <table>
@@ -165,23 +213,23 @@ function Dashboard({ auth, apiBaseUrl }) {
               <tbody>
                 {stats.recentBookings.slice(0, 5).map((booking) => (
                   <tr key={booking._id}>
-                    <td>{booking._id?.slice(-8)}</td>
-                    <td>{booking.user_id?.slice(-8)}</td>
+                    <td><code className="mono-id">{booking._id?.slice(-8)}</code></td>
+                    <td><code className="mono-id">{booking.user_id?.slice(-8)}</code></td>
                     <td>{booking.service_type || 'N/A'}</td>
-                    <td>{booking.amount_pkr || 0}</td>
+                    <td className="amount-cell">{(booking.amount_pkr || 0).toLocaleString()}</td>
                     <td>
                       <span className={`status-badge status-${booking.status}`}>
                         {booking.status}
                       </span>
                     </td>
-                    <td>{new Date(booking.createdAt).toLocaleDateString()}</td>
+                    <td className="date-cell">{new Date(booking.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p>No recent bookings</p>
+          <p className="chart-empty">No recent bookings</p>
         )}
       </div>
     </div>
