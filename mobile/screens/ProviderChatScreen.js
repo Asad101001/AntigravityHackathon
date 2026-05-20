@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
@@ -185,8 +186,17 @@ export default function ProviderChatScreen({ route, navigation }) {
   }, [bookingId]);
 
   useEffect(() => {
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
+    const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
+    return () => clearTimeout(timer);
   }, [messages, sending]);
+
+  // Scroll to end when keyboard opens so quick-reply blocks never go behind input
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+    });
+    return () => sub.remove();
+  }, []);
 
   const send = async () => {
     if (!input.trim() || sending) return;
@@ -241,14 +251,14 @@ export default function ProviderChatScreen({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
     >
       {/* Ambient background tints */}
       <View style={styles.ambientTop} />
       <View style={styles.ambientBottom} />
 
-      <View style={[styles.inner, { paddingTop: insets.top + 60, paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 8) }]}>
         
         {/* Active Provider Info Card */}
         <LiquidGlass style={styles.providerPanel} contentStyle={styles.providerPanelInner} strong radius={RADII.xl}>
@@ -367,7 +377,7 @@ const styles = StyleSheet.create({
   online: { color: COLORS.primary, fontSize: 10, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.7 },
   
   // Message bubbles lists
-  messages: { padding: 16, paddingTop: 12, paddingBottom: 110, gap: 14 },
+  messages: { padding: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
   
   bubbleRow: {
     flexDirection: 'row',
@@ -577,15 +587,12 @@ const styles = StyleSheet.create({
 
   // Composer Input
   composer: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 12,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 18,
     elevation: 4,
+    marginBottom: 4,
   },
   composerInner: { minHeight: 54, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 10 },
   input: { flex: 1, maxHeight: 100, color: COLORS.textPrimary, fontSize: 15, fontWeight: '700' },
