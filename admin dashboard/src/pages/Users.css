@@ -1,113 +1,139 @@
+/* ============================================================
+   USERS PAGE
+   ============================================================ */
 .users-container {
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.users-container h2 {
-  font-size: 1.8rem;
-  color: var(--text-color);
-  margin-bottom: 1.5rem;
-}
-
-.users-loading {
-  padding: 2rem;
-  text-align: center;
-  font-size: 1rem;
-  color: var(--text-light);
-}
-
-.error-message {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: var(--red);
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  border-left: 4px solid var(--red);
-}
-
+/* Table wrapper */
 .users-table-wrapper {
-  background: var(--bg-card-solid);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px var(--shadow);
-  border: 1px solid var(--border-color);
+  background: var(--bg-glass-md);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--bd-glass);
+  border-radius: var(--r-md);
   overflow: hidden;
   overflow-x: auto;
-  margin-bottom: 1.5rem;
+  box-shadow: var(--sh-sm), 0 1px 0 rgba(255,255,255,0.85) inset;
+  animation: fadeInUp 0.42s var(--ease-out) 0.06s both;
+}
+
+.users-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
 }
 
 .users-table thead {
-  background: var(--bg-soft);
+  background: linear-gradient(135deg, var(--accent-soft), rgba(228,247,236,0.55));
 }
 
 .users-table th {
-  padding: 1rem;
+  padding: 0.8rem 1rem;
   text-align: left;
-  font-weight: 600;
-  color: var(--text-light);
-  font-size: 0.85rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--tx-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid var(--border-color);
+  letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--bd);
+  white-space: nowrap;
 }
 
 .users-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  font-size: 0.9rem;
+  padding: 0.78rem 1rem;
+  border-bottom: 1px solid var(--bd);
+  font-size: 0.86rem;
+  color: var(--tx);
+  transition: background var(--t-fast) var(--ease);
 }
 
-.users-table tr:hover {
-  background-color: #f9f9f9;
-}
+.users-table tbody tr:last-child td { border-bottom: none; }
 
-.btn-admin {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
+.users-table tbody tr:hover td { background: var(--accent-soft); }
+
+/* Role button */
+.btn-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.32rem 0.75rem;
+  border-radius: var(--r-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: transform 0.2s;
+  border: 1.5px solid var(--bd-md);
+  background: var(--bg-glass-lg);
+  color: var(--tx-muted);
+  transition: all var(--t) var(--ease-spring);
+  white-space: nowrap;
 }
 
-.btn-admin:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+.btn-role:hover {
+  background: var(--accent-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
 }
 
+.btn-role-admin {
+  background: var(--accent-soft);
+  border-color: rgba(14,143,70,0.30);
+  color: var(--green-700);
+}
+
+.btn-role-admin:hover {
+  background: var(--red-100);
+  border-color: rgba(220,38,38,0.30);
+  color: var(--red);
+}
+
+/* Pagination */
 .pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .btn-pagination {
-  padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.48rem 1rem;
+  background: var(--bg-glass-md);
+  border: 1px solid var(--bd-md);
+  border-radius: var(--r-sm);
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s;
+  font-size: 0.82rem;
+  color: var(--tx-sub);
+  transition: all var(--t) var(--ease-spring);
+  backdrop-filter: blur(8px);
 }
 
 .btn-pagination:hover:not(:disabled) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--green-500), var(--green-700));
   color: white;
   border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: var(--sh-sm);
 }
 
 .btn-pagination:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .page-info {
-  color: #666;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--tx-muted);
+  min-width: 100px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
