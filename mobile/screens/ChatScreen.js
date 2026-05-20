@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,10 +15,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
-import { COLORS, RADII, SHADOWS } from '../theme';
-import { getActiveBooking, subscribeSessionBookings } from '../sessionBookings';
+import { COLORS, SHADOWS } from '../theme';
+import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
 
 function stamp() {
@@ -60,10 +60,10 @@ const QUICK_REPLIES = [
   { text: 'Confirm Request', icon: 'checkmark-circle-outline', custom: true },
 ];
 
-export default function ChatScreen() {
+export default function ChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
-  const { registerScroll, showTabBar } = useTabBarVisibility();
+  const { registerScroll, hideTabBar } = useTabBarVisibility();
   const [activeBooking, setActiveBooking] = useState({
     id: 'general',
     service: 'Asaaniyat AI',
@@ -159,9 +159,24 @@ export default function ChatScreen() {
     }
   }), []);
 
+  // Hide tab bar as soon as we land on the chat screen
   useEffect(() => {
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    hideTabBar();
+  }, [hideTabBar]);
+
+  // Scroll to bottom whenever messages update
+  useEffect(() => {
+    const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
+    return () => clearTimeout(timer);
   }, [messages]);
+
+  // Also scroll to bottom when keyboard opens so input is never hidden
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+    });
+    return () => sub.remove();
+  }, []);
 
   const send = async () => {
     const content = input.trim();
@@ -301,30 +316,39 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
     >
       {/* Ambient background tints */}
       <View style={styles.ambientTop} />
       <View style={styles.ambientBottom} />
 
-      <View style={[styles.inner, { paddingTop: insets.top + 60, paddingBottom: Math.max(insets.bottom, 12) }]}>
-        
-        {/* Context Top Card — Show Active Chat Thread */}
-        <LiquidGlass style={styles.contextCard} contentStyle={styles.contextInner} strong radius={RADII.xl}>
-          <View style={styles.contextIcon}>
-            <Ionicons name={activeBooking.kind === 'assistant' ? 'chatbubble' : 'person'} size={18} color="#FFFFFF" />
-          </View>
-          <View style={styles.contextCopy}>
-            <Text style={styles.contextTitle}>{activeBooking.provider || activeBooking.title || 'Chat'}</Text>
-            <Text style={styles.contextMeta}>{activeBooking.area || activeBooking.subtitle || 'Assistant'}</Text>
+      <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 8) }]}>
+
+        {/* Minimal back-button nav bar — replaces the heavy context card */}
+        <View style={styles.minimalNav}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation?.canGoBack() ? navigation.goBack() : navigation?.navigate('Home')}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
+          <View style={styles.navTitleBlock}>
+            <Text style={styles.navTitle} numberOfLines={1}>
+              {activeBooking.provider || activeBooking.title || 'Chat'}
+            </Text>
+            <Text style={styles.navSub} numberOfLines={1}>
+              {activeBooking.area || activeBooking.subtitle || 'Assistant'}
+            </Text>
           </View>
           {chatThreads.length > 1 && (
             <TouchableOpacity style={styles.switchButton} onPress={() => setShowBookingModal(true)} activeOpacity={0.7}>
               <Text style={styles.switchButtonText}>All Chats</Text>
             </TouchableOpacity>
           )}
-        </LiquidGlass>
+        </View>
 
         {/* Message Scroll View */}
         <ScrollView
@@ -558,23 +582,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF8EF',
     opacity: 0.5,
   },
-  inner: { flex: 1, paddingHorizontal: 16, gap: 12 },
-  
-  // Context Card Header
-  contextCard: {
-    marginTop: 6,
-    zIndex: 10,
+  inner: { flex: 1, paddingHorizontal: 16, gap: 8 },
+
+  // Minimal nav bar (replaces heavy context card)
+  minimalNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
-  contextInner: { minHeight: 66, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  contextIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary },
-  contextCopy: { flex: 1 },
-  contextTitle: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900' },
-  contextMeta: { color: COLORS.primary, fontSize: 10, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(14,143,70,0.08)',
+    flexShrink: 0,
+  },
+  navTitleBlock: { flex: 1 },
+  navTitle: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
+  navSub: { color: COLORS.primary, fontSize: 10, fontWeight: '800', marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.5 },
   switchButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     backgroundColor: 'rgba(14,143,70,0.1)',
+    flexShrink: 0,
   },
   switchButtonText: {
     fontSize: 11,
@@ -584,7 +619,7 @@ const styles = StyleSheet.create({
 
   // Message area
   messageList: { flex: 1 },
-  messageContent: { gap: 14, paddingTop: 14, paddingBottom: 110 },
+  messageContent: { gap: 14, paddingTop: 10, paddingBottom: 24 },
   composerWrap: {
     paddingTop: 6,
     paddingBottom: 8,
@@ -592,7 +627,7 @@ const styles = StyleSheet.create({
   composer: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     flexWrap: 'nowrap',
     gap: 10,
     backgroundColor: 'rgba(255,255,255,0.96)',
@@ -617,12 +652,13 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 44,
     height: 44,
+    marginTop: 1,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
     flexShrink: 0,
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start',
   },
   sendButtonDisabled: {
     opacity: 0.45,

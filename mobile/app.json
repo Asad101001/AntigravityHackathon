@@ -52,7 +52,8 @@
             "usesCleartextTraffic": true,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "minSdkVersion": 24
+            "minSdkVersion": 24,
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
       ],
