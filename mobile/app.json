@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -52,9 +52,7 @@
             "usesCleartextTraffic": true,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "minSdkVersion": 24,
-            "edgeToEdgeEnabled": false,
-            "gradleWrapperVersion": "8.13"
+            "minSdkVersion": 24
           }
         }
       ],
@@ -65,6 +63,12 @@
           "icon": "./assets/icon.png",
           "color": "#0E8F46",
           "defaultChannel": "asaaniyat-service"
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "androidGoogleMapsApiKey": "AIzaSyDUlHky64mXWWcSqtGoVv4lJjjubJuIlFE"
         }
       ]
     ]
