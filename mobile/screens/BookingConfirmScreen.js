@@ -27,10 +27,29 @@ import { useAppContext } from '../context/AppContext';
 
 // ---------------------------------------------------------------------------
 export default function BookingConfirmScreen({ route, navigation }) {
-  const { provider, fullResult } = route.params;
+  const provider   = route.params?.provider   || {};
+  const fullResult = route.params?.fullResult  || {};
   const insets = useSafeAreaInsets();
   const { executionLogsCache } = useAppContext();
   const toast = useToast();
+
+  // Guard: if critical params are missing, render an error state
+  if (!route.params?.provider || !route.params?.fullResult) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>Booking Error</Text>
+        <Text style={{ color: COLORS.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 24 }}>
+          Booking details could not be loaded. Please go back and try again.
+        </Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ backgroundColor: COLORS.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const slot =
     provider.confirmed_slot ||
@@ -195,15 +214,19 @@ export default function BookingConfirmScreen({ route, navigation }) {
   };
 
   const acceptNewProvider = () => {
+    if (!chaosResult?.new_provider) {
+      closeModal();
+      toast.show('Recovery failed: no replacement provider available.', 'error');
+      return;
+    }
     closeModal();
-    // Navigate to BookingConfirm again with the replacement provider
     navigation.replace('BookingConfirm', {
       provider:   chaosResult.new_provider,
       fullResult: {
         ...fullResult,
-        provider:       chaosResult.new_provider,
-        reasoning_log:  chaosResult.reasoning_log,
-        quote_pkr:      chaosResult.new_quote_pkr ?? chaosResult.quote_pkr ?? fullResult.quote_pkr,
+        provider:        chaosResult.new_provider,
+        reasoning_log:   chaosResult.reasoning_log,
+        quote_pkr:       chaosResult.new_quote_pkr ?? chaosResult.quote_pkr ?? fullResult.quote_pkr,
         quote_breakdown: chaosResult.new_quote_breakdown ?? chaosResult.quote_breakdown ?? fullResult.quote_breakdown,
       },
     });

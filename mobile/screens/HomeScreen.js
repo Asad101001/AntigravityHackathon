@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -45,26 +46,49 @@ export default function HomeScreen({ route, navigation }) {
   const [text, setText] = useState('');
   const [pickedLocation, setPickedLocation] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsError, setGpsError] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [cityOpen, setCityOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
+  const carouselOpacity = useRef(new Animated.Value(1)).current;
+
+  const switchPage = useCallback((nextPage) => {
+    Animated.timing(carouselOpacity, {
+      toValue: 0,
+      duration: 90,
+      useNativeDriver: true,
+    }).start(() => {
+      setCurrentPage(nextPage);
+      Animated.timing(carouselOpacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [carouselOpacity]);
 
   // Autoplay popular services carousel every 3.5 seconds
   useEffect(() => {
     if (!autoplay) return;
-
     const timer = setInterval(() => {
-      setCurrentPage(prev => (prev + 1) % SERVICES_PAGES.length);
+      setCurrentPage(prev => {
+        const next = (prev + 1) % SERVICES_PAGES.length;
+        // Trigger the crossfade; state update happens via setCurrentPage inside switchPage
+        Animated.timing(carouselOpacity, { toValue: 0, duration: 90, useNativeDriver: true }).start(() => {
+          setCurrentPage(next);
+          Animated.timing(carouselOpacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+        });
+        return prev;
+      });
     }, 3500);
-
     return () => clearInterval(timer);
-  }, [autoplay]);
+  }, [autoplay, carouselOpacity]);
 
-  const handleDotPress = (index) => {
-    setAutoplay(false); // Stop autoplay when dot explicitly clicked
-    setCurrentPage(index);
-  };
+  const handleDotPress = useCallback((index) => {
+    setAutoplay(false);
+    switchPage(index);
+  }, [switchPage]);
 
   // GPS on mount
   useEffect(() => {
@@ -75,9 +99,11 @@ export default function HomeScreen({ route, navigation }) {
       }
 
       setGpsLoading(true);
+      setGpsError(false);
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
+          setGpsError(true);
           return;
         }
 
@@ -107,6 +133,7 @@ export default function HomeScreen({ route, navigation }) {
         });
       } catch (err) {
         console.warn('[HomeScreen] GPS error:', err.message);
+        setGpsError(true);
       } finally {
         setGpsLoading(false);
       }
@@ -119,12 +146,13 @@ export default function HomeScreen({ route, navigation }) {
     }
   }, [route.params?.pickedLocation]);
 
-  // Bug Fix: Dynamic fallback based on selectedCity instead of hardcoded 'DHA Phase 6, Karachi'
   const locationLabel = gpsLoading
     ? 'Detecting location…'
+    : gpsError
+    ? `${selectedCity} (GPS unavailable)`
     : pickedLocation?.label || `${selectedCity}, Pakistan`;
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     const userText = text.trim();
     if (!userText) return;
     navigation.navigate('Loading', {
@@ -133,14 +161,11 @@ export default function HomeScreen({ route, navigation }) {
       locationSource: pickedLocation ? 'gps' : 'typed',
       city: selectedCity,
     });
-  };
+  }, [text, pickedLocation, selectedCity, navigation]);
 
-  const prefill = (label) => {
-    // Do NOT append city — let location be resolved from GPS pin / UI city selector only.
-    // Appending "in Karachi" would cause the AI to extract it as a typed location,
-    // overriding the user's actual GPS coordinates.
+  const prefill = useCallback((label) => {
     setText(`${label} needed`);
-  };
+  }, []);
 
   return (
     <View style={styles.background}>
@@ -152,8 +177,9 @@ export default function HomeScreen({ route, navigation }) {
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          bounces={true}
+          bounces={Platform.OS === 'ios'}
           overScrollMode="never"
+          decelerationRate="fast"
           onScroll={registerScroll}
           scrollEventThrottle={16}
         >
@@ -229,22 +255,28 @@ export default function HomeScreen({ route, navigation }) {
 
           {/* Service Carousel Component */}
           <View style={styles.carouselContainer}>
-            <View style={styles.grid2x2}>
-              {SERVICES_PAGES[currentPage].map(service => (
-                <TouchableOpacity
-                  key={service.id}
-                  style={styles.serviceCard}
-                  onPress={() => prefill(service.label)}
-                  activeOpacity={0.86}
-                >
-                  <View style={styles.serviceIconContainer}>
-                    <Ionicons name={service.icon} size={24} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.serviceLabel}>{service.label}</Text>
-                  <Text style={styles.serviceUrdu}>{service.urdu}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <Animated.View style={[styles.grid2x2, { opacity: carouselOpacity }]}>
+              {SERVICES_PAGES[currentPage].map(service => {
+                const scaleAnim = new Animated.Value(1);
+                return (
+                  <Animated.View key={service.id} style={{ width: '48%', transform: [{ scale: scaleAnim }] }}>
+                    <TouchableOpacity
+                      style={styles.serviceCard}
+                      onPress={() => prefill(service.label)}
+                      onPressIn={() => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true, speed: 50, bounciness: 4 }).start()}
+                      onPressOut={() => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start()}
+                      activeOpacity={1}
+                    >
+                      <View style={styles.serviceIconContainer}>
+                        <Ionicons name={service.icon} size={24} color={COLORS.primary} />
+                      </View>
+                      <Text style={styles.serviceLabel}>{service.label}</Text>
+                      <Text style={styles.serviceUrdu}>{service.urdu}</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })}
+            </Animated.View>
 
             {/* Dynamic Pagination Dots with Generous Click Target Size */}
             <View style={styles.paginationContainer}>
@@ -475,7 +507,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   serviceCard: {
-    width: '48%',
+    width: '100%',
     aspectRatio: 1.22,
     borderRadius: RADII.md,
     padding: 12,

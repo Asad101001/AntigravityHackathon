@@ -167,6 +167,15 @@ export default function MapPanel({
   const fitDone = useRef(false);  // guard: only fit once after map is ready
   const [selectedId, setSelectedId] = useState(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapTimedOut, setMapTimedOut] = useState(false);
+
+  // Map load timeout — if map never becomes ready after 8s, show fallback
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!mapReady) setMapTimedOut(true);
+    }, 8000);
+    return () => clearTimeout(t);
+  }, [mapReady]);
 
   // Pulse animation for user marker
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -299,8 +308,8 @@ export default function MapPanel({
             <Polyline
               key={`line-${provider.id}`}
               coordinates={[userCoord, coordinate]}
-              strokeColor={colorFor(provider) + '38'}
-              strokeWidth={1.5}
+              strokeColor={colorFor(provider) + '60'}
+              strokeWidth={2.5}
               lineDashPattern={[5, 7]}
             />
           ))}
@@ -376,21 +385,42 @@ export default function MapPanel({
         })}
       </MapView>
 
-      {/* ── Legend — bottom-left, avoids map controls ──────────────── */}
-      <View style={styles.legend} pointerEvents="none">
-        {Object.entries(BADGE_LABELS).map(([key, label]) => (
-          <View key={key} style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: BADGE_COLORS[key] }]}>
-              <Ionicons name={BADGE_ICONS[key]} size={7} color="#FFFFFF" />
-            </View>
-            <Text style={styles.legendText}>{label}</Text>
-          </View>
-        ))}
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.textMuted }]} />
-          <Text style={styles.legendText}>Other</Text>
+      {/* ── Loading skeleton — shown until map is ready ───────────── */}
+      {!mapReady && !mapTimedOut && (
+        <View style={styles.mapSkeleton} pointerEvents="none">
+          <View style={styles.mapSkeletonPulse} />
         </View>
-      </View>
+      )}
+
+      {/* ── Map unavailable fallback ────────────────────────────── */}
+      {mapTimedOut && !mapReady && (
+        <View style={styles.mapFallback} pointerEvents="none">
+          <Ionicons name="map-outline" size={28} color={COLORS.textMuted} />
+          <Text style={styles.mapFallbackText}>Map unavailable</Text>
+        </View>
+      )}
+
+      {/* ── Legend — bottom-left, only show present badges ─────── */}
+      {providerMarkers.length > 0 && (
+        <View style={styles.legend} pointerEvents="none">
+          {Object.entries(BADGE_LABELS)
+            .filter(([key]) => providerMarkers.some(({ provider: p }) => p.multi_factor_badge === key))
+            .map(([key, label]) => (
+              <View key={key} style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: BADGE_COLORS[key] }]}>
+                  <Ionicons name={BADGE_ICONS[key]} size={7} color="#FFFFFF" />
+                </View>
+                <Text style={styles.legendText}>{label}</Text>
+              </View>
+            ))}
+          {providerMarkers.some(({ provider: p }) => !p.multi_factor_badge) && (
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: COLORS.textMuted }]} />
+              <Text style={styles.legendText}>Other</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* ── Re-center button ───────────────────────────────────────── */}
       <TouchableOpacity
@@ -574,6 +604,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
     ...SHADOWS.card,
+  },
+
+  // Map loading skeleton & fallback
+  mapSkeleton: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#EEF8F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapSkeletonPulse: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(14,143,70,0.12)',
+  },
+  mapFallback: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#EEF8F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  mapFallbackText: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
 

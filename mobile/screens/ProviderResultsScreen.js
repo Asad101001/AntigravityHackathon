@@ -4,7 +4,7 @@
  * smooth scroll, better touch animations on provider cards.
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Animated,
   Platform,
@@ -22,8 +22,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADII, SHADOWS } from '../theme';
 
 export default function ProviderResultsScreen({ route, navigation }) {
-  const { fullResult } = route.params;
+  const fullResult = route.params?.fullResult;
   const insets = useSafeAreaInsets();
+
+  // Null guard — if navigation params are missing, show safe empty state
+  if (!fullResult) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>No Results</Text>
+        <Text style={{ color: COLORS.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 24 }}>
+          Something went wrong retrieving providers. Please go back and try again.
+        </Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ backgroundColor: COLORS.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const providers = [fullResult.provider, ...(fullResult.alternatives || [])]
     .filter(Boolean)
@@ -39,6 +57,15 @@ export default function ProviderResultsScreen({ route, navigation }) {
     longitude:      userCoords?.lng || firstCoordinate?.lng || fallbackLng,
     latitudeDelta:  0.06,
     longitudeDelta: 0.06,
+  };
+
+  // Expandable map height
+  const [mapExpanded, setMapExpanded] = useState(false);
+  const mapHeight = useRef(new Animated.Value(290)).current;
+  const toggleMapExpand = () => {
+    const toValue = mapExpanded ? 290 : 400;
+    Animated.spring(mapHeight, { toValue, useNativeDriver: false, bounciness: 4, speed: 14 }).start();
+    setMapExpanded(v => !v);
   };
 
   const basePricePkr = fullResult.quote_pkr || 1800;
@@ -62,12 +89,13 @@ export default function ProviderResultsScreen({ route, navigation }) {
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
-        bounces={true}
+        bounces={Platform.OS === 'ios'}
         overScrollMode="never"
+        decelerationRate="fast"
         scrollEventThrottle={16}
       >
-        {/* Map */}
-        <View style={styles.mapWrap}>
+        {/* Map — expandable */}
+        <Animated.View style={[styles.mapWrap, { height: mapHeight }]}>
           <MapPanel
             style={styles.map}
             userCoordinates={userCoords}
@@ -82,7 +110,19 @@ export default function ProviderResultsScreen({ route, navigation }) {
               title: 'Service location',
             }] : []}
           />
-        </View>
+          {/* Expand toggle */}
+          <TouchableOpacity
+            style={styles.mapExpandBtn}
+            onPress={toggleMapExpand}
+            activeOpacity={0.82}
+          >
+            <Ionicons
+              name={mapExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
+              size={14}
+              color={COLORS.primary}
+            />
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* Section header */}
         <View style={styles.sectionRow}>
@@ -91,6 +131,15 @@ export default function ProviderResultsScreen({ route, navigation }) {
           </Text>
           <Text style={styles.sectionSub}>AI-ranked · tap to review</Text>
         </View>
+
+        {/* Empty state */}
+        {providers.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="search-outline" size={36} color={COLORS.textMuted} />
+            <Text style={styles.emptyTitle}>No providers found</Text>
+            <Text style={styles.emptySubtitle}>Try adjusting your location or service type.</Text>
+          </View>
+        )}
 
         {providers.map(provider => (
           <ProviderCard
@@ -108,8 +157,8 @@ export default function ProviderResultsScreen({ route, navigation }) {
 function ProviderCard({ provider, estimatedPkr, onPress }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const handlePressIn = () => Animated.spring(scaleAnim, { toValue: 0.975, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
-  const handlePressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+  const handlePressIn = () => Animated.spring(scaleAnim, { toValue: 0.972, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
+  const handlePressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }], marginBottom: 14 }}>
@@ -195,7 +244,6 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingTop: 12 },
 
   mapWrap: {
-    height: 250,
     borderRadius: 22,
     overflow: 'hidden',
     marginBottom: 18,
@@ -204,7 +252,37 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   map: { flex: 1 },
-
+  mapExpandBtn: {
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.12)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    ...SHADOWS.card,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 10,
+  },
+  emptyTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  emptySubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
