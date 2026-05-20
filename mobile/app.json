@@ -53,7 +53,8 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "minSdkVersion": 24,
-            "edgeToEdgeEnabled": false
+            "edgeToEdgeEnabled": false,
+            "gradleWrapperVersion": "8.13"
           }
         }
       ],
