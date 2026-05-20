@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import { ChevronLeft, ChevronRight, ShieldCheck, ShieldOff, AlertCircle } from 'lucide-react';
 import './Users.css';
 
@@ -41,8 +42,10 @@ function Users({ auth, apiBaseUrl }) {
         setUsers(users.map(user =>
           user.id === userId ? { ...user, isAdmin: response.data.user.isAdmin } : user
         ));
+        toast.success(response.data.user.isAdmin ? 'User promoted to Admin' : 'Admin rights revoked');
       }
     } catch (err) {
+      toast.error('Failed to change admin status');
       console.error('Error toggling admin:', err);
     }
   };
@@ -78,7 +81,7 @@ function Users({ auth, apiBaseUrl }) {
             <tr>
               <th>ID</th>
               <th>Email</th>
-              <th>Display Name</th>
+              <th>Name</th>
               <th>City</th>
               <th>Logins</th>
               <th>Joined</th>

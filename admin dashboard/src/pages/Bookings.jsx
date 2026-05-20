@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import { Filter, Eye, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import './Bookings.css';
 import BookingDetailModal from '../components/BookingDetailModal';
@@ -43,8 +44,10 @@ function Bookings({ auth, apiBaseUrl }) {
       if (response.data.success) {
         setBookings(bookings.filter(b => b._id !== bookingId));
         setSelectedBooking(null);
+        toast.success('Booking successfully deleted');
       }
     } catch (err) {
+      toast.error('Error deleting booking');
       console.error('Error deleting booking:', err);
     }
   };
@@ -62,10 +65,11 @@ function Bookings({ auth, apiBaseUrl }) {
         );
         setBookings(updated);
         setSelectedBooking({ ...selectedBooking, status: newStatus, updatedAt: new Date() });
+        toast.success(`Booking marked as ${newStatus}`);
       }
     } catch (err) {
       console.error('Error updating booking:', err);
-      alert('Failed to update booking status: ' + (err.response?.data?.error || err.message));
+      toast.error('Failed to update booking status: ' + (err.response?.data?.error || err.message));
     }
   };
 

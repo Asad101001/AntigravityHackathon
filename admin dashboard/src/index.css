@@ -400,3 +400,60 @@ input, select, textarea { font-family:inherit; }
 .status-confirmed { background:var(--blue-100);  color:var(--blue);   border:1px solid rgba(47,128,237,0.20); }
 .status-completed { background:var(--mint-100);  color:var(--green-700); border:1px solid rgba(14,143,70,0.20); }
 .status-cancelled { background:var(--red-100);   color:var(--red);    border:1px solid rgba(220,38,38,0.20); }
+
+/* ============================================================
+   GLOBAL UTILITY — ENHANCED TABLES
+   ============================================================ */
+.bookings-table-wrapper, .users-table-wrapper {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  overflow-x: auto;
+  box-shadow: 0 4px 20px rgba(14, 143, 70, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.bookings-table, .users-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.bookings-table thead, .users-table thead {
+  background: rgba(255, 255, 255, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.bookings-table th, .users-table th {
+  padding: 0.85rem 0.85rem !important;
+  text-align: left;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: var(--tx-sub) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px !important;
+  border-bottom: 1px solid rgba(14, 143, 70, 0.15) !important;
+  background: transparent !important;
+}
+
+.bookings-table td, .users-table td {
+  padding: 0.85rem 0.85rem !important;
+  border-bottom: 1px solid rgba(14, 143, 70, 0.08) !important;
+  font-size: 0.875rem !important;
+  color: var(--tx) !important;
+  transition: all 0.2s ease !important;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bookings-table tbody tr:hover td, .users-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+.bookings-table tbody tr:last-child td, .users-table tbody tr:last-child td {
+  border-bottom: none !important;
+}

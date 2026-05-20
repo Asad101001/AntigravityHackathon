@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Toaster, toast } from 'react-hot-toast';
 import {
   LayoutDashboard, Users, CalendarDays, BarChart3,
-  Settings, LogOut, Shield, ChevronRight
+  Info, LogOut, Shield, ChevronRight, Menu, X
 } from 'lucide-react';
 import './App.css';
 import LoginPage from './pages/LoginPage';
@@ -13,22 +15,28 @@ import Analytics from './pages/Analytics';
 import SettingsPage from './pages/Settings';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard',  Icon: LayoutDashboard },
-  { id: 'users',     label: 'Users',      Icon: Users           },
-  { id: 'bookings',  label: 'Bookings',   Icon: CalendarDays    },
-  { id: 'analytics', label: 'Analytics',  Icon: BarChart3       },
-  { id: 'settings',  label: 'Settings',   Icon: Settings        },
+  { id: 'dashboard', path: '/',           label: 'Dashboard',  Icon: LayoutDashboard },
+  { id: 'users',     path: '/users',      label: 'Users',      Icon: Users           },
+  { id: 'bookings',  path: '/bookings',   label: 'Bookings',   Icon: CalendarDays    },
+  { id: 'analytics', path: '/analytics',  label: 'Analytics',  Icon: BarChart3       },
+  { id: 'settings',  path: '/about',      label: 'About',      Icon: Info            },
 ];
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
   const [auth, setAuth] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pageKey, setPageKey] = useState(0); // forces re-mount for transition
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://asaaniyat-backend-525519819889.asia-south1.run.app';
 
   useEffect(() => { checkAuth(); }, []);
+  
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('admin_token');
@@ -48,19 +56,15 @@ function App() {
   const handleLogin = (token, user) => {
     localStorage.setItem('admin_token', token);
     setAuth({ token, user });
-    setCurrentPage('dashboard');
+    toast.success('Successfully logged in');
+    navigate('/');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     setAuth(null);
-    setCurrentPage('dashboard');
-  };
-
-  const navigate = (page) => {
-    if (page === currentPage) return;
-    setCurrentPage(page);
-    setPageKey(k => k + 1);
+    toast('Logged out successfully', { icon: '👋' });
+    navigate('/');
   };
 
   if (loading) {
@@ -76,6 +80,7 @@ function App() {
   if (!auth) return <LoginPage onLogin={handleLogin} apiBaseUrl={API_BASE_URL} />;
 
   const displayName = auth.user.displayName || auth.user.email?.split('@')[0] || 'Admin';
+  const currentNav = NAV_ITEMS.find(n => n.path === location.pathname) || NAV_ITEMS[0];
 
   return (
     <div className="app-container">
@@ -83,6 +88,9 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <div className="brand">
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
             <span className="brand-icon"><Shield size={20} strokeWidth={2} /></span>
             <h1 className="app-title">Asaaniyat <span>Admin</span></h1>
           </div>
@@ -90,7 +98,7 @@ function App() {
           <div className="header-right">
             <div className="header-breadcrumb">
               <span className="breadcrumb-page">
-                {NAV_ITEMS.find(n => n.id === currentPage)?.label}
+                {currentNav.label}
               </span>
             </div>
             <div className="user-chip">
@@ -107,21 +115,20 @@ function App() {
 
       <div className="app-layout">
         {/* ── Sidebar ── */}
-        <nav className="app-sidebar">
-          <div className="nav-label">Navigation</div>
+        <nav className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
           <ul className="nav-menu">
-            {NAV_ITEMS.map(({ id, label, Icon }) => (
+            {NAV_ITEMS.map(({ id, path, label, Icon }) => (
               <li key={id}>
-                <button
-                  className={`nav-item ${currentPage === id ? 'active' : ''}`}
-                  onClick={() => navigate(id)}
+                <NavLink
+                  to={path}
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                 >
                   <span className="nav-icon"><Icon size={18} strokeWidth={1.75} /></span>
                   <span className="nav-label-text">{label}</span>
-                  {currentPage === id && (
+                  {location.pathname === path && (
                     <span className="nav-indicator"><ChevronRight size={14} strokeWidth={2.5} /></span>
                   )}
-                </button>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -132,14 +139,32 @@ function App() {
         </nav>
 
         {/* ── Main ── */}
-        <main className="app-main" key={pageKey}>
-          {currentPage === 'dashboard' && <Dashboard auth={auth} apiBaseUrl={API_BASE_URL} />}
-          {currentPage === 'users'     && <UsersPage auth={auth} apiBaseUrl={API_BASE_URL} />}
-          {currentPage === 'bookings'  && <Bookings  auth={auth} apiBaseUrl={API_BASE_URL} />}
-          {currentPage === 'analytics' && <Analytics auth={auth} apiBaseUrl={API_BASE_URL} />}
-          {currentPage === 'settings'  && <SettingsPage auth={auth} apiBaseUrl={API_BASE_URL} />}
+        <main className="app-main" key={location.pathname}>
+          <div className="main-content-scroll">
+            <Routes>
+              <Route path="/" element={<Dashboard auth={auth} apiBaseUrl={API_BASE_URL} />} />
+              <Route path="/users" element={<UsersPage auth={auth} apiBaseUrl={API_BASE_URL} />} />
+              <Route path="/bookings" element={<Bookings auth={auth} apiBaseUrl={API_BASE_URL} />} />
+              <Route path="/analytics" element={<Analytics auth={auth} apiBaseUrl={API_BASE_URL} />} />
+              <Route path="/about" element={<SettingsPage auth={auth} apiBaseUrl={API_BASE_URL} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+          <footer className="app-footer">
+            <p>Asaaniyat Admin System &copy; {new Date().getFullYear()}. All rights reserved.</p>
+          </footer>
         </main>
       </div>
+      
+      <Toaster position="top-right" toastOptions={{
+        style: { background: '#fff', color: '#333', fontSize: '0.85rem', fontWeight: 600, borderRadius: '8px' },
+        success: { iconTheme: { primary: '#0E8F46', secondary: '#fff' } }
+      }} />
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
     </div>
   );
 }
