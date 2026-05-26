@@ -109,7 +109,7 @@ export default function BookingsScreen({ navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 140 }]}
       onScroll={registerScroll}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
@@ -243,9 +243,9 @@ function Detail({ icon, label, value }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.bg },
   content: { paddingHorizontal: 18 },
-  eyebrow: { color: COLORS.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { color: COLORS.textPrimary, fontSize: 30, lineHeight: 36, fontWeight: '900', marginTop: 8 },
-  subtitle: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, marginTop: 6, marginBottom: 18, fontWeight: '600' },
+  eyebrow: { color: COLORS.primary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  title: { color: COLORS.textPrimary, fontSize: 32, lineHeight: 38, fontWeight: '900', marginTop: 8, letterSpacing: -0.3 },
+  subtitle: { color: COLORS.textSecondary, fontSize: 14, lineHeight: 21, marginTop: 6, marginBottom: 20, fontWeight: '600' },
   loadingContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   loadingText: { marginTop: 12, color: COLORS.textSecondary, fontSize: 13, fontWeight: '600' },
   emptyCard: { marginTop: 6 },
@@ -256,22 +256,22 @@ const styles = StyleSheet.create({
   bookingCard: { marginBottom: 14 },
   bookingContent: { padding: 16, gap: 14 },
   bookingTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  serviceIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  serviceIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   bookingCopy: { flex: 1 },
-  bookingTitle: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900' },
-  bookingMeta: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  statusChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  statusText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
+  bookingTitle: { color: COLORS.textPrimary, fontSize: 19, fontWeight: '900', letterSpacing: -0.2 },
+  bookingMeta: { color: COLORS.textSecondary, fontSize: 13, fontWeight: '700', marginTop: 3 },
+  statusChip: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  statusText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
   detailGrid: { gap: 10 },
   detail: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   detailCopy: { flex: 1 },
-  detailLabel: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  detailValue: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '600', marginTop: 2 },
+  detailLabel: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  detailValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '600', marginTop: 3, lineHeight: 21 },
   buttonRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  viewStatusButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: `${COLORS.primary}20` },
-  viewStatusButtonText: { color: COLORS.primary, fontSize: 13, fontWeight: '700' },
-  chatButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: COLORS.primary },
-  chatButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  cancelButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#F4433620' },
-  cancelButtonText: { color: '#F44336', fontSize: 13, fontWeight: '700' },
+  viewStatusButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, backgroundColor: `${COLORS.primary}20` },
+  viewStatusButtonText: { color: COLORS.primary, fontSize: 14, fontWeight: '800' },
+  chatButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, backgroundColor: COLORS.primary },
+  chatButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  cancelButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, backgroundColor: '#F4433620' },
+  cancelButtonText: { color: '#F44336', fontSize: 14, fontWeight: '800' },
 });

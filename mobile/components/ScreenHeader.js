@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
 
   stepLabel: {
     color: COLORS.primary,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
     color: COLORS.textPrimary,
     letterSpacing: -0.3,

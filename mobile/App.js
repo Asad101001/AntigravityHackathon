@@ -25,7 +25,7 @@ import AppHeader from './components/AppHeader';
 import Sidebar from './components/Sidebar';
 import LiquidGlass from './components/LiquidGlass';
 import { ToastProvider } from './components/Toast';
-import { COLORS } from './theme';
+import { COLORS, SHADOWS } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
 import { initNotificationHandler, configureNotifications } from './notifications';
 import { AppContextProvider } from './context/AppContext';
@@ -67,6 +67,33 @@ function getCurrentRouteName(state) {
   return route.name;
 }
 
+function AnimatedTabButton({ tab, active, onPress }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, { toValue: 0.88, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
+  };
+
+  return (
+    <Animated.View style={[styles.tabButton, active && styles.tabButtonActive, { transform: [{ scale: scaleAnim }] }]}>
+      <TouchableOpacity
+        style={styles.tabButtonInner}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        <Ionicons name={active ? tab.activeIcon : tab.icon} size={22} color={active ? '#FFFFFF' : COLORS.textSecondary} />
+        <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) {
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(0)).current;
@@ -92,27 +119,22 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
 
   return (
     <Animated.View
-      style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 10), transform: [{ translateY }] }]}
+      style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 12), transform: [{ translateY }] }]}
       pointerEvents="box-none"
     >
-      <Pressable onPress={showTabBar}>
-        <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={16}>
-          {TAB_CONFIG.map(tab => {
-            const active = activeTab === tab.name;
-            return (
-              <TouchableOpacity
-                key={tab.name}
-                style={[styles.tabButton, active && styles.tabButtonActive]}
-                onPress={() => navigationRef.current?.navigate(tab.name)}
-                activeOpacity={0.84}
-              >
-                <Ionicons name={active ? tab.activeIcon : tab.icon} size={20} color={active ? '#FFFFFF' : COLORS.textSecondary} />
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </LiquidGlass>
-      </Pressable>
+      <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={18}>
+        {TAB_CONFIG.map(tab => {
+          const active = activeTab === tab.name;
+          return (
+            <AnimatedTabButton
+              key={tab.name}
+              tab={tab}
+              active={active}
+              onPress={() => navigationRef.current?.navigate(tab.name)}
+            />
+          );
+        })}
+      </LiquidGlass>
     </Animated.View>
   );
 }
@@ -170,7 +192,7 @@ function AppNavigator() {
 
   return (
     <TabBarVisibilityContext.Provider value={contextValue}>
-      <Pressable style={[styles.appShell, darkMode && styles.appShellDim]} onPress={showTabBar}>
+      <View style={[styles.appShell, darkMode && styles.appShellDim]}>
         <NavigationContainer
           ref={navigationRef}
           onReady={() => setCurrentRouteName(getCurrentRouteName(navigationRef.current?.getRootState()))}
@@ -231,7 +253,7 @@ function AppNavigator() {
           currentUser={user}
           onLogout={logout}
         />
-      </Pressable>
+      </View>
     </TabBarVisibilityContext.Provider>
   );
 }
@@ -283,9 +305,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
-  tabBar: { height: 74 },
+  tabBar: { height: 78 },
   tabBarInner: {
     flex: 1,
     padding: 8,
@@ -295,16 +317,20 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    height: 56,
-    borderRadius: 12,
+    height: 60,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  tabButtonInner: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    gap: 4,
   },
   tabButtonActive: { backgroundColor: COLORS.primary },
-  tabLabel: { color: COLORS.textSecondary, fontSize: 10, fontWeight: '900' },
+  tabLabel: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
   tabLabelActive: { color: '#FFFFFF' },
   authGate: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
-  authGateTitle: { color: COLORS.primary, fontSize: 30, fontWeight: '900', letterSpacing: 1 },
-  authGateSubtitle: { marginTop: 8, color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
+  authGateTitle: { color: COLORS.primary, fontSize: 32, fontWeight: '900', letterSpacing: 1 },
+  authGateSubtitle: { marginTop: 8, color: COLORS.textSecondary, fontSize: 15, fontWeight: '700' },
 });

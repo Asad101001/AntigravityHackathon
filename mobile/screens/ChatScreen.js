@@ -63,7 +63,7 @@ const QUICK_REPLIES = [
 export default function ChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
-  const { registerScroll, hideTabBar } = useTabBarVisibility();
+  const { registerScroll, hideTabBar, showTabBar } = useTabBarVisibility();
   const [activeBooking, setActiveBooking] = useState({
     id: 'general',
     service: 'Asaaniyat AI',
@@ -356,8 +356,6 @@ export default function ChatScreen({ navigation }) {
           style={styles.messageList}
           contentContainerStyle={styles.messageContent}
           onScroll={registerScroll}
-          onScrollBeginDrag={showTabBar}
-          onTouchStart={showTabBar}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -562,7 +560,7 @@ function ChatBubble({ message }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F9FCFA' },
+  screen: { flex: 1, backgroundColor: '#F5FBF7' },
   // Cohesive background tints
   ambientTop: {
     position: 'absolute',
@@ -582,7 +580,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF8EF',
     opacity: 0.5,
   },
-  inner: { flex: 1, paddingHorizontal: 16, gap: 8 },
+  inner: { flex: 1, paddingHorizontal: 16, gap: 10 },
 
   // Minimal nav bar (replaces heavy context card)
   minimalNav: {
@@ -602,8 +600,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   navTitleBlock: { flex: 1 },
-  navTitle: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
-  navSub: { color: COLORS.primary, fontSize: 10, fontWeight: '800', marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.5 },
+  navTitle: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 },
+  navSub: { color: COLORS.primary, fontSize: 11, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
   switchButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -619,7 +617,7 @@ const styles = StyleSheet.create({
 
   // Message area
   messageList: { flex: 1 },
-  messageContent: { gap: 14, paddingTop: 10, paddingBottom: 24 },
+  messageContent: { gap: 16, paddingTop: 12, paddingBottom: 28 },
   composerWrap: {
     paddingTop: 6,
     paddingBottom: 8,
@@ -640,13 +638,13 @@ const styles = StyleSheet.create({
   composerInput: {
     flex: 1,
     minWidth: 0,
-    minHeight: 46,
+    minHeight: 48,
     maxHeight: 110,
     color: COLORS.textPrimary,
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 23,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 11,
     textAlignVertical: 'top',
   },
   sendButton: {
@@ -694,18 +692,18 @@ const styles = StyleSheet.create({
   },
 
   // Message Bubbles
-  bubble: { maxWidth: '80%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20 },
+  bubble: { maxWidth: '82%', paddingHorizontal: 16, paddingVertical: 13, borderRadius: 22 },
   assistantBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
     borderBottomLeftRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.06)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 1,
+    borderColor: 'rgba(14,143,70,0.08)',
+    shadowColor: '#0E8F46',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 2,
   },
   userBubble: {
     alignSelf: 'flex-end',
@@ -721,21 +719,21 @@ const styles = StyleSheet.create({
   // Texts
   messageText: {
     color: '#10251A',
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
     fontWeight: '600',
   },
   userText: {
     color: '#FFFFFF',
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
     fontWeight: '600',
   },
   timestamp: {
     alignSelf: 'flex-end',
     marginTop: 6,
     color: COLORS.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
   },
   userTimestamp: {
@@ -874,7 +872,7 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   quickReplyText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.primary,
   },

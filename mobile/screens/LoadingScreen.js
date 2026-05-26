@@ -479,10 +479,11 @@ const styles = StyleSheet.create({
 
   // Typography
   cardHeading: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
     color: '#0B2A18', // forest black/dark green contrast color
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
 
   // Dots
@@ -528,7 +529,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   narrationText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
     color: COLORS.textSecondary,
     textAlign: 'center',
@@ -561,7 +562,7 @@ const styles = StyleSheet.create({
   },
   checkLabel: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
@@ -598,7 +599,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardFooterText: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.textMuted,
     fontWeight: '700',
   },
@@ -621,16 +622,16 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   errorTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     color: COLORS.danger,
     marginBottom: 8,
   },
   errorText: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 21,
     marginBottom: 20,
   },
   retryButton: {
@@ -641,7 +642,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '900',
   },
 });

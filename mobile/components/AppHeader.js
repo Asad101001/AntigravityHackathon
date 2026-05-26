@@ -81,16 +81,16 @@ const styles = StyleSheet.create({
   },
   logoText: {
     color: COLORS.primary,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
   subtextMarker: {
     color: COLORS.textSecondary,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.5,
-    marginTop: 1,
+    marginTop: 2,
   },
   avatarButton: {
     width: 38,

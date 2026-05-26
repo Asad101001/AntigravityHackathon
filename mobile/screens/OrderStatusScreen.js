@@ -1,218 +1,466 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+/**
+ * OrderStatusScreen.js — Service Status with Simulated Map Tracker
+ * Shows booking progress stages + animated provider location tracker.
+ */
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  Easing,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
-import { useTabBarVisibility } from '../components/TabBarVisibility';
-import { COLORS } from '../theme';
-import { sendLocalNotification } from '../notifications';
+import { COLORS, SHADOWS } from '../theme';
 
-const STAGES = ['Confirmed', 'Assigned', 'On the way', 'Started', 'Completed'];
+const STAGES = [
+  { key: 'confirmed', label: 'Confirmed',  icon: 'checkmark-circle-outline' },
+  { key: 'dispatched', label: 'Dispatched', icon: 'navigate-outline' },
+  { key: 'arriving',   label: 'Arriving',   icon: 'car-outline' },
+  { key: 'working',    label: 'In Progress', icon: 'construct-outline' },
+  { key: 'completed',  label: 'Completed',  icon: 'trophy-outline' },
+];
 
-export default function OrderStatusScreen({ route, navigation }) {
-  const insets = useSafeAreaInsets();
-  const { registerScroll } = useTabBarVisibility();
-  const { booking } = route.params;
-  const [stageIndex, setStageIndex] = useState(booking?.stageIndex || 0);
-  const [loading, setLoading] = useState(false);
+function getStageIndex(status) {
+  const map = { confirmed: 0, dispatched: 1, arriving: 2, en_route: 2, working: 3, in_progress: 3, completed: 4, done: 4 };
+  return map[status?.toLowerCase()] ?? 0;
+}
 
-  const progress = useMemo(() => stageIndex / (STAGES.length - 1), [stageIndex]);
+// ── Simulated Map Tracker ──────────────────────────────────────────────────
+function SimulatedMapTracker({ stageIndex }) {
+  const dotAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const advanceStage = async () => {
-    if (!booking) return;
-    setLoading(true);
-    const next = Math.min(stageIndex + 1, STAGES.length - 1);
-    setStageIndex(next);
-    await sendLocalNotification(
-      'Asaaniyat status update',
-      `${booking.provider_name}: ${STAGES[next]}`,
-      { booking_id: booking._id, stage: STAGES[next] }
-    );
-    setLoading(false);
-  };
+  useEffect(() => {
+    // Animate the dot position based on the stage
+    Animated.timing(dotAnim, {
+      toValue: stageIndex / (STAGES.length - 1),
+      duration: 1200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'confirmed':
-        return '#4CAF50';
-      case 'operating':
-        return '#2196F3';
-      case 'completed':
-        return '#9C27B0';
-      case 'canceled':
-        return '#F44336';
-      default:
-        return COLORS.primary;
-    }
-  };
+    // Pulse animation for the moving dot
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.4, duration: 800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.in(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+  }, [stageIndex]);
 
-  if (!booking) {
-    return (
-      <ScrollView
-        style={styles.screen}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
-      >
-        <LiquidGlass style={styles.card} contentStyle={styles.emptyContent} strong>
-          <View style={styles.emptyIcon}>
-            <Ionicons name="pulse-outline" size={24} color={COLORS.primary} />
-          </View>
-          <Text style={styles.emptyTitle}>Booking not found</Text>
-          <Text style={styles.emptyText}>Unable to load order status.</Text>
-        </LiquidGlass>
-      </ScrollView>
-    );
-  }
-
-  const statusColor = getStatusColor(booking.status);
+  const dotLeft = dotAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['5%', '85%'],
+  });
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 118, paddingBottom: insets.bottom + 128 }]}
-      onScroll={registerScroll}
-      scrollEventThrottle={16}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={styles.eyebrow}>Order Status</Text>
-      <Text style={styles.title}>{booking.service_type}</Text>
-      <Text style={styles.subtitle}>{booking.provider_name}</Text>
+    <View style={trackerStyles.container}>
+      {/* Mini map background with grid */}
+      <View style={trackerStyles.mapBg}>
+        {/* Grid lines */}
+        {[0, 1, 2, 3, 4].map(i => (
+          <View key={`h-${i}`} style={[trackerStyles.gridLine, { top: `${i * 25}%` }]} />
+        ))}
+        {[0, 1, 2, 3].map(i => (
+          <View key={`v-${i}`} style={[trackerStyles.gridLineV, { left: `${(i + 1) * 25}%` }]} />
+        ))}
 
-      {/* Booking Info Card */}
-      <LiquidGlass style={styles.infoCard} contentStyle={styles.infoContent} strong>
-        <View style={styles.infoRow}>
-          <Ionicons name="location-outline" size={18} color={COLORS.primary} />
-          <View style={styles.infoCopy}>
-            <Text style={styles.infoLabel}>Location</Text>
-            <Text style={styles.infoValue}>{[booking.area, booking.city].filter(Boolean).join(', ')}</Text>
-          </View>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Ionicons name="calendar-outline" size={18} color={COLORS.primary} />
-          <View style={styles.infoCopy}>
-            <Text style={styles.infoLabel}>Appointment</Text>
-            <Text style={styles.infoValue}>
-              {(() => {
-                try {
-                  return new Date(booking.booking_start_time).toLocaleString('en-PK');
-                } catch (_) {
-                  return new Date(booking.booking_start_time).toString();
-                }
-              })()}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Ionicons name="cash-outline" size={18} color={COLORS.primary} />
-          <View style={styles.infoCopy}>
-            <Text style={styles.infoLabel}>Quote</Text>
-            <Text style={styles.infoValue}>
-              {booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Ionicons name="information-circle-outline" size={18} color={statusColor} />
-          <View style={styles.infoCopy}>
-            <Text style={styles.infoLabel}>Current Status</Text>
-            <Text style={[styles.infoValue, { color: statusColor }]}>
-              {booking.status?.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-      </LiquidGlass>
+        {/* Route path */}
+        <View style={trackerStyles.routePath} />
 
-      {/* Progress Track */}
-      {booking.status?.toLowerCase() !== 'canceled' && (
-        <LiquidGlass style={styles.card} contentStyle={styles.cardContent} strong>
-          <Text style={styles.progressTitle}>Service Progress</Text>
+        {/* Start point (Home) */}
+        <View style={trackerStyles.startPoint}>
+          <Ionicons name="home" size={12} color="#FFFFFF" />
+        </View>
 
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { flex: progress }]} />
-            <View style={{ flex: 1 - progress }} />
+        {/* End point (Destination) */}
+        <View style={trackerStyles.endPoint}>
+          <Ionicons name="location" size={12} color="#FFFFFF" />
+        </View>
+
+        {/* Animated moving dot */}
+        <Animated.View style={[trackerStyles.movingDotWrap, { left: dotLeft }]}>
+          <Animated.View style={[trackerStyles.movingDotPulse, { transform: [{ scale: pulseAnim }] }]} />
+          <View style={trackerStyles.movingDot}>
+            <Ionicons name="car" size={14} color="#FFFFFF" />
           </View>
+        </Animated.View>
 
-          <View style={styles.stageRow}>
-            {STAGES.map((stage, index) => {
-              const done = index <= stageIndex;
-              return (
-                <View key={stage} style={styles.stageItem}>
-                  <View style={[styles.stageDot, done && styles.stageDotDone]}>
-                    <Ionicons
-                      name={done ? 'checkmark' : 'ellipse'}
-                      size={done ? 10 : 6}
-                      color={done ? '#FFFFFF' : COLORS.textMuted}
-                    />
-                  </View>
-                  <Text style={[styles.stageText, done && styles.stageTextDone]} numberOfLines={2}>
-                    {stage}
-                  </Text>
+        {/* Status label */}
+        <View style={trackerStyles.statusLabel}>
+          <Ionicons name="navigate" size={10} color={COLORS.primary} />
+          <Text style={trackerStyles.statusLabelText}>
+            {stageIndex <= 1 ? 'Dispatching...' : stageIndex === 2 ? 'On the way!' : stageIndex === 3 ? 'Arrived — Working' : 'Service Complete ✓'}
+          </Text>
+        </View>
+      </View>
+
+      {/* ETA bar */}
+      <View style={trackerStyles.etaRow}>
+        <Ionicons name="time-outline" size={14} color={COLORS.primary} />
+        <Text style={trackerStyles.etaText}>
+          {stageIndex <= 1 ? 'ETA: ~25 min' : stageIndex === 2 ? 'ETA: ~10 min' : stageIndex === 3 ? 'Provider on-site' : 'Completed'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const trackerStyles = StyleSheet.create({
+  container: {
+    marginBottom: 18,
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+    backgroundColor: '#EEF8F2',
+    ...SHADOWS.card,
+  },
+  mapBg: {
+    height: 160,
+    backgroundColor: '#E8F4ED',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  gridLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(14,143,70,0.06)',
+  },
+  gridLineV: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(14,143,70,0.06)',
+  },
+  routePath: {
+    position: 'absolute',
+    top: '50%',
+    left: '5%',
+    right: '5%',
+    height: 4,
+    backgroundColor: 'rgba(14,143,70,0.15)',
+    borderRadius: 2,
+    marginTop: -2,
+  },
+  startPoint: {
+    position: 'absolute',
+    left: '3%',
+    top: '42%',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.pressed,
+  },
+  endPoint: {
+    position: 'absolute',
+    right: '3%',
+    top: '42%',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#D97706',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.pressed,
+  },
+  movingDotWrap: {
+    position: 'absolute',
+    top: '38%',
+    alignItems: 'center',
+  },
+  movingDotPulse: {
+    position: 'absolute',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(14,143,70,0.12)',
+    top: -8,
+    left: -8,
+  },
+  movingDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#2F80ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.card,
+  },
+  statusLabel: {
+    position: 'absolute',
+    bottom: 10,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+  },
+  statusLabelText: {
+    color: COLORS.primary,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  etaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+  },
+  etaText: {
+    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+});
+
+// ── Main Screen ────────────────────────────────────────────────────────────
+export default function OrderStatusScreen({ route, navigation }) {
+  const booking = route.params?.booking;
+  const insets  = useSafeAreaInsets();
+
+  const currentStage = getStageIndex(booking?.status);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const stageAnims = useRef(STAGES.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: currentStage / (STAGES.length - 1),
+      duration: 1000,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+
+    stageAnims.forEach((anim, i) => {
+      Animated.spring(anim, {
+        toValue: i <= currentStage ? 1 : 0,
+        delay: i * 120,
+        useNativeDriver: true,
+        damping: 14,
+        stiffness: 120,
+      }).start();
+    });
+  }, [currentStage]);
+
+  const info = useMemo(() => [
+    { label: 'SERVICE', value: booking?.service || 'Home Service', icon: 'briefcase-outline' },
+    { label: 'PROVIDER', value: booking?.provider || 'Asaaniyat Pro', icon: 'person-outline' },
+    { label: 'BOOKING ID', value: booking?.id?.slice(0, 12) || 'ASN-001', icon: 'document-text-outline' },
+    { label: 'CREATED', value: booking?.created_at ? new Date(booking.created_at).toLocaleString('en-PK') : 'Recently', icon: 'time-outline' },
+  ], [booking]);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
+  return (
+    <View style={styles.shell}>
+      <View style={styles.ambientTop} />
+      <ScreenHeader navigation={navigation} title="Service Status" stepLabel="LIVE TRACKER" />
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 140 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Simulated Map Tracker ──────────────────────── */}
+        <SimulatedMapTracker stageIndex={currentStage} />
+
+        {/* ── Title ──────────────────────────────────────── */}
+        <Text style={styles.heading}>
+          {booking?.service || 'Service'} Status
+        </Text>
+        <Text style={styles.sub}>Real-time tracking for your booking</Text>
+
+        {/* ── Progress Bar ───────────────────────────────── */}
+        <View style={styles.progressTrack}>
+          <Animated.View style={[styles.progressFill, { width: progressWidth }]}>
+            <View style={styles.progressGlow} />
+          </Animated.View>
+        </View>
+
+        {/* ── Stages ─────────────────────────────────────── */}
+        <View style={styles.stagesRow}>
+          {STAGES.map((stage, i) => {
+            const done = i <= currentStage;
+            const active = i === currentStage;
+            return (
+              <Animated.View
+                key={stage.key}
+                style={[
+                  styles.stageItem,
+                  { opacity: stageAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+                  { transform: [{ scale: stageAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] },
+                ]}
+              >
+                <View style={[
+                  styles.stageDot,
+                  done && styles.stageDotDone,
+                  active && styles.stageDotActive,
+                ]}>
+                  <Ionicons
+                    name={done ? 'checkmark' : stage.icon}
+                    size={active ? 14 : 12}
+                    color={done ? '#FFFFFF' : COLORS.textMuted}
+                  />
                 </View>
-              );
-            })}
-          </View>
+                <Text style={[styles.stageLabel, done && styles.stageLabelDone]} numberOfLines={1}>
+                  {stage.label}
+                </Text>
+              </Animated.View>
+            );
+          })}
+        </View>
 
-          {/* Action Button */}
-          <TouchableOpacity
-            style={[styles.advanceButton, loading && styles.advanceButtonDisabled]}
-            onPress={advanceStage}
-            disabled={loading}
-            activeOpacity={0.84}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
-            )}
-            <Text style={styles.advanceButtonText}>
-              {loading ? 'Updating...' : 'Update Status'}
-            </Text>
-          </TouchableOpacity>
+        {/* ── Info Card ──────────────────────────────────── */}
+        <LiquidGlass style={styles.infoCard} radius={18}>
+          {info.map((item, i) => (
+            <View key={item.label} style={[styles.infoRow, i < info.length - 1 && styles.infoRowBorder]}>
+              <Ionicons name={item.icon} size={16} color={COLORS.primary} style={{ flexShrink: 0 }} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>{item.label}</Text>
+                <Text style={styles.infoValue}>{item.value}</Text>
+              </View>
+            </View>
+          ))}
         </LiquidGlass>
-      )}
-    </ScrollView>
+
+        {/* ── Update Status Button ───────────────────────── */}
+        <TouchableOpacity
+          style={styles.updateBtn}
+          activeOpacity={0.84}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="refresh-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.updateBtnText}>Back to Bookings</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.bg },
-  content: { paddingHorizontal: 18 },
-  eyebrow: { color: COLORS.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { color: COLORS.textPrimary, fontSize: 28, lineHeight: 34, fontWeight: '900', marginTop: 8 },
-  subtitle: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, marginTop: 2, marginBottom: 18, fontWeight: '600' },
+  shell: { flex: 1, backgroundColor: COLORS.bg },
+  ambientTop: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: '35%',
+    backgroundColor: '#EFF6FF',
+    opacity: 0.45,
+  },
+  content: { padding: 18, paddingTop: 14 },
 
-  // Info Card
-  infoCard: { marginBottom: 16 },
-  infoContent: { padding: 16, gap: 4 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  infoCopy: { flex: 1 },
-  infoLabel: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  infoValue: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '600', marginTop: 2 },
-  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 4 },
+  heading: { fontSize: 28, fontWeight: '900', color: COLORS.textPrimary, letterSpacing: -0.3, lineHeight: 34 },
+  sub: { color: COLORS.textSecondary, fontSize: 14, fontWeight: '700', marginTop: 4, marginBottom: 18, lineHeight: 20 },
 
-  // Progress Card
-  card: { marginBottom: 16 },
-  cardContent: { padding: 18, gap: 18 },
-  progressTitle: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900' },
-  progressTrack: { height: 8, borderRadius: 6, backgroundColor: 'rgba(14,143,70,0.12)', overflow: 'hidden', flexDirection: 'row' },
-  progressFill: { height: 8, borderRadius: 6, backgroundColor: COLORS.accent },
-  stageRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 5 },
-  stageItem: { flex: 1, alignItems: 'center' },
-  stageDot: { width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: COLORS.border },
-  stageDotDone: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  stageText: { color: COLORS.textMuted, textAlign: 'center', fontSize: 9, fontWeight: '800', marginTop: 5, lineHeight: 12 },
-  stageTextDone: { color: COLORS.textPrimary },
+  // Progress bar — taller with glow
+  progressTrack: {
+    height: 10,
+    backgroundColor: 'rgba(14,143,70,0.08)',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 22,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: 5,
+    position: 'relative',
+  },
+  progressGlow: {
+    position: 'absolute',
+    right: 0,
+    top: -2,
+    bottom: -2,
+    width: 20,
+    backgroundColor: 'rgba(34,197,94,0.3)',
+    borderRadius: 10,
+  },
 
-  // Advance Button
-  advanceButton: { backgroundColor: COLORS.primary, borderRadius: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 },
-  advanceButtonDisabled: { opacity: 0.6 },
-  advanceButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
+  // Stages
+  stagesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 4,
+  },
+  stageItem: { alignItems: 'center', flex: 1 },
+  stageDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#EAF8EF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+    marginBottom: 6,
+  },
+  stageDotDone: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  stageDotActive: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.iconGlow,
+  },
+  stageLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '800', textAlign: 'center' },
+  stageLabelDone: { color: COLORS.primary },
 
-  // Empty state
-  emptyContent: { padding: 22, alignItems: 'center' },
-  emptyIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.accentSoft, marginBottom: 12 },
-  emptyTitle: { color: COLORS.textPrimary, fontSize: 18, fontWeight: '900' },
-  emptyText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 6 },
+  // Info card
+  infoCard: { padding: 16, marginBottom: 20, gap: 0 },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  infoRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(14,143,70,0.06)',
+  },
+  infoContent: { flex: 1 },
+  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  infoValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '700', marginTop: 2, lineHeight: 21 },
+
+  // Update button
+  updateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    ...SHADOWS.card,
+  },
+  updateBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
 });

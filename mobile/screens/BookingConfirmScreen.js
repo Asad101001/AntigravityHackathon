@@ -601,19 +601,20 @@ const styles = StyleSheet.create({
   },
   profileName: {
     color: COLORS.textPrimary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
+    letterSpacing: -0.2,
   },
   profileService: {
     color: COLORS.primary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
-    marginTop: 1,
+    marginTop: 2,
     textTransform: 'capitalize',
   },
   profileCompany: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     marginTop: 2,
   },
@@ -624,8 +625,8 @@ const styles = StyleSheet.create({
   },
   infoRow:   { flexDirection: 'row', gap: 12, alignItems: 'center' },
   infoIcon:  { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.chip },
-  infoLabel: { color: COLORS.textMuted, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
-  infoValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900', marginTop: 2 },
+  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
+  infoValue: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', marginTop: 2 },
 
   // Reasoning snippet
   reasoningCard: {
@@ -637,13 +638,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 11, letterSpacing: 0.5 },
-  reasoningText:  { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  reasoningLink:  { color: COLORS.primary, fontWeight: '800', fontSize: 12, marginTop: 8 },
+  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 12, letterSpacing: 0.5 },
+  reasoningText:  { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  reasoningLink:  { color: COLORS.primary, fontWeight: '800', fontSize: 13, marginTop: 8 },
  
   // CTAs
   primaryButton:  { backgroundColor: COLORS.primary, borderRadius: 20, paddingVertical: 17, alignItems: 'center', marginTop: 4 },
-  primaryText:    { color: '#fff', fontSize: 16, fontWeight: '900' },
+  primaryText:    { color: '#fff', fontSize: 17, fontWeight: '900' },
   secondaryButton:{ alignItems: 'center', paddingVertical: 14 },
   secondaryText:  { color: COLORS.primary, fontWeight: '800', fontSize: 14 },
  
@@ -657,7 +658,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   devDot:        { width: 24, height: 1, backgroundColor: 'rgba(14,143,70,0.16)' },
-  devSectionTitle: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.5 },
+  devSectionTitle: { color: COLORS.textMuted, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.5 },
  
   chaosButton: {
     flexDirection: 'row',
@@ -669,8 +670,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(220, 38, 38, 0.16)',
     borderStyle: 'dashed',
   },
-  chaosButtonTitle: { color: COLORS.danger, fontWeight: '800', fontSize: 13 },
-  chaosButtonSub:   { color: COLORS.textMuted, fontSize: 10, marginTop: 2, fontWeight: '700' },
+  chaosButtonTitle: { color: COLORS.danger, fontWeight: '800', fontSize: 14 },
+  chaosButtonSub:   { color: COLORS.textMuted, fontSize: 11, marginTop: 3, fontWeight: '700' },
   chaosArrow:       { width: 28, alignItems: 'center' },
 
   // Modal
@@ -713,9 +714,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.chip,
     borderColor: 'rgba(14,143,70,0.12)',
   },
-  providerChipLabel: { color: COLORS.danger, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
-  providerChipName:  { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', marginTop: 4 },
-  providerChipPrice: { color: COLORS.primary, fontSize: 14, fontWeight: '700', marginTop: 4 },
+  providerChipLabel: { color: COLORS.danger, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
+  providerChipName:  { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', marginTop: 4 },
+  providerChipPrice: { color: COLORS.primary, fontSize: 15, fontWeight: '700', marginTop: 4 },
 
   chaosArrowDown: { textAlign: 'center', fontSize: 18, color: COLORS.textMuted, marginVertical: 4 },
 
@@ -745,7 +746,7 @@ const styles = StyleSheet.create({
   smallFooterText: {
     textAlign: 'center',
     color: COLORS.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 1.2,

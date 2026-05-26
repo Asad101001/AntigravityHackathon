@@ -61,9 +61,9 @@ export default function ProviderResultsScreen({ route, navigation }) {
 
   // Expandable map height
   const [mapExpanded, setMapExpanded] = useState(false);
-  const mapHeight = useRef(new Animated.Value(290)).current;
+  const mapHeight = useRef(new Animated.Value(320)).current;
   const toggleMapExpand = () => {
-    const toValue = mapExpanded ? 290 : 400;
+    const toValue = mapExpanded ? 320 : 420;
     Animated.spring(mapHeight, { toValue, useNativeDriver: false, bounciness: 4, speed: 14 }).start();
     setMapExpanded(v => !v);
   };
@@ -290,9 +290,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     color: COLORS.textPrimary,
+    letterSpacing: -0.3,
   },
   sectionSub: {
     fontSize: 12,
@@ -343,9 +344,9 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: COLORS.primary, fontSize: 20, fontWeight: '900' },
 
-  providerName: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
-  serviceLabel:  { color: COLORS.primary, fontSize: 11, fontWeight: '800', marginTop: 1, textTransform: 'capitalize' },
-  companyLabel:  { color: COLORS.textSecondary, fontSize: 11, marginTop: 2, fontWeight: '700' },
+  providerName: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 },
+  serviceLabel:  { color: COLORS.primary, fontSize: 12, fontWeight: '800', marginTop: 2, textTransform: 'capitalize' },
+  companyLabel:  { color: COLORS.textSecondary, fontSize: 12, marginTop: 2, fontWeight: '700' },
 
   metricsRow: { flexDirection: 'row', gap: 5, marginTop: 8, flexWrap: 'wrap' },
   chip: {
@@ -357,12 +358,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 4,
   },
-  chipText: { fontSize: 10, fontWeight: '800', color: COLORS.textSecondary },
+  chipText: { fontSize: 11, fontWeight: '800', color: COLORS.textSecondary },
 
   priceBlock: { alignItems: 'flex-end', justifyContent: 'center', flexShrink: 0, marginLeft: 4 },
-  priceLabel: { color: COLORS.textMuted, fontSize: 9, fontWeight: '900', letterSpacing: 0.4 },
-  priceValue: { color: COLORS.primary, fontWeight: '900', fontSize: 16, marginTop: 1 },
-  priceEst:   { color: COLORS.textMuted, fontSize: 9, fontWeight: '700' },
+  priceLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 0.4 },
+  priceValue: { color: COLORS.primary, fontWeight: '900', fontSize: 18, marginTop: 1 },
+  priceEst:   { color: COLORS.textMuted, fontSize: 10, fontWeight: '700' },
 
   arrowRow: {
     flexDirection: 'row',
@@ -374,5 +375,5 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(14,143,70,0.06)',
     gap: 4,
   },
-  arrowText: { color: COLORS.primary, fontSize: 11, fontWeight: '800' },
+  arrowText: { color: COLORS.primary, fontSize: 13, fontWeight: '800' },
 });

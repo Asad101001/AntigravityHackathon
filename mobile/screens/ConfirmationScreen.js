@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 4,
   },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
-  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, fontSize: 13, marginTop: 10, marginBottom: 24, fontWeight: '700', paddingHorizontal: 12 },
+  title: { fontSize: 30, fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
+  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontSize: 14, marginTop: 10, marginBottom: 24, fontWeight: '700', paddingHorizontal: 12 },
 
   // Summary Card
   summaryCard: {
@@ -368,13 +368,13 @@ const styles = StyleSheet.create({
   },
   bookingIdLabel: {
     color: COLORS.textMuted,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1,
   },
   bookingIdValue: {
     color: COLORS.textPrimary,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
     marginTop: 2,
   },
@@ -409,19 +409,19 @@ const styles = StyleSheet.create({
   },
   summaryRowLabel: {
     color: COLORS.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
   },
   summaryRowValue: {
     color: COLORS.textPrimary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
     marginTop: 1,
   },
   summaryRowSub: {
     color: COLORS.textSecondary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     marginTop: 1,
   },
@@ -449,14 +449,14 @@ const styles = StyleSheet.create({
   },
   proTitle: {
     color: COLORS.textPrimary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
   },
   proSubtitle: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 1,
+    marginTop: 2,
   },
 
   // Buttons
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '900',
   },
   secondaryButton: {
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: COLORS.primary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
   },
 

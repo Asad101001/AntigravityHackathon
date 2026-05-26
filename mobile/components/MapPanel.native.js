@@ -1,13 +1,13 @@
 /**
  * MapPanel.native.js — Premium Google Maps component for Asaaniyat
  *
- * Improvements over previous version:
- * - Deduplicates fitToCoordinates calls (no more jitter)
- * - Legend moved to bottom-left to avoid overlapping controls
- * - Marker offset for very close coordinates to prevent overlaps
- * - MIN_ZOOM guard ensures single-provider view doesn't overzoom
- * - Callout uses stable layout, no overlapping with pin or badge
- * - User location pulse animation via Animated API
+ * Complete overhaul:
+ * - Larger, fully visible markers with proper shadowing
+ * - Legend repositioned to top-left with increased width, no truncation
+ * - Bigger callouts with clear text
+ * - Enhanced polylines and user marker
+ * - Better map label visibility via customMapStyle
+ * - Larger re-center button
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -130,7 +130,7 @@ function ProviderCallout({ provider, onPress }) {
     <TouchableOpacity style={styles.callout} onPress={() => onPress(provider)} activeOpacity={0.85}>
       {badge && (
         <View style={[styles.calloutBadge, { backgroundColor: badgeColor + '22', borderColor: badgeColor + '55' }]}>
-          <Ionicons name={BADGE_ICONS[badge]} size={10} color={badgeColor} />
+          <Ionicons name={BADGE_ICONS[badge]} size={11} color={badgeColor} />
           <Text style={[styles.calloutBadgeText, { color: badgeColor }]}>{BADGE_LABELS[badge]}</Text>
         </View>
       )}
@@ -245,7 +245,7 @@ export default function MapPanel({
     }
 
     mapRef.current.fitToCoordinates(coords, {
-      edgePadding: { top: 80, right: 60, bottom: 90, left: 60 },
+      edgePadding: { top: 100, right: 80, bottom: 100, left: 80 },
       animated,
     });
   }, [extraMarkers, mapReady, providerMarkers, userCoord]);
@@ -288,7 +288,7 @@ export default function MapPanel({
               <View style={styles.userMarker}>
                 <Animated.View style={[styles.userPulse, { transform: [{ scale: pulseAnim }] }]} />
                 <View style={styles.userCore}>
-                  <Ionicons name="home" size={14} color="#FFFFFF" />
+                  <Ionicons name="home" size={16} color="#FFFFFF" />
                 </View>
                 <Text style={styles.userLabel}>You</Text>
               </View>
@@ -308,9 +308,9 @@ export default function MapPanel({
             <Polyline
               key={`line-${provider.id}`}
               coordinates={[userCoord, coordinate]}
-              strokeColor={colorFor(provider) + '60'}
-              strokeWidth={2.5}
-              lineDashPattern={[5, 7]}
+              strokeColor={colorFor(provider) + '70'}
+              strokeWidth={3.5}
+              lineDashPattern={[6, 8]}
             />
           ))}
 
@@ -323,7 +323,7 @@ export default function MapPanel({
             tracksViewChanges={false}
           >
             <View style={styles.extraMarker}>
-              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Ionicons name="location" size={18} color="#FFFFFF" />
             </View>
           </Marker>
         ))}
@@ -349,7 +349,7 @@ export default function MapPanel({
                 <View style={[styles.distanceBadge, { borderColor: color + '60' }]}>
                   {badge ? (
                     <View style={styles.distanceBadgeInner}>
-                      <Ionicons name={BADGE_ICONS[badge]} size={8} color={color} />
+                      <Ionicons name={BADGE_ICONS[badge]} size={10} color={color} />
                       <Text style={[styles.distanceText, { color }]}>
                         {provider.distance_km != null ? `${provider.distance_km}km` : 'near'}
                       </Text>
@@ -361,7 +361,7 @@ export default function MapPanel({
                   )}
                 </View>
 
-                {/* Pin shell */}
+                {/* Pin shell — LARGER for visibility */}
                 <View style={[
                   styles.pinShell,
                   { borderColor: color },
@@ -369,7 +369,7 @@ export default function MapPanel({
                   badge === 'overall_best' && styles.pinShellBest,
                 ]}>
                   <View style={[styles.pinCore, { backgroundColor: color }]}>
-                    <Ionicons name={icon} size={15} color="#FFFFFF" />
+                    <Ionicons name={icon} size={19} color="#FFFFFF" />
                   </View>
                 </View>
 
@@ -395,20 +395,21 @@ export default function MapPanel({
       {/* ── Map unavailable fallback ────────────────────────────── */}
       {mapTimedOut && !mapReady && (
         <View style={styles.mapFallback} pointerEvents="none">
-          <Ionicons name="map-outline" size={28} color={COLORS.textMuted} />
+          <Ionicons name="map-outline" size={32} color={COLORS.textMuted} />
           <Text style={styles.mapFallbackText}>Map unavailable</Text>
         </View>
       )}
 
-      {/* ── Legend — bottom-left, only show present badges ─────── */}
+      {/* ── Legend — TOP-LEFT, fully visible, wider ────────────── */}
       {providerMarkers.length > 0 && (
         <View style={styles.legend} pointerEvents="none">
+          <Text style={styles.legendTitle}>LEGEND</Text>
           {Object.entries(BADGE_LABELS)
             .filter(([key]) => providerMarkers.some(({ provider: p }) => p.multi_factor_badge === key))
             .map(([key, label]) => (
               <View key={key} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: BADGE_COLORS[key] }]}>
-                  <Ionicons name={BADGE_ICONS[key]} size={7} color="#FFFFFF" />
+                  <Ionicons name={BADGE_ICONS[key]} size={8} color="#FFFFFF" />
                 </View>
                 <Text style={styles.legendText}>{label}</Text>
               </View>
@@ -422,13 +423,14 @@ export default function MapPanel({
         </View>
       )}
 
-      {/* ── Re-center button ───────────────────────────────────────── */}
+      {/* ── Re-center button — LARGER with label ─────────────────── */}
       <TouchableOpacity
         style={styles.recenterBtn}
         onPress={() => { fitDone.current = false; fitMap(true); fitDone.current = true; }}
         activeOpacity={0.8}
       >
-        <Ionicons name="locate-outline" size={18} color={COLORS.primary} />
+        <Ionicons name="locate-outline" size={20} color={COLORS.primary} />
+        <Text style={styles.recenterText}>Re-center</Text>
       </TouchableOpacity>
     </View>
   );
@@ -441,25 +443,25 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.08)',
+    borderColor: 'rgba(14,143,70,0.1)',
     backgroundColor: '#EEF8F2',
   },
   map: { flex: 1 },
 
-  // User marker
+  // User marker — LARGER
   userMarker: { alignItems: 'center' },
   userPulse: {
     position: 'absolute',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: 'rgba(14,143,70,0.14)',
-    top: -5, left: -5,
+    top: -6, left: -6,
   },
   userCore: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
@@ -468,22 +470,23 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   userLabel: {
-    marginTop: 3,
+    marginTop: 4,
     color: COLORS.primary,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '900',
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 999,
     overflow: 'hidden',
+    letterSpacing: 0.3,
   },
 
-  // Extra markers
+  // Extra markers — LARGER
   extraMarker: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
@@ -492,118 +495,134 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
 
-  // Provider pins
+  // Provider pins — LARGER for full visibility
   pinWrap:       { alignItems: 'center' },
   pinWrapActive: { transform: [{ scale: 1.14 }] },
 
   distanceBadge: {
-    marginBottom: 3,
-    backgroundColor: 'rgba(255,255,255,0.96)',
+    marginBottom: 4,
+    backgroundColor: 'rgba(255,255,255,0.97)',
     borderRadius: 999,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderWidth: 1,
+    ...SHADOWS.pressed,
   },
-  distanceBadgeInner: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  distanceText: { fontSize: 9, fontWeight: '900' },
+  distanceBadgeInner: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  distanceText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.2 },
 
   pinShell: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2.5,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.96)',
+    backgroundColor: 'rgba(255,255,255,0.97)',
     ...SHADOWS.card,
   },
   pinShellActive: { borderWidth: 3 },
   pinShellBest:   { borderWidth: 3 },
   pinCore: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pinTail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -1,
   },
 
-  // Callout
+  // Callout — WIDER with clearer text
   callout: {
     backgroundColor: 'rgba(255,255,255,0.99)',
-    borderRadius: 16,
-    padding: 13,
-    width: 220,
+    borderRadius: 18,
+    padding: 16,
+    width: 260,
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.08)',
-    ...SHADOWS.card,
-    gap: 3,
+    borderColor: 'rgba(14,143,70,0.1)',
+    ...SHADOWS.floating,
+    gap: 4,
   },
   calloutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
-    marginBottom: 3,
+    marginBottom: 4,
   },
-  calloutBadgeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.4 },
-  calloutName:      { color: COLORS.textPrimary, fontSize: 13, fontWeight: '900' },
-  calloutMetaRow:   { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  calloutMeta:      { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700' },
+  calloutBadgeText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
+  calloutName:      { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900', lineHeight: 20 },
+  calloutMetaRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  calloutMeta:      { color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
   calloutMetaDot:   { color: COLORS.textMuted },
-  calloutPrice:     { color: COLORS.primary, fontSize: 12, fontWeight: '900', marginTop: 2 },
-  calloutCta:       { color: COLORS.primary, fontSize: 11, fontWeight: '900', textAlign: 'right', marginTop: 3 },
+  calloutPrice:     { color: COLORS.primary, fontSize: 14, fontWeight: '900', marginTop: 3 },
+  calloutCta:       { color: COLORS.primary, fontSize: 12, fontWeight: '900', textAlign: 'right', marginTop: 4 },
 
-  // Legend — bottom-left corner
+  // Legend — TOP-LEFT corner, fully visible, wider
   legend: {
     position: 'absolute',
-    bottom: 14,
+    top: 14,
     left: 12,
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: 'rgba(255,255,255,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.08)',
-    borderRadius: 12,
-    padding: 8,
+    borderColor: 'rgba(14,143,70,0.12)',
+    borderRadius: 14,
+    padding: 10,
+    paddingTop: 8,
     gap: 5,
-    maxWidth: 140,
+    maxWidth: 180,
+    ...SHADOWS.card,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  legendTitle: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: COLORS.textMuted,
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: {
-    width: 13,
-    height: 13,
-    borderRadius: 6.5,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  legendText: { color: COLORS.textSecondary, fontSize: 9.5, fontWeight: '700', flex: 1 },
+  legendText: { color: COLORS.textPrimary, fontSize: 11, fontWeight: '700', flex: 1 },
 
-  // Re-center button — bottom-right
+  // Re-center button — LARGER with label
   recenterBtn: {
     position: 'absolute',
     bottom: 14,
     right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.96)',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.97)',
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.1)',
+    borderColor: 'rgba(14,143,70,0.12)',
     ...SHADOWS.card,
+  },
+  recenterText: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '800',
   },
 
   // Map loading skeleton & fallback
@@ -624,25 +643,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF8F2',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   mapFallbackText: {
     color: COLORS.textMuted,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
 });
 
-// ── Green-tinted custom map style ─────────────────────────────────────────────
+// ── Enhanced custom map style — better text visibility ────────────────────────
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry',              stylers: [{ color: '#EEF8F2' }] },
-  { elementType: 'labels.text.fill',      stylers: [{ color: '#51645A' }] },
-  { elementType: 'labels.text.stroke',    stylers: [{ color: '#FFFFFF' }] },
+  { elementType: 'labels.text.fill',      stylers: [{ color: '#3D5A4A' }] },
+  { elementType: 'labels.text.stroke',    stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
   { featureType: 'road',          elementType: 'geometry',   stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road',          elementType: 'labels.text.fill', stylers: [{ color: '#51645A' }] },
   { featureType: 'road.arterial', elementType: 'geometry',   stylers: [{ color: '#D8F0E1' }] },
   { featureType: 'road.highway',  elementType: 'geometry',   stylers: [{ color: '#C2EDD5' }] },
   { featureType: 'water',         elementType: 'geometry',   stylers: [{ color: '#CDEFE0' }] },
   { featureType: 'poi',           elementType: 'labels',     stylers: [{ visibility: 'off' }] },
   { featureType: 'transit',       elementType: 'labels',     stylers: [{ visibility: 'off' }] },
   { featureType: 'administrative.neighborhood', elementType: 'labels.text', stylers: [{ visibility: 'simplified' }] },
+  { featureType: 'administrative.neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#3D5A4A' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#2D4A3A' }] },
 ];

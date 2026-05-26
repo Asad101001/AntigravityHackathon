@@ -418,19 +418,20 @@ const styles = StyleSheet.create({
   },
   profileName: {
     color: COLORS.textPrimary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
+    letterSpacing: -0.2,
   },
   profileService: {
     color: COLORS.primary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
-    marginTop: 1,
+    marginTop: 2,
     textTransform: 'capitalize',
   },
   profileCompany: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     marginTop: 2,
   },
@@ -441,7 +442,7 @@ const styles = StyleSheet.create({
   },
   urduText: {
     color: COLORS.primary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
   },
   detailsList: {
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
   },
   detailRowText: {
     color: COLORS.textSecondary,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
   expertImageContainer: {
@@ -512,18 +513,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quoteHeaderTitle: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 16 },
+  quoteHeaderTitle: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 18, letterSpacing: -0.3 },
 
   aiBadge: { backgroundColor: 'rgba(14,143,70,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   aiBadgeText: { color: COLORS.primary, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
   quoteRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  quoteRowLabel: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 14 },
-  quoteRowValue: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 14 },
+  quoteRowLabel: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 15 },
+  quoteRowValue: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 15 },
 
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  totalLabel: { color: COLORS.primary, fontWeight: '900', fontSize: 18 },
-  totalValue: { color: COLORS.primary, fontWeight: '900', fontSize: 26 },
+  totalLabel: { color: COLORS.primary, fontWeight: '900', fontSize: 20 },
+  totalValue: { color: COLORS.primary, fontWeight: '900', fontSize: 28 },
 
   priceDisclaimer: {
     color: COLORS.textMuted,
@@ -543,15 +544,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 11, letterSpacing: 0.5 },
-  reasoningText: { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  reasoningLink: { color: COLORS.primary, fontWeight: '800', fontSize: 12, marginTop: 8 },
+  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 12, letterSpacing: 0.5 },
+  reasoningText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  reasoningLink: { color: COLORS.primary, fontWeight: '800', fontSize: 13, marginTop: 8 },
 
   // CTA
   button: { backgroundColor: COLORS.primary, borderRadius: 20, paddingVertical: 18, alignItems: 'center', marginTop: 4 },
   buttonInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '900' },
-  terms: { color: COLORS.textMuted, fontSize: 11, textAlign: 'center', marginTop: 12, fontWeight: '700' },
+  buttonText: { color: '#fff', fontSize: 17, fontWeight: '900' },
+  terms: { color: COLORS.textMuted, fontSize: 12, textAlign: 'center', marginTop: 12, fontWeight: '700' },
 
   // Duplicate Warning Modal
   modalOverlay: {

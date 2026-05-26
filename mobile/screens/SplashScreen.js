@@ -9,56 +9,138 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS } from '../theme';
+import { COLORS, SHADOWS, FONTS } from '../theme';
 
 const SPLASH_ICON = require('../assets/splash-icon.png');
 const { width } = Dimensions.get('window');
 
 export default function SplashScreen({ navigation }) {
-  const cardScale = useRef(new Animated.Value(0.92)).current;
+  const cardScale = useRef(new Animated.Value(0.88)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const logoSpin = useRef(new Animated.Value(0)).current;
-  const textTranslateY = useRef(new Animated.Value(15)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
+  const urduTranslateY = useRef(new Animated.Value(30)).current;
+  const urduOpacity = useRef(new Animated.Value(0)).current;
+  const englishTranslateY = useRef(new Animated.Value(25)).current;
+  const englishOpacity = useRef(new Animated.Value(0)).current;
+  const subtitleTranslateY = useRef(new Animated.Value(20)).current;
+  const subtitleOpacity = useRef(new Animated.Value(0)).current;
+  const breatheAnim = useRef(new Animated.Value(1)).current;
+
+  // Loading dots animation
+  const dot1Anim = useRef(new Animated.Value(0.3)).current;
+  const dot2Anim = useRef(new Animated.Value(0.3)).current;
+  const dot3Anim = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    // Start animations on mount
+    // Staggered entrance animations
+
+    // 1. Card appears with scale + fade
     Animated.parallel([
-      // Soft card fade & scale in
       Animated.timing(cardOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 600,
         easing: Easing.out(Easing.back(1.5)),
         useNativeDriver: true,
       }),
-      Animated.timing(cardScale, {
+      Animated.spring(cardScale, {
         toValue: 1,
-        duration: 800,
-        easing: Easing.out(Easing.back(1.5)),
-        useNativeDriver: true,
-      }),
-      // Gentle logo rotation
-      Animated.timing(logoSpin, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      // Typography slide-in
-      Animated.timing(textTranslateY, {
-        toValue: 0,
-        duration: 700,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(textOpacity, {
-        toValue: 1,
-        duration: 750,
+        damping: 14,
+        stiffness: 120,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Navigate to Home screen after 2.6 seconds
+    // 2. Logo spins in (200ms delay)
+    Animated.timing(logoSpin, {
+      toValue: 1,
+      duration: 1000,
+      delay: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+
+    // 3. Urdu text slides up (400ms delay)
+    Animated.parallel([
+      Animated.timing(urduTranslateY, {
+        toValue: 0,
+        duration: 500,
+        delay: 400,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(urduOpacity, {
+        toValue: 1,
+        duration: 500,
+        delay: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 4. English title slides up (600ms delay)
+    Animated.parallel([
+      Animated.timing(englishTranslateY, {
+        toValue: 0,
+        duration: 500,
+        delay: 600,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(englishOpacity, {
+        toValue: 1,
+        duration: 500,
+        delay: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 5. Subtitle fades in (800ms delay)
+    Animated.parallel([
+      Animated.timing(subtitleTranslateY, {
+        toValue: 0,
+        duration: 500,
+        delay: 800,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(subtitleOpacity, {
+        toValue: 1,
+        duration: 500,
+        delay: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Gentle breathe animation on card
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(breatheAnim, {
+          toValue: 1.012,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(breatheAnim, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Animated pulsating loading dots
+    const animateDot = (dot, delay) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(dot, { toValue: 1, duration: 400, delay, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(dot, { toValue: 0.3, duration: 400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      );
+    animateDot(dot1Anim, 0).start();
+    animateDot(dot2Anim, 150).start();
+    animateDot(dot3Anim, 300).start();
+
+    // Navigate to Home screen after 2.8 seconds
     const timer = setTimeout(() => {
       navigation.replace('Home');
     }, 2800);
@@ -75,6 +157,7 @@ export default function SplashScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Premium Cohesive Background Overlays */}
       <View style={styles.ambientTop} />
+      <View style={styles.ambientMid} />
       <View style={styles.ambientBottom} />
 
       <View style={styles.content}>
@@ -84,11 +167,11 @@ export default function SplashScreen({ navigation }) {
             styles.card,
             {
               opacity: cardOpacity,
-              transform: [{ scale: cardScale }],
+              transform: [{ scale: Animated.multiply(cardScale, breatheAnim) }],
             },
           ]}
         >
-          {/* Pulsating lightning icon square */}
+          {/* Pulsating icon container */}
           <Animated.View
             style={[
               styles.iconContainer,
@@ -98,13 +181,13 @@ export default function SplashScreen({ navigation }) {
             <Image source={SPLASH_ICON} style={styles.splashImage} resizeMode="contain" />
           </Animated.View>
 
-          {/* Calligraphic Urdu Typography */}
+          {/* Calligraphic Urdu Typography — larger and more prominent */}
           <Animated.Text
             style={[
               styles.urduTitle,
               {
-                opacity: textOpacity,
-                transform: [{ translateY: textTranslateY }],
+                opacity: urduOpacity,
+                transform: [{ translateY: urduTranslateY }],
               },
             ]}
           >
@@ -116,8 +199,8 @@ export default function SplashScreen({ navigation }) {
             style={[
               styles.englishTitle,
               {
-                opacity: textOpacity,
-                transform: [{ translateY: textTranslateY }],
+                opacity: englishOpacity,
+                transform: [{ translateY: englishTranslateY }],
               },
             ]}
           >
@@ -132,19 +215,19 @@ export default function SplashScreen({ navigation }) {
             style={[
               styles.subtitle,
               {
-                opacity: textOpacity,
-                transform: [{ translateY: textTranslateY }],
+                opacity: subtitleOpacity,
+                transform: [{ translateY: subtitleTranslateY }],
               },
             ]}
           >
             Premium Home Services
           </Animated.Text>
 
-          {/* Active online loading dots */}
+          {/* Animated pulsating loading dots */}
           <View style={styles.loadingIndicator}>
-            <View style={[styles.dot, styles.dot1]} />
-            <View style={[styles.dot, styles.dot2]} />
-            <View style={[styles.dot, styles.dot3]} />
+            <Animated.View style={[styles.dot, { opacity: dot1Anim, transform: [{ scale: dot1Anim }] }]} />
+            <Animated.View style={[styles.dot, { opacity: dot2Anim, transform: [{ scale: dot2Anim }] }]} />
+            <Animated.View style={[styles.dot, { opacity: dot3Anim, transform: [{ scale: dot3Anim }] }]} />
           </View>
         </Animated.View>
       </View>
@@ -155,26 +238,35 @@ export default function SplashScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FCFA', // Soft off-white mint
+    backgroundColor: '#F5FBF7',
   },
-  // Ambient gradients matching Home
+  // Ambient gradients — richer tonal range
   ambientTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '45%',
-    backgroundColor: '#EFF6FF', // Soft ice blue
-    opacity: 0.8,
+    height: '40%',
+    backgroundColor: '#E8F4FD',
+    opacity: 0.85,
+  },
+  ambientMid: {
+    position: 'absolute',
+    top: '30%',
+    left: 0,
+    right: 0,
+    height: '30%',
+    backgroundColor: '#EDF9F0',
+    opacity: 0.6,
   },
   ambientBottom: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: '40%',
-    backgroundColor: '#EAF8EF', // Soft mint tint
-    opacity: 0.7,
+    height: '45%',
+    backgroundColor: '#E0F5E8',
+    opacity: 0.75,
   },
   content: {
     flex: 1,
@@ -183,58 +275,62 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 
-  // Premium Brand Card
+  // Premium Brand Card — deeper shadows
   card: {
     width: '100%',
     maxWidth: 340,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    borderRadius: 28,
+    paddingVertical: 44,
+    paddingHorizontal: 28,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.14,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowColor: '#087238',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.18,
+    shadowRadius: 32,
+    elevation: 12,
   },
 
-  // Top Icon Container
+  // Top Icon Container — slightly larger
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 18,
+    width: 88,
+    height: 88,
+    borderRadius: 22,
     backgroundColor: '#EAF8EF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
     borderWidth: 1.5,
     borderColor: 'rgba(14,143,70,0.14)',
     overflow: 'hidden',
+    ...SHADOWS.iconGlow,
   },
   splashImage: {
-    width: 56,
-    height: 56,
+    width: 62,
+    height: 62,
   },
 
-  // Calligraphy
+  // Calligraphy — larger, bolder Urdu
   urduTitle: {
-    fontSize: 38,
+    fontSize: 46,
     fontWeight: '700',
     color: '#0B2A18',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
+    writingDirection: 'rtl',
+    lineHeight: 58,
   },
 
-  // English
+  // English — bigger
   englishTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '900',
     color: COLORS.primary,
     textAlign: 'center',
     letterSpacing: 0.5,
+    lineHeight: 34,
   },
 
   // Divider line
@@ -243,42 +339,33 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: COLORS.primary,
     borderRadius: 1.5,
-    marginVertical: 18,
+    marginVertical: 20,
     opacity: 0.8,
   },
 
-  // Subtitle
+  // Subtitle — slightly bigger
   subtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.textSecondary,
-    letterSpacing: 2,
+    letterSpacing: 2.5,
     textTransform: 'uppercase',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
+    lineHeight: 16,
   },
 
-  // Visual active dots
+  // Animated dots
   loadingIndicator: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.primary,
-    opacity: 0.35,
-  },
-  dot1: {
-    opacity: 0.9,
-  },
-  dot2: {
-    opacity: 0.6,
-  },
-  dot3: {
-    opacity: 0.35,
   },
 });

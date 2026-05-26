@@ -229,7 +229,7 @@ export default function HomeScreen({ route, navigation }) {
 
           {/* Centerpiece text input field - Primary Visual Focus */}
           <View style={styles.requestBoxFocus}>
-            <Ionicons name="search" size={21} color={COLORS.primary} style={styles.searchIcon} />
+            <Ionicons name="search" size={22} color={COLORS.primary} style={styles.searchIcon} />
             <TextInput
               style={styles.input}
               placeholder="What service do you need today?"
@@ -244,7 +244,7 @@ export default function HomeScreen({ route, navigation }) {
               disabled={!text.trim()}
               activeOpacity={0.82}
             >
-              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
@@ -268,7 +268,7 @@ export default function HomeScreen({ route, navigation }) {
                       activeOpacity={1}
                     >
                       <View style={styles.serviceIconContainer}>
-                        <Ionicons name={service.icon} size={24} color={COLORS.primary} />
+                        <Ionicons name={service.icon} size={28} color={COLORS.primary} />
                       </View>
                       <Text style={styles.serviceLabel}>{service.label}</Text>
                       <Text style={styles.serviceUrdu}>{service.urdu}</Text>
@@ -361,7 +361,7 @@ export default function HomeScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   flex:       { flex: 1 },
   background: { flex: 1, backgroundColor: COLORS.bg },
-  content:    { paddingHorizontal: 16 },
+  content:    { paddingHorizontal: 18 },
 
   // Location selector styles
   locationContainer: {
@@ -467,10 +467,11 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 52,
+    height: 54,
     color: COLORS.textPrimary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
+    lineHeight: 22,
   },
   sendButton: {
     width: 46,
@@ -491,9 +492,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: COLORS.textPrimary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
 
   // Carousel & Grid styles
@@ -519,26 +520,28 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   serviceIconContainer: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
     borderRadius: RADII.sm,
     backgroundColor: '#EAF8EF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   serviceLabel: {
     color: COLORS.primary,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '900',
     textAlign: 'center',
+    lineHeight: 20,
   },
   serviceUrdu: {
     color: COLORS.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-    marginTop: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 2,
     textAlign: 'center',
+    writingDirection: 'rtl',
   },
 
   // Dots Pagination styles
@@ -597,9 +600,10 @@ const styles = StyleSheet.create({
   },
   promoKicker: {
     color: COLORS.primary,
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '900',
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.2,
   },
   promoDarkKicker: {
     color: '#34D399', // Mint green highlight
@@ -609,10 +613,10 @@ const styles = StyleSheet.create({
   },
   promoText: {
     color: COLORS.textSecondary,
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 19,
     fontWeight: '700',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   promoDarkText: {
     color: '#A7F3D0',
@@ -634,7 +638,7 @@ const styles = StyleSheet.create({
   },
   promoButtonText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '900',
   },
   promoRight: {

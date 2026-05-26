@@ -290,12 +290,12 @@ function InputField({
 }
 
 const inputStyles = StyleSheet.create({
-  wrap: { marginBottom: 14 },
+  wrap: { marginBottom: 16 },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
     color: COLORS.textPrimary,
-    marginBottom: 6,
+    marginBottom: 7,
     letterSpacing: 0.3,
   },
   inputRow: {
@@ -316,9 +316,9 @@ const inputStyles = StyleSheet.create({
   icon: { flexShrink: 0 },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: COLORS.textPrimary,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   rightBtn: {
     padding: 4,
@@ -398,22 +398,23 @@ const styles = StyleSheet.create({
   brandText: { flex: 1 },
   brand: {
     color: COLORS.primary,
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.5,
   },
   brandUrdu: {
     color: COLORS.textSecondary,
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '700',
     marginTop: 2,
+    writingDirection: 'rtl',
   },
   tagline: {
     color: COLORS.textSecondary,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 21,
     fontWeight: '700',
-    marginBottom: 18,
+    marginBottom: 20,
   },
 
   // Segment
@@ -470,14 +471,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
     borderRadius: RADII.lg,
-    paddingVertical: 15,
-    marginTop: 6,
+    paddingVertical: 17,
+    marginTop: 8,
     ...SHADOWS.card,
   },
   submitBtnDisabled: { opacity: 0.72 },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '900',
   },
 

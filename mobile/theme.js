@@ -90,41 +90,81 @@ export const SPACING = {
   lg: 20,
   xl: 28,
   xxl: 36,
+  xxxl: 48,
+};
+
+// Standardised line-height ratios for all font sizes
+export const LINE_HEIGHTS = {
+  tight: 1.2,
+  normal: 1.45,
+  relaxed: 1.65,
 };
 
 export const FONTS = {
   regular: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
     color: COLORS.textPrimary,
+    lineHeight: 22,
   },
   bold: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
     fontWeight: '700',
     color: COLORS.textPrimary,
+    lineHeight: 22,
   },
   heading: {
-    fontSize: 22,
+    fontSize: 24,
     fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
     fontWeight: '900',
     color: COLORS.textPrimary,
+    lineHeight: 30,
+    letterSpacing: -0.3,
   },
   subheading: {
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
     fontWeight: '800',
     color: COLORS.textPrimary,
+    lineHeight: 23,
   },
   caption: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
     color: COLORS.textSecondary,
+    lineHeight: 18,
   },
   mono: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  // Urdu typography preset — larger, right-aligned, with appropriate weight
+  urdu: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    lineHeight: 24,
+  },
+  urduLarge: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    lineHeight: 32,
+  },
+  urduDisplay: {
+    fontSize: 46,
+    fontWeight: '700',
+    color: PALETTE.emeraldInk,
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    lineHeight: 58,
   },
 };
 
@@ -150,6 +190,30 @@ export const SHADOWS = {
     shadowRadius: 22,
     elevation: 12,
   },
+  // New: for button pressed state
+  pressed: {
+    shadowColor: PALETTE.green600,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  // New: subtle glow behind icons
+  iconGlow: {
+    shadowColor: PALETTE.green600,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  // New: elevated elements (modals, overlays)
+  elevated: {
+    shadowColor: '#08351D',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 16,
+  },
 };
 
 export const GLASS = {
@@ -159,4 +223,13 @@ export const GLASS = {
   strongFallback: COLORS.bgGlassStrong,
   border: COLORS.borderLight,
   borderStrong: COLORS.borderStrong,
+};
+
+// Button feedback constants for consistent press animations
+export const BUTTON_FEEDBACK = {
+  pressScale: 0.96,
+  pressSpeed: 50,
+  pressBounce: 4,
+  releaseSpeed: 30,
+  releaseBounce: 8,
 };

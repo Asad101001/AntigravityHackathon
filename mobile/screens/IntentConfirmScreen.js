@@ -260,15 +260,15 @@ const styles = StyleSheet.create({
   headerCenter: { alignItems: 'center' },
   stepLabel: {
     color: COLORS.primary,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
     color: COLORS.textPrimary,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
     marginTop: 2,
   },
   headerSpacer: { width: 38, height: 38 },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   aiBadgeText: {
     color: COLORS.primary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
   },
   iconCircle: {
-    width: 40, height: 40,
+    width: 42, height: 42,
     borderRadius: RADII.sm,
     backgroundColor: '#EAF8EF',
     alignItems: 'center',
@@ -322,16 +322,17 @@ const styles = StyleSheet.create({
   rowContent: { flex: 1 },
   rowLabel: {
     color: COLORS.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   rowValue: {
     color: COLORS.textPrimary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
-    marginTop: 2,
+    marginTop: 3,
+    lineHeight: 22,
   },
   rowValueSoft: { color: COLORS.textSecondary, fontWeight: '700', fontStyle: 'italic' },
   rowValueUrgent: { color: COLORS.danger },
@@ -353,12 +354,12 @@ const styles = StyleSheet.create({
   },
   confidenceLabel: {
     color: COLORS.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
   },
   confidenceValue: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
     marginTop: 2,
   },
@@ -383,9 +384,9 @@ const styles = StyleSheet.create({
   },
   warningText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.warning,
-    lineHeight: 17,
+    lineHeight: 19,
     fontWeight: '700',
   },
 
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   confirmButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
     color: '#FFFFFF',
   },
