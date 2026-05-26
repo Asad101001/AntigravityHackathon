@@ -251,8 +251,8 @@ export default function ProviderChatScreen({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 20}
     >
       {/* Ambient background tints */}
       <View style={styles.ambientTop} />

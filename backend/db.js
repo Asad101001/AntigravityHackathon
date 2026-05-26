@@ -318,6 +318,16 @@ async function recordUserLogin(userId) {
   );
 }
 
+async function updateUserPushToken(userId, pushToken) {
+  if (!userId) return null;
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  await db.collection(COLLECTIONS.users).updateOne(
+    { _id: String(userId) },
+    { $set: { pushToken: pushToken ? String(pushToken) : null, updatedAt: now } }
+  );
+}
+
 async function findProviders(service, location) {
   const db = await setupDatabase();
   const query = service
@@ -557,6 +567,7 @@ module.exports = {
   findUserById,
   createUser,
   recordUserLogin,
+  updateUserPushToken,
   findProviders,
   findProvidersByService,
   saveChatMessage,

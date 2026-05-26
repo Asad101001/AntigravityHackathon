@@ -316,8 +316,8 @@ export default function ChatScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 20}
     >
       {/* Ambient background tints */}
       <View style={styles.ambientTop} />
@@ -343,11 +343,7 @@ export default function ChatScreen({ navigation }) {
               {activeBooking.area || activeBooking.subtitle || 'Assistant'}
             </Text>
           </View>
-          {chatThreads.length > 1 && (
-            <TouchableOpacity style={styles.switchButton} onPress={() => setShowBookingModal(true)} activeOpacity={0.7}>
-              <Text style={styles.switchButtonText}>All Chats</Text>
-            </TouchableOpacity>
-          )}
+          </View>
         </View>
 
         {/* Message Scroll View */}
@@ -401,6 +397,15 @@ export default function ChatScreen({ navigation }) {
         {/* Message Composer */}
         <View style={styles.composerWrap}>
           <View style={styles.composer}>
+            {chatThreads.length > 0 && (
+              <TouchableOpacity
+                style={styles.attachButton}
+                onPress={() => setShowBookingModal(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="chatbubbles-outline" size={24} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
             <TextInput
               style={styles.composerInput}
               value={input}
@@ -625,7 +630,7 @@ const styles = StyleSheet.create({
   composer: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     flexWrap: 'nowrap',
     gap: 10,
     backgroundColor: 'rgba(255,255,255,0.96)',
@@ -634,6 +639,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.08)',
     ...SHADOWS.card,
+  },
+  attachButton: {
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   composerInput: {
     flex: 1,

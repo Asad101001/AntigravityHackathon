@@ -43,3 +43,7 @@ yarn-error.*
 
 # delieverables
 final submissions/*
+
+# Firebase & GCP Credentials (DO NOT COMMIT)
+google-services.json
+antigravity-hackathon-*.json

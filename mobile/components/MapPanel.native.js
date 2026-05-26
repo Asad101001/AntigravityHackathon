@@ -321,6 +321,8 @@ export default function MapPanel({
             coordinate={marker.coordinate}
             title={marker.title}
             tracksViewChanges={false}
+            draggable={marker.draggable}
+            onDragEnd={marker.onDragEnd}
           >
             <View style={styles.extraMarker}>
               <Ionicons name="location" size={18} color="#FFFFFF" />

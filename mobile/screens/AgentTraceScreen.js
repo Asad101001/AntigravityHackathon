@@ -246,13 +246,15 @@ export default function AgentTraceScreen({ route, navigation }) {
                     </DetailBlock>
                   )}
                   {log.input && (
-                    <DetailBlock icon="📥" title="Input" color={meta.color}>
+                    <DetailBlock icon="📥" title="Input (Raw & Parsed)" color={meta.color}>
                       <CodeBlock value={log.input} />
+                      <HumanReadableBlock value={log.input} />
                     </DetailBlock>
                   )}
                   {log.output && (
-                    <DetailBlock icon="📤" title="Output" color={meta.color}>
+                    <DetailBlock icon="📤" title="Output (Raw & Parsed)" color={meta.color}>
                       <CodeBlock value={log.output} maxLen={900} />
+                      <HumanReadableBlock value={log.output} />
                     </DetailBlock>
                   )}
                   {log.error && (
@@ -342,6 +344,31 @@ function CodeBlock({ value, maxLen = 800 }) {
   return (
     <View style={styles.codeBlock}>
       <Text style={styles.codeText}>{truncated}</Text>
+    </View>
+  );
+}
+
+function HumanReadableBlock({ value }) {
+  if (!value) return null;
+  let parsed = value;
+  if (typeof value === 'string') {
+    try { parsed = JSON.parse(value); } catch (_) { return null; }
+  }
+  if (typeof parsed !== 'object' || parsed === null) return null;
+
+  return (
+    <View style={styles.humanReadableBox}>
+      <Text style={styles.humanReadableTitle}>Summary</Text>
+      {Object.entries(parsed).map(([k, v]) => {
+        let valStr = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        if (valStr.length > 100) valStr = valStr.slice(0, 100) + '...';
+        return (
+          <View key={k} style={styles.hrRow}>
+            <Text style={styles.hrKey}>• {k.replace(/_/g, ' ')}: </Text>
+            <Text style={styles.hrValue}>{valStr}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -486,6 +513,24 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 15,
   },
+  humanReadableBox: {
+    marginTop: 8,
+    backgroundColor: '#F9FAF9',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.1)',
+  },
+  humanReadableTitle: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: COLORS.primary,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  hrRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 },
+  hrKey: { fontSize: 12, fontWeight: '800', color: COLORS.textPrimary, textTransform: 'capitalize' },
+  hrValue: { fontSize: 12, color: COLORS.textSecondary, flexShrink: 1 },
   timestamp: { fontSize: 10, color: COLORS.textMuted, marginTop: 4 },
 
   timelineCard: {

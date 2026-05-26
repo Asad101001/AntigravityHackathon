@@ -140,3 +140,30 @@ export async function sendLocalNotification(title, body, data = {}) {
     return false;
   }
 }
+
+/**
+ * Syncs the native device push token to the backend server.
+ * Requires an active auth token to securely bind to the user account.
+ */
+export async function syncPushToken(authToken) {
+  const N = await _getModule();
+  if (!N || isExpoGo() || Platform.OS === 'web') return;
+
+  try {
+    const { status } = await N.getPermissionsAsync();
+    if (status !== 'granted') return;
+
+    // Fetch the native FCM Token (Expo Go does not support this, hence the check above)
+    const pushTokenData = await N.getDevicePushTokenAsync();
+    const push_token = pushTokenData?.data;
+
+    if (push_token) {
+      const apiClient = require('./lib/apiClient').default;
+      await apiClient.post('/auth/push-token', { push_token }, {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+    }
+  } catch (err) {
+    console.warn('[Notifications] Failed to sync push token:', err.message);
+  }
+}

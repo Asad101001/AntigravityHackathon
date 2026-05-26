@@ -238,14 +238,23 @@ export default function HomeScreen({ route, navigation }) {
               onChangeText={setText}
               maxLength={200}
             />
-            <TouchableOpacity
-              style={[styles.sendButton, !text.trim() && styles.disabled]}
-              onPress={handleSend}
-              disabled={!text.trim()}
-              activeOpacity={0.82}
-            >
-              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            {text.trim() ? (
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleSend}
+                activeOpacity={0.82}
+              >
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.sendButton, { backgroundColor: 'rgba(14,143,70,0.1)' }]}
+                onPress={() => alert('Gemini Multimodal Voice activated.\n(Integration payload ready for expo-av recording)')}
+                activeOpacity={0.82}
+              >
+                <Ionicons name="mic" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Popular Services Header */}

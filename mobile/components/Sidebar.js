@@ -56,9 +56,6 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
               <View style={styles.profileCopy}>
                 <Text style={styles.profileName}>{currentUser?.displayName || 'Asaaniyat User'}</Text>
                 <Text style={styles.profileMeta}>Karachi, Pakistan</Text>
-                <View style={styles.badgeContainer}>
-                  <Text style={styles.badgeText}>PREMIUM MEMBER</Text>
-                </View>
               </View>
             </View>
 
@@ -94,40 +91,24 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
 const styles = StyleSheet.create({
   modalRoot: { flex: 1 },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(9,38,22,0.46)' },
-  drawerWrap: { position: 'absolute', top: 0, left: 0, bottom: 0, width: '64%', paddingLeft: 12 },
+  drawerWrap: { position: 'absolute', top: 0, left: 0, bottom: 0, width: '70%', paddingLeft: 12 },
   drawer: { flex: 1 },
-  drawerContent: { flex: 1, padding: 16 },
+  drawerContent: { flex: 1, padding: 16, backgroundColor: 'rgba(255,255,255,0.2)' },
   profileHeaderRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 12 },
   profileBlock: { alignItems: 'flex-start', gap: 12, marginBottom: 16, paddingHorizontal: 4 },
   profileAvatar: { width: 72, height: 72, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF', ...SHADOWS.card },
   profileCopy: { width: '100%' },
-  profileName: { color: COLORS.primary, fontSize: 20, fontWeight: '900', marginTop: 8 },
+  profileName: { color: COLORS.textPrimary, fontSize: 20, fontWeight: '900', marginTop: 8 },
   profileMeta: { marginTop: 2, color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
-  badgeContainer: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#EAF8EF',
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.18)',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginTop: 8,
-  },
-  badgeText: {
-    color: COLORS.primary,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 12, width: '100%' },
-  closeButton: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.66)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
+  closeButton: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
   section: { flex: 1, marginTop: 4 },
-  row: { minHeight: 60, borderRadius: 12, padding: 10, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.56)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.84)' },
-  rowIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.accentSoft },
+  row: { minHeight: 64, borderRadius: 16, padding: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
+  rowIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.chip },
   rowIconDanger: { backgroundColor: 'rgba(220,38,38,0.1)' },
   rowCopy: { flex: 1 },
-  rowLabel: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '900' },
+  rowLabel: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
   rowLabelDanger: { color: '#DC2626' },
-  rowHelper: { marginTop: 1, color: COLORS.textSecondary, fontSize: 10, fontWeight: '700' },
-  footer: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: 'rgba(14,143,70,0.06)', paddingTop: 12 },
+  rowHelper: { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
+  footer: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: 'rgba(14,143,70,0.06)', paddingTop: 16 },
 });

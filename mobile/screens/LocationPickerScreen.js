@@ -94,6 +94,8 @@ export default function LocationPickerScreen({ route, navigation }) {
             coordinate: { latitude: pin.lat, longitude: pin.lng },
             title:       pin.label,
             pinColor:    COLORS.primary,
+            draggable:   true,
+            onDragEnd:   onPick,
           },
         ]}
       />

@@ -10,6 +10,7 @@ const AntigravityOrchestrator = require('../orchestrator/AntigravityOrchestrator
 const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
 const requireAuth = require('../middleware/requireAuth');
+const { sendPushNotification } = require('../utils/pushNotification');
 
 const orchestrator = new AntigravityOrchestrator({
   apiKey: process.env.ANTIGRAVITY_KEY || 'demo-key'
@@ -600,6 +601,21 @@ router.post('/bookings', async (req, res) => {
       raw_data
     });
 
+    // Dispatch confirmation push notification
+    let formattedTime = 'the scheduled time';
+    try {
+      if (resolvedBookingStartTime) {
+        formattedTime = new Date(resolvedBookingStartTime).toLocaleString('en-PK');
+      }
+    } catch (_) {}
+
+    await sendPushNotification(
+      user_id,
+      'Booking Confirmed! 🎉',
+      `Your ${service_type} booking with ${provider_name} is confirmed for ${formattedTime}.`,
+      { booking_id: booking._id, status: booking.status }
+    );
+
     return res.status(201).json({ success: true, booking });
   } catch (error) {
     console.error('Booking creation error:', error);
@@ -667,6 +683,15 @@ router.put('/bookings/:booking_id', async (req, res) => {
     }
 
     const updatedBooking = await db.updateBookingStatus(req.params.booking_id, status);
+
+    // Dispatch push notification about booking update
+    await sendPushNotification(
+      booking.user_id,
+      'Booking Update 🛠️',
+      `Your booking status with ${booking.provider_name} has been updated to "${status}".`,
+      { booking_id: req.params.booking_id, status }
+    );
+
     return res.json({ success: true, booking: updatedBooking });
   } catch (error) {
     console.error('Booking update error:', error);
@@ -691,6 +716,15 @@ router.delete('/bookings/:booking_id', async (req, res) => {
     }
 
     const cancelledBooking = await db.cancelBooking(req.params.booking_id);
+
+    // Dispatch push notification about cancellation
+    await sendPushNotification(
+      booking.user_id,
+      'Booking Cancelled ❌',
+      `Your booking with ${booking.provider_name} has been successfully cancelled.`,
+      { booking_id: req.params.booking_id, status: 'canceled' }
+    );
+
     return res.json({ success: true, message: 'Booking cancelled', booking: cancelledBooking });
   } catch (error) {
     console.error('Booking cancellation error:', error);

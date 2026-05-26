@@ -264,9 +264,14 @@ export default function App() {
 
     if (isLoading) {
       return (
-        <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center' }]}>
-          <Text style={styles.authGateTitle}>Asaaniyat</Text>
-          <Text style={styles.authGateSubtitle}>Checking secure session…</Text>
+        <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center', flex: 1, backgroundColor: COLORS.bg }]}>
+          <LiquidGlass style={StyleSheet.absoluteFill} contentStyle={{ alignItems: 'center', justifyContent: 'center' }} strong radius={0}>
+             <ActivityIndicator size="large" color={COLORS.primary} style={{ marginBottom: 20 }} />
+             <Text style={{ fontSize: 32, fontWeight: '900', color: COLORS.textPrimary, letterSpacing: -0.8 }}>Asaaniyat</Text>
+             <Text style={{ fontSize: 11, fontWeight: '900', color: COLORS.primary, marginTop: 8, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+               Checking secure session...
+             </Text>
+          </LiquidGlass>
         </View>
       );
     }

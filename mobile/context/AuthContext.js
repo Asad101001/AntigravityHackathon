@@ -21,6 +21,16 @@ export function AuthProvider({ children }) {
     setToken(nextToken || null);
     setUser(nextUser || null);
     await setSession({ token: nextToken || null, user: nextUser || null });
+
+    // Instantly sync push token upon successful session synchronization
+    if (nextToken && nextUser) {
+      try {
+        const { syncPushToken } = require('../notifications');
+        void syncPushToken(nextToken);
+      } catch (e) {
+        console.warn('Failed to invoke push token sync:', e);
+      }
+    }
   }, []);
 
   const refreshSession = useCallback(async () => {

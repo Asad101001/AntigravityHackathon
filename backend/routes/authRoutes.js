@@ -119,6 +119,20 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// Register or update device push token
+router.post('/push-token', requireAuth, async (req, res) => {
+  try {
+    const { push_token } = req.body;
+    if (!push_token) {
+      return res.status(400).json({ success: false, error: 'push_token is required' });
+    }
+    await db.updateUserPushToken(req.auth.sub, push_token);
+    return res.json({ success: true, message: 'Push token updated successfully' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════
 // POST /api/auth/admin-login
 // Admin login endpoint
