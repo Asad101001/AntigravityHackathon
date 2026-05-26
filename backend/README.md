@@ -16,27 +16,58 @@ The core intelligence and orchestration center of the **Asaaniyat** ecosystem. I
 At the heart of the engine is the `AntigravityOrchestrator`, which manages 8 highly decoupled, specialized agents. Instead of direct calling or cascading state, they communicate via a centralized, immutable `Context` state engine.
 
 ```mermaid
-graph TD
-    A[Raw Multilingual Request] --> B[1. IntentParser]
-    B --> C[2. LocationResolver]
-    C --> D[3. ProviderDiscoverer]
-    D --> E[4. ProviderRanker]
-    E --> F[5. DecisionMaker]
-    F --> G[6. DynamicPricing]
-    G --> H[7. BookingExecutor]
-    H --> I[8. FollowUpManager]
-    I --> J[Traceable Confirmation]
+flowchart TD
+    %% Theme Definitions
+    classDef mainBound fill:#0E8F46,stroke:#0C7A3C,stroke-width:2px,color:#FFFFFF,font-weight:bold,rx:8px,ry:8px;
+    classDef agentBox fill:#FFFFFF,stroke:#0E8F46,stroke-width:1.5px,color:#111111,font-size:13px,rx:6px,ry:6px;
+    classDef stageGroup fill:#F5FBF7,stroke:#A7F3D0,stroke-width:1.5px,color:#065F46,font-weight:bold;
+
+    %% Nodes
+    A([🗣️ Raw Multilingual Input]):::mainBound
     
-    style A fill:#F5FBF7,stroke:#0E8F46,stroke-width:2px
-    style B fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style C fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style D fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style E fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style F fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style G fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style H fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style I fill:#E6F4EA,stroke:#137333,stroke-width:1px
-    style J fill:#F5FBF7,stroke:#0E8F46,stroke-width:2px
+    subgraph Stage1 ["Stage 1: Input Analysis"]
+        B["🤖 1. IntentParser<br>(Extracts service, schedule, and area)"]:::agentBox
+    end
+    
+    subgraph Stage2 ["Stage 2: Geolocation & Discovery"]
+        C["📍 2. LocationResolver<br>(Translates neighborhood terms to GPS)"]:::agentBox
+        D["🔍 3. ProviderDiscoverer<br>(Adaptive-radius spatial query)"]:::agentBox
+    end
+    
+    subgraph Stage3 ["Stage 3: Selection & Pricing"]
+        E["📈 4. ProviderRanker<br>(Multi-factor quality/availability scoring)"]:::agentBox
+        F["🎯 5. DecisionMaker<br>(Applies operational constraints & selects best)"]:::agentBox
+        G["💰 6. DynamicPricing<br>(Calculates fair transparent quote in PKR)"]:::agentBox
+    end
+    
+    subgraph Stage4 ["Stage 4: Execution & Feedback"]
+        H["🔐 7. BookingExecutor<br>(Secures transaction & writes to SQLite)"]:::agentBox
+        I["🔔 8. FollowUpManager<br>(Prepares FCM survey & follow-up logs)"]:::agentBox
+    end
+    
+    J([🌿 Traceable Success & Booking ID]):::mainBound
+
+    %% Connections
+    A --> Stage1
+    Stage1 --> Stage2
+    Stage2 --> Stage3
+    Stage3 --> Stage4
+    Stage4 --> J
+
+    %% Sequential pipeline flow inside stages
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+
+    %% Apply Stage Group Styles
+    style Stage1 fill:#F5FBF7,stroke:#A7F3D0,stroke-width:1px
+    style Stage2 fill:#F5FBF7,stroke:#A7F3D0,stroke-width:1px
+    style Stage3 fill:#F5FBF7,stroke:#A7F3D0,stroke-width:1px
+    style Stage4 fill:#F5FBF7,stroke:#A7F3D0,stroke-width:1px
 ```
 
 ---
