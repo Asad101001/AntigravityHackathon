@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# Auto-cancel any active runs of the same workflow on the same branch if a new push arrives
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-release:
     name: Build and Publish APK
