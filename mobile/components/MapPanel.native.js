@@ -162,6 +162,8 @@ export default function MapPanel({
   style,
   initialRegion: initialRegionOverride,
   onPress,
+  onRegionChange,
+  onRegionChangeComplete,
 }) {
   const mapRef  = useRef(null);
   const fitDone = useRef(false);  // guard: only fit once after map is ready
@@ -278,6 +280,8 @@ export default function MapPanel({
         mapType="standard"
         customMapStyle={LIGHT_MAP_STYLE}
         onPress={onPress}
+        onRegionChange={onRegionChange}
+        onRegionChangeComplete={onRegionChangeComplete}
         moveOnMarkerPress={false} // Prevent map repositioning on tap
         rotateEnabled={false}     // Keeps orientation consistent
       >
@@ -654,19 +658,46 @@ const styles = StyleSheet.create({
   },
 });
 
-// ── Enhanced custom map style — better text visibility ────────────────────────
+// ── Rich custom map style — informative, beautiful, premium ───────────────────
 const LIGHT_MAP_STYLE = [
-  { elementType: 'geometry',              stylers: [{ color: '#EEF8F2' }] },
-  { elementType: 'labels.text.fill',      stylers: [{ color: '#3D5A4A' }] },
-  { elementType: 'labels.text.stroke',    stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
-  { featureType: 'road',          elementType: 'geometry',   stylers: [{ color: '#FFFFFF' }] },
-  { featureType: 'road',          elementType: 'labels.text.fill', stylers: [{ color: '#51645A' }] },
-  { featureType: 'road.arterial', elementType: 'geometry',   stylers: [{ color: '#D8F0E1' }] },
-  { featureType: 'road.highway',  elementType: 'geometry',   stylers: [{ color: '#C2EDD5' }] },
-  { featureType: 'water',         elementType: 'geometry',   stylers: [{ color: '#CDEFE0' }] },
-  { featureType: 'poi',           elementType: 'labels',     stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit',       elementType: 'labels',     stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative.neighborhood', elementType: 'labels.text', stylers: [{ visibility: 'simplified' }] },
-  { featureType: 'administrative.neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#3D5A4A' }] },
-  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#2D4A3A' }] },
+  // Base geometry — warm light green-grey
+  { elementType: 'geometry',              stylers: [{ color: '#F0F5F1' }] },
+  { elementType: 'labels.text.fill',      stylers: [{ color: '#2D4A3A' }] },
+  { elementType: 'labels.text.stroke',    stylers: [{ color: '#FFFFFF' }, { weight: 3.5 }] },
+  // Roads — clear hierarchy
+  { featureType: 'road.highway',  elementType: 'geometry.fill',   stylers: [{ color: '#D4E8DA' }] },
+  { featureType: 'road.highway',  elementType: 'geometry.stroke', stylers: [{ color: '#B8D9C2' }] },
+  { featureType: 'road.highway',  elementType: 'labels.text.fill', stylers: [{ color: '#2A5A3F' }] },
+  { featureType: 'road.arterial', elementType: 'geometry.fill',   stylers: [{ color: '#E2EFE6' }] },
+  { featureType: 'road.arterial', elementType: 'labels.text.fill', stylers: [{ color: '#3D6B50' }] },
+  { featureType: 'road.local',    elementType: 'geometry.fill',   stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road.local',    elementType: 'labels.text.fill', stylers: [{ color: '#5A7D66' }] },
+  // Water — ACTUALLY blue, not green
+  { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#B8D4E8' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4A7FA5' }] },
+  // Parks & green spaces
+  { featureType: 'poi.park',             elementType: 'geometry.fill', stylers: [{ color: '#D5ECD8' }] },
+  { featureType: 'poi.park',             elementType: 'labels.text.fill', stylers: [{ color: '#3D7A4E' }] },
+  // Show useful POIs — hospitals, schools, government
+  { featureType: 'poi.medical',          elementType: 'labels', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.school',           elementType: 'labels', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.government',       elementType: 'labels', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.place_of_worship', elementType: 'labels', stylers: [{ visibility: 'on' }] },
+  // Hide noisy commercial POIs
+  { featureType: 'poi.business',         elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.attraction',       elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  // POI icon styling
+  { featureType: 'poi', elementType: 'labels.text.fill',  stylers: [{ color: '#5A8267' }] },
+  { featureType: 'poi', elementType: 'geometry.fill',     stylers: [{ color: '#E0EDE3' }] },
+  // Transit — show major stations
+  { featureType: 'transit.station',      elementType: 'labels', stylers: [{ visibility: 'on' }] },
+  { featureType: 'transit.line',         elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  // Neighborhoods and localities — PROMINENT
+  { featureType: 'administrative.neighborhood', elementType: 'labels.text', stylers: [{ visibility: 'on' }] },
+  { featureType: 'administrative.neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#2D5A3E' }, { weight: 1 }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#1A4028' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text', stylers: [{ visibility: 'on' }] },
+  // Landscape
+  { featureType: 'landscape.man_made', elementType: 'geometry.fill', stylers: [{ color: '#EDF3EE' }] },
+  { featureType: 'landscape.natural',  elementType: 'geometry.fill', stylers: [{ color: '#E5F0E7' }] },
 ];

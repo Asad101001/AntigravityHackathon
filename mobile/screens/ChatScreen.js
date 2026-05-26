@@ -9,9 +9,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Modal,
-  FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,21 +76,17 @@ export default function ChatScreen({ navigation }) {
   const [messages, setMessages] = useState([]);
   
   const [chatThreads, setChatThreads] = useState([]);
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [loadingBookings, setLoadingBookings] = useState(false);
+  
 
   useEffect(() => {
     const fetchThreads = async () => {
       try {
-        setLoadingBookings(true);
         const response = await apiClient.get('/chat/threads');
         if (response.data.success && response.data.threads) {
           setChatThreads(response.data.threads);
         }
       } catch (error) {
         console.error('Failed to fetch chats:', error);
-      } finally {
-        setLoadingBookings(false);
       }
     };
     fetchThreads();
@@ -231,8 +224,6 @@ export default function ChatScreen({ navigation }) {
             },
           ]);
           
-          // Show booking modal so user can select a booking
-          setShowBookingModal(true);
           // Store the user's original message so we can send it again after selection
           global.pendingOrderMessage = content;
         } else {
@@ -290,7 +281,6 @@ export default function ChatScreen({ navigation }) {
     };
     
     setActiveBooking(bookingData);
-    setShowBookingModal(false);
     
     setMessages(prev => [
       ...prev,
@@ -325,7 +315,7 @@ export default function ChatScreen({ navigation }) {
 
       <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 8) }]}>
 
-        {/* Minimal back-button nav bar — replaces the heavy context card */}
+        {/* Minimal back-button nav bar */}
         <View style={styles.minimalNav}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -344,6 +334,54 @@ export default function ChatScreen({ navigation }) {
             </Text>
           </View>
         </View>
+
+        {/* ── Thread Selector Strip ─────────────────────────────── */}
+        {chatThreads.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.threadStrip}
+            style={styles.threadStripWrap}
+          >
+            {chatThreads.map(thread => {
+              const isActive = activeBooking.id === thread.id;
+              return (
+                <TouchableOpacity
+                  key={thread.id}
+                  style={[styles.threadChip, isActive && styles.threadChipActive]}
+                  onPress={() => {
+                    setActiveBooking({
+                      id: thread.id,
+                      kind: thread.kind,
+                      service: thread.subtitle,
+                      provider: thread.title,
+                      area: thread.subtitle,
+                      slot: thread.booking?.booking_start_time || null,
+                      quote_pkr: thread.booking?.quote_pkr || null,
+                      status: thread.booking?.status || 'active',
+                    });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={thread.kind === 'assistant' ? 'logo-android' : 'person-outline'}
+                    size={14}
+                    color={isActive ? '#FFFFFF' : COLORS.primary}
+                  />
+                  <Text
+                    style={[styles.threadChipText, isActive && styles.threadChipTextActive]}
+                    numberOfLines={1}
+                  >
+                    {thread.title}
+                  </Text>
+                  {thread.is_pinned && (
+                    <Text style={{ fontSize: 10 }}>📌</Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
 
         {/* Message Scroll View */}
         <ScrollView
@@ -393,18 +431,9 @@ export default function ChatScreen({ navigation }) {
           )}
         </ScrollView>
 
-        {/* Message Composer */}
+        {/* Message Composer — send button directly beside input */}
         <View style={styles.composerWrap}>
           <View style={styles.composer}>
-            {chatThreads.length > 0 && (
-              <TouchableOpacity
-                style={styles.attachButton}
-                onPress={() => setShowBookingModal(true)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="chatbubbles-outline" size={24} color={COLORS.primary} />
-              </TouchableOpacity>
-            )}
             <TextInput
               style={styles.composerInput}
               value={input}
@@ -426,74 +455,6 @@ export default function ChatScreen({ navigation }) {
           </View>
         </View>
       </View>
-
-      {/* Chat Threads List Modal */}
-      <Modal
-        visible={showBookingModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowBookingModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Chat Threads</Text>
-              <TouchableOpacity onPress={() => setShowBookingModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            {loadingBookings ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-                <Text style={styles.loadingText}>Loading chats...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={chatThreads}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.bookingsList}
-                renderItem={({ item: thread }) => (
-                  <TouchableOpacity
-                    style={[styles.bookingRow, thread.is_pinned && styles.pinnedThread]}
-                    onPress={() => {
-                      setActiveBooking({
-                        id: thread.id,
-                        kind: thread.kind,
-                        service: thread.subtitle,
-                        provider: thread.title,
-                        area: thread.subtitle,
-                        slot: thread.booking?.booking_start_time || null,
-                        quote_pkr: thread.booking?.quote_pkr || null,
-                        status: thread.booking?.status || 'active',
-                      });
-                      setShowBookingModal(false);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.bookingRowLeft}>
-                      <View style={[styles.serviceIcon, { backgroundColor: thread.is_pinned ? 'rgba(250, 204, 21, 0.1)' : 'rgba(14,143,70,0.1)' }]}>
-                        <Ionicons name={thread.kind === 'assistant' ? 'logo-android' : 'person-outline'} size={20} color={thread.is_pinned ? 'rgb(250, 204, 21)' : COLORS.primary} />
-                      </View>
-                      <View style={styles.bookingInfo}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={styles.bookingProvider}>{thread.title}</Text>
-                          {thread.is_pinned && <Text style={{ color: 'rgb(250, 204, 21)', fontSize: 12, fontWeight: '900' }}>📌 PINNED</Text>}
-                        </View>
-                        <Text style={styles.bookingMeta}>{thread.subtitle}</Text>
-                        <Text style={styles.bookingTime} numberOfLines={1}>{thread.preview}</Text>
-                      </View>
-                    </View>
-                    <View style={styles.bookingRowRight}>
-                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                    </View>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-          </View>
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -606,6 +567,34 @@ const styles = StyleSheet.create({
   navTitleBlock: { flex: 1 },
   navTitle: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 },
   navSub: { color: COLORS.primary, fontSize: 11, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
+
+  // Thread selector strip
+  threadStripWrap: { maxHeight: 42, marginBottom: 4 },
+  threadStrip: { paddingHorizontal: 4, gap: 8, alignItems: 'center' },
+  threadChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(14,143,70,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.12)',
+  },
+  threadChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  threadChipText: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '800',
+    maxWidth: 110,
+  },
+  threadChipTextActive: {
+    color: '#FFFFFF',
+  },
   switchButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -666,7 +655,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
     flexShrink: 0,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   sendButtonDisabled: {
     opacity: 0.45,

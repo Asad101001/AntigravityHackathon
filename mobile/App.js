@@ -25,11 +25,12 @@ import AppHeader from './components/AppHeader';
 import Sidebar from './components/Sidebar';
 import LiquidGlass from './components/LiquidGlass';
 import { ToastProvider } from './components/Toast';
-import { COLORS, SHADOWS } from './theme';
+import { COLORS, SHADOWS, darkTheme } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
 import { initNotificationHandler, configureNotifications } from './notifications';
 import { AppContextProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Initialize notification handler as early as possible
@@ -141,10 +142,10 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
 
 function AppNavigator() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme, theme } = useTheme();
   const navigationRef = useRef(null);
   const [currentRouteName, setCurrentRouteName] = useState('Splash');
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [tabVisible, setTabVisible] = useState(true);
   const idleTimer = useRef(null);
   const lastOffset = useRef(0);
@@ -192,13 +193,13 @@ function AppNavigator() {
 
   return (
     <TabBarVisibilityContext.Provider value={contextValue}>
-      <View style={[styles.appShell, darkMode && styles.appShellDim]}>
+      <View style={[styles.appShell, isDark && { backgroundColor: theme.colors.bg }]}>
         <NavigationContainer
           ref={navigationRef}
           onReady={() => setCurrentRouteName(getCurrentRouteName(navigationRef.current?.getRootState()))}
           onStateChange={state => setCurrentRouteName(getCurrentRouteName(state))}
         >
-          <StatusBar style="dark" />
+          <StatusBar style={isDark ? 'light' : 'dark'} />
           <Stack.Navigator
             initialRouteName="Splash"
             screenOptions={{
@@ -247,8 +248,8 @@ function AppNavigator() {
         <Sidebar
           visible={sidebarVisible}
           onClose={() => setSidebarVisible(false)}
-          darkMode={darkMode}
-          onToggleTheme={setDarkMode}
+          darkMode={isDark}
+          onToggleTheme={toggleTheme}
           onNavigateTrace={() => navigationRef.current?.navigate('AgentTrace')}
           currentUser={user}
           onLogout={logout}
@@ -288,11 +289,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <AuthGate />
-        </ToastProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <AuthGate />
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

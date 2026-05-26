@@ -1,9 +1,44 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Image, Linking, Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Linking, Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from './LiquidGlass';
 import { COLORS, RADII, SHADOWS } from '../theme';
+
+const DASHBOARD_URL = 'https://antigravity-hackathon.vercel.app';
+
+// Initials-based avatar — no external image dependency
+function InitialsAvatar({ name, size = 72 }) {
+  const initials = (name || 'A U')
+    .split(' ')
+    .map(w => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  return (
+    <View style={[avatarStyles.circle, { width: size, height: size, borderRadius: size * 0.18 }]}>
+      <Text style={[avatarStyles.text, { fontSize: size * 0.36 }]}>{initials}</Text>
+    </View>
+  );
+}
+
+const avatarStyles = StyleSheet.create({
+  circle: {
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.card,
+  },
+  text: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+});
 
 function SidebarRow({ icon, label, helper, onPress, right, isDanger }) {
   return (
@@ -32,6 +67,7 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
     ]).start();
   }, [fade, translateX, visible]);
 
+  const openDashboard = () => Linking.openURL(DASHBOARD_URL);
   const openRate = () => Linking.openURL('https://expo.dev/');
 
   return (
@@ -48,30 +84,55 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
               </TouchableOpacity>
             </View>
 
+            {/* Profile block with initials avatar */}
             <View style={styles.profileBlock}>
-              <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80' }} 
-                style={styles.profileAvatar} 
-              />
+              <InitialsAvatar name={currentUser?.displayName} size={72} />
               <View style={styles.profileCopy}>
                 <Text style={styles.profileName}>{currentUser?.displayName || 'Asaaniyat User'}</Text>
+                <Text style={styles.profileEmail} numberOfLines={1}>{currentUser?.email || 'user@asaaniyat.pk'}</Text>
                 <Text style={styles.profileMeta}>Karachi, Pakistan</Text>
               </View>
             </View>
 
             <View style={styles.divider} />
 
+            {/* Navigation rows */}
             <View style={styles.section}>
-              <SidebarRow icon="star-outline" label="Rate Our App" helper="Share your feedback" onPress={openRate} />
-              <SidebarRow icon="git-branch-outline" label="Agent Traces" helper="View orchestrator decisions" onPress={() => { onClose?.(); onNavigateTrace?.(); }} />
+              {/* Dashboard link — prominent */}
               <SidebarRow
-                icon={darkMode ? 'moon-outline' : 'sunny-outline'}
-                label="Theme Toggle"
-                helper={darkMode ? 'Soft dark glass enabled' : 'Asaaniyat light branding'}
-                right={<Switch value={darkMode} onValueChange={onToggleTheme} trackColor={{ false: '#DDEBE3', true: COLORS.accent }} thumbColor="#FFFFFF" />}
+                icon="grid-outline"
+                label="Admin Dashboard"
+                helper="View analytics & agent traces"
+                onPress={() => { onClose?.(); openDashboard(); }}
+              />
+              <SidebarRow
+                icon="git-branch-outline"
+                label="Agent Traces"
+                helper="View orchestrator decisions"
+                onPress={() => { onClose?.(); onNavigateTrace?.(); }}
+              />
+              <SidebarRow
+                icon="star-outline"
+                label="Rate Our App"
+                helper="Share your feedback"
+                onPress={openRate}
+              />
+              <SidebarRow
+                icon={darkMode ? 'moon' : 'sunny-outline'}
+                label="Dark Mode"
+                helper={darkMode ? 'Dim theme active' : 'Light branding active'}
+                right={
+                  <Switch
+                    value={darkMode}
+                    onValueChange={onToggleTheme}
+                    trackColor={{ false: '#DDEBE3', true: COLORS.accent }}
+                    thumbColor="#FFFFFF"
+                  />
+                }
               />
             </View>
 
+            {/* Footer */}
             <View style={styles.footer}>
               <SidebarRow
                 icon="log-out-outline"
@@ -80,6 +141,7 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
                 right={<View />}
                 onPress={async () => { await onLogout?.(); onClose?.(); }}
               />
+              <Text style={styles.versionText}>Asaaniyat v1.0.0 · AI Seekho 2026</Text>
             </View>
           </LiquidGlass>
         </Animated.View>
@@ -91,14 +153,14 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
 const styles = StyleSheet.create({
   modalRoot: { flex: 1 },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(9,38,22,0.46)' },
-  drawerWrap: { position: 'absolute', top: 0, left: 0, bottom: 0, width: '70%', paddingLeft: 12 },
+  drawerWrap: { position: 'absolute', top: 0, left: 0, bottom: 0, width: '72%', paddingLeft: 12 },
   drawer: { flex: 1 },
-  drawerContent: { flex: 1, padding: 16, backgroundColor: 'rgba(255,255,255,0.2)' },
-  profileHeaderRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 12 },
+  drawerContent: { flex: 1, padding: 18, backgroundColor: 'rgba(255,255,255,0.2)' },
+  profileHeaderRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
   profileBlock: { alignItems: 'flex-start', gap: 12, marginBottom: 16, paddingHorizontal: 4 },
-  profileAvatar: { width: 72, height: 72, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF', ...SHADOWS.card },
   profileCopy: { width: '100%' },
   profileName: { color: COLORS.textPrimary, fontSize: 20, fontWeight: '900', marginTop: 8 },
+  profileEmail: { color: COLORS.primary, fontSize: 12, fontWeight: '700', marginTop: 2 },
   profileMeta: { marginTop: 2, color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 12, width: '100%' },
   closeButton: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
@@ -111,4 +173,5 @@ const styles = StyleSheet.create({
   rowLabelDanger: { color: '#DC2626' },
   rowHelper: { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
   footer: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: 'rgba(14,143,70,0.06)', paddingTop: 16 },
+  versionText: { textAlign: 'center', color: COLORS.textMuted, fontSize: 11, fontWeight: '600', marginTop: 12, letterSpacing: 0.3 },
 });

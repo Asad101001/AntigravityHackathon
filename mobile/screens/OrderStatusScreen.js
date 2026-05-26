@@ -32,82 +32,121 @@ function getStageIndex(status) {
   return map[status?.toLowerCase()] ?? 0;
 }
 
-// ── Simulated Map Tracker ──────────────────────────────────────────────────
-function SimulatedMapTracker({ stageIndex }) {
-  const dotAnim = useRef(new Animated.Value(0)).current;
+// ── Simulated Map Tracker — Curved path with animated provider ─────────────
+function SimulatedMapTracker({ stageIndex, booking }) {
+  const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const carPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Animate the dot position based on the stage
-    Animated.timing(dotAnim, {
+    // Smoothly animate provider position along the route
+    Animated.timing(progressAnim, {
       toValue: stageIndex / (STAGES.length - 1),
-      duration: 1200,
-      easing: Easing.out(Easing.ease),
+      duration: 2000,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: false,
     }).start();
 
-    // Pulse animation for the moving dot
+    // Pulse for destination marker
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.4, duration: 800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.5, duration: 1000, easing: Easing.out(Easing.ease), useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.in(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+
+    // Car glow pulse
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(carPulse, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.timing(carPulse, { toValue: 0, duration: 600, useNativeDriver: true }),
       ])
     ).start();
   }, [stageIndex]);
 
-  const dotLeft = dotAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['5%', '85%'],
+  const carLeft = progressAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['8%', '30%', '50%', '72%', '85%'],
   });
+
+  const carTop = progressAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['55%', '35%', '50%', '38%', '52%'],
+  });
+
+  const statusMessages = [
+    { text: 'Provider dispatched', icon: 'navigate', color: '#2F80ED' },
+    { text: 'On the way to you', icon: 'car', color: '#D97706' },
+    { text: 'Almost there!', icon: 'location', color: COLORS.primary },
+    { text: 'Provider arrived — working', icon: 'construct', color: COLORS.primary },
+    { text: 'Service complete ✓', icon: 'checkmark-circle', color: '#16A34A' },
+  ];
+
+  const msg = statusMessages[Math.min(stageIndex, statusMessages.length - 1)];
 
   return (
     <View style={trackerStyles.container}>
-      {/* Mini map background with grid */}
       <View style={trackerStyles.mapBg}>
-        {/* Grid lines */}
+        {/* Subtle grid for road texture */}
+        {[0, 1, 2, 3, 4, 5].map(i => (
+          <View key={`h-${i}`} style={[trackerStyles.gridLine, { top: `${i * 20}%` }]} />
+        ))}
         {[0, 1, 2, 3, 4].map(i => (
-          <View key={`h-${i}`} style={[trackerStyles.gridLine, { top: `${i * 25}%` }]} />
-        ))}
-        {[0, 1, 2, 3].map(i => (
-          <View key={`v-${i}`} style={[trackerStyles.gridLineV, { left: `${(i + 1) * 25}%` }]} />
+          <View key={`v-${i}`} style={[trackerStyles.gridLineV, { left: `${(i + 1) * 20}%` }]} />
         ))}
 
-        {/* Route path */}
-        <View style={trackerStyles.routePath} />
+        {/* Curved route path — segmented */}
+        <View style={[trackerStyles.routeSegment, { top: '55%', left: '10%', width: '25%', transform: [{ rotate: '-18deg' }] }]} />
+        <View style={[trackerStyles.routeSegment, { top: '38%', left: '28%', width: '22%', transform: [{ rotate: '12deg' }] }]} />
+        <View style={[trackerStyles.routeSegment, { top: '46%', left: '45%', width: '20%', transform: [{ rotate: '-8deg' }] }]} />
+        <View style={[trackerStyles.routeSegment, { top: '40%', left: '60%', width: '18%', transform: [{ rotate: '15deg' }] }]} />
+        <View style={[trackerStyles.routeSegment, { top: '50%', left: '74%', width: '16%', transform: [{ rotate: '-5deg' }] }]} />
 
-        {/* Start point (Home) */}
+        {/* Provider start point */}
         <View style={trackerStyles.startPoint}>
-          <Ionicons name="home" size={12} color="#FFFFFF" />
+          <View style={trackerStyles.startDot}>
+            <Ionicons name="storefront" size={14} color="#FFFFFF" />
+          </View>
+          <Text style={trackerStyles.endpointLabel}>Provider</Text>
         </View>
 
-        {/* End point (Destination) */}
+        {/* Destination (Your location) */}
         <View style={trackerStyles.endPoint}>
-          <Ionicons name="location" size={12} color="#FFFFFF" />
+          <Animated.View style={[trackerStyles.endPulse, { transform: [{ scale: pulseAnim }] }]} />
+          <View style={trackerStyles.endDot}>
+            <Ionicons name="home" size={14} color="#FFFFFF" />
+          </View>
+          <Text style={trackerStyles.endpointLabel}>You</Text>
         </View>
 
-        {/* Animated moving dot */}
-        <Animated.View style={[trackerStyles.movingDotWrap, { left: dotLeft }]}>
-          <Animated.View style={[trackerStyles.movingDotPulse, { transform: [{ scale: pulseAnim }] }]} />
-          <View style={trackerStyles.movingDot}>
-            <Ionicons name="car" size={14} color="#FFFFFF" />
+        {/* Animated provider vehicle */}
+        <Animated.View style={[trackerStyles.carWrap, { left: carLeft, top: carTop }]}>
+          <Animated.View style={[trackerStyles.carGlow, { opacity: carPulse }]} />
+          <View style={trackerStyles.carDot}>
+            <Ionicons name="car" size={16} color="#FFFFFF" />
           </View>
         </Animated.View>
 
-        {/* Status label */}
-        <View style={trackerStyles.statusLabel}>
-          <Ionicons name="navigate" size={10} color={COLORS.primary} />
-          <Text style={trackerStyles.statusLabelText}>
-            {stageIndex <= 1 ? 'Dispatching...' : stageIndex === 2 ? 'On the way!' : stageIndex === 3 ? 'Arrived — Working' : 'Service Complete ✓'}
-          </Text>
+        {/* Status pill overlay */}
+        <View style={trackerStyles.statusPill}>
+          <Ionicons name={msg.icon} size={12} color={msg.color} />
+          <Text style={[trackerStyles.statusPillText, { color: msg.color }]}>{msg.text}</Text>
         </View>
       </View>
 
       {/* ETA bar */}
       <View style={trackerStyles.etaRow}>
-        <Ionicons name="time-outline" size={14} color={COLORS.primary} />
-        <Text style={trackerStyles.etaText}>
-          {stageIndex <= 1 ? 'ETA: ~25 min' : stageIndex === 2 ? 'ETA: ~10 min' : stageIndex === 3 ? 'Provider on-site' : 'Completed'}
-        </Text>
+        <View style={trackerStyles.etaLeft}>
+          <Ionicons name="time-outline" size={16} color={COLORS.primary} />
+          <Text style={trackerStyles.etaText}>
+            {stageIndex <= 1 ? 'ETA: ~25 min' : stageIndex === 2 ? 'ETA: ~10 min' : stageIndex === 3 ? 'Provider on-site' : 'Completed'}
+          </Text>
+        </View>
+        <View style={[trackerStyles.etaBadge, { backgroundColor: msg.color + '18' }]}>
+          <Text style={[trackerStyles.etaBadgeText, { color: msg.color }]}>
+            {STAGES[stageIndex]?.label || 'Unknown'}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -116,15 +155,15 @@ function SimulatedMapTracker({ stageIndex }) {
 const trackerStyles = StyleSheet.create({
   container: {
     marginBottom: 18,
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.1)',
+    borderColor: 'rgba(14,143,70,0.12)',
     backgroundColor: '#EEF8F2',
     ...SHADOWS.card,
   },
   mapBg: {
-    height: 160,
+    height: 180,
     backgroundColor: '#E8F4ED',
     position: 'relative',
     overflow: 'hidden',
@@ -134,109 +173,145 @@ const trackerStyles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(14,143,70,0.06)',
+    backgroundColor: 'rgba(14,143,70,0.04)',
   },
   gridLineV: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(14,143,70,0.06)',
+    backgroundColor: 'rgba(14,143,70,0.04)',
   },
-  routePath: {
+  routeSegment: {
     position: 'absolute',
-    top: '50%',
-    left: '5%',
-    right: '5%',
     height: 4,
-    backgroundColor: 'rgba(14,143,70,0.15)',
+    backgroundColor: 'rgba(14,143,70,0.18)',
     borderRadius: 2,
-    marginTop: -2,
   },
   startPoint: {
     position: 'absolute',
-    left: '3%',
-    top: '42%',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    ...SHADOWS.pressed,
-  },
-  endPoint: {
-    position: 'absolute',
-    right: '3%',
-    top: '42%',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#D97706',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    ...SHADOWS.pressed,
-  },
-  movingDotWrap: {
-    position: 'absolute',
-    top: '38%',
+    left: '4%',
+    top: '46%',
     alignItems: 'center',
   },
-  movingDotPulse: {
-    position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(14,143,70,0.12)',
-    top: -8,
-    left: -8,
-  },
-  movingDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  startDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#2F80ED',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#FFFFFF',
     ...SHADOWS.card,
   },
-  statusLabel: {
+  endPoint: {
     position: 'absolute',
-    bottom: 10,
+    right: '4%',
+    top: '42%',
+    alignItems: 'center',
+  },
+  endPulse: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(14,143,70,0.10)',
+    top: -8,
+  },
+  endDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.card,
+  },
+  endpointLabel: {
+    marginTop: 4,
+    fontSize: 10,
+    fontWeight: '900',
+    color: COLORS.textSecondary,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    overflow: 'hidden',
+    letterSpacing: 0.3,
+  },
+  carWrap: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  carGlow: {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(217,119,6,0.15)',
+  },
+  carDot: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#D97706',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.floating,
+  },
+  statusPill: {
+    position: 'absolute',
+    bottom: 12,
     left: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
+    ...SHADOWS.pressed,
   },
-  statusLabelText: {
-    color: COLORS.primary,
-    fontSize: 11,
+  statusPillText: {
+    fontSize: 12,
     fontWeight: '800',
+    letterSpacing: 0.2,
   },
   etaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+  },
+  etaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   etaText: {
     color: COLORS.textPrimary,
     fontSize: 14,
     fontWeight: '800',
+  },
+  etaBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  etaBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
 });
 

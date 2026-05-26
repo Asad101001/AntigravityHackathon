@@ -1,25 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import MapPanel from '../components/MapPanel';
 import LiquidGlass from '../components/LiquidGlass';
-import { COLORS, RADII } from '../theme';
+import { COLORS, RADII, SHADOWS } from '../theme';
 
-// Tab bar is 74px tall + safe-area bottom inset; add breathing room
 const TAB_BAR_HEIGHT = 74;
 const SHEET_EXTRA_PAD = 16;
 
 const DEFAULT_REGION = {
   latitude:      24.926,
   longitude:     67.092,
-  latitudeDelta: 0.08,
-  longitudeDelta: 0.08,
+  latitudeDelta: 0.04,
+  longitudeDelta: 0.04,
 };
 
 export default function LocationPickerScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
+  const geocodeTimeout = useRef(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const [pin, setPin] = useState(
     route.params?.pickedLocation || {
@@ -29,20 +30,28 @@ export default function LocationPickerScreen({ route, navigation }) {
     }
   );
 
-  // The bottom of the sheet must clear: safe-area bottom + tab bar + extra breathing room
+  const [isMoving, setIsMoving] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+
+  // Crosshair bounce animation
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.15, duration: 900, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 700, easing: Easing.in(Easing.ease),  useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
   const sheetBottom = Math.max(insets.bottom, 10) + TAB_BAR_HEIGHT + SHEET_EXTRA_PAD;
 
   useEffect(() => {
     (async () => {
       try {
-        // Only auto-locate if the user hasn't already pinned something
         if (route.params?.pickedLocation) return;
-
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
           setPin({
             lat:   loc.coords.latitude,
             lng:   loc.coords.longitude,
@@ -55,7 +64,41 @@ export default function LocationPickerScreen({ route, navigation }) {
     })();
   }, [route.params?.pickedLocation]);
 
-  const onPick = async (event) => {
+  // When user pans the map, track the center coordinate
+  const onRegionChange = () => {
+    setIsMoving(true);
+  };
+
+  const onRegionChangeComplete = (region) => {
+    setIsMoving(false);
+    const { latitude, longitude } = region;
+
+    // Update pin coordinates immediately
+    setPin(prev => ({ ...prev, lat: latitude, lng: longitude }));
+
+    // Debounced reverse geocode
+    if (geocodeTimeout.current) clearTimeout(geocodeTimeout.current);
+    geocodeTimeout.current = setTimeout(async () => {
+      setGeocoding(true);
+      try {
+        const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
+        const first = geo?.[0];
+        if (first) {
+          const label = [first.district, first.subregion, first.city].filter(Boolean).slice(0, 2).join(', ') || 'Pinned location';
+          setPin(prev => ({ ...prev, label }));
+        } else {
+          setPin(prev => ({ ...prev, label: 'Selected location' }));
+        }
+      } catch (_) {
+        setPin(prev => ({ ...prev, label: 'Selected location' }));
+      } finally {
+        setGeocoding(false);
+      }
+    }, 600);
+  };
+
+  // Also support direct tap on map
+  const onMapPress = async (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     let label = 'Pinned location';
     try {
@@ -70,8 +113,7 @@ export default function LocationPickerScreen({ route, navigation }) {
 
   const confirm = () => navigation.navigate('Home', { pickedLocation: pin });
 
-  // Sheet height is fixed so map fills the remaining space above it
-  const SHEET_APPROX_HEIGHT = 220;
+  const SHEET_APPROX_HEIGHT = 230;
   const mapBottomMargin = sheetBottom + SHEET_APPROX_HEIGHT;
 
   return (
@@ -84,21 +126,28 @@ export default function LocationPickerScreen({ route, navigation }) {
         initialRegion={{
           latitude:      pin.lat,
           longitude:     pin.lng,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitudeDelta: 0.04,
+          longitudeDelta: 0.04,
         }}
-        onPress={onPick}
-        markers={[
-          {
-            id:         'selected-pin',
-            coordinate: { latitude: pin.lat, longitude: pin.lng },
-            title:       pin.label,
-            pinColor:    COLORS.primary,
-            draggable:   true,
-            onDragEnd:   onPick,
-          },
-        ]}
+        onPress={onMapPress}
+        onRegionChange={onRegionChange}
+        onRegionChangeComplete={onRegionChangeComplete}
+        markers={[]}
       />
+
+      {/* ── CENTER CROSSHAIR — always visible on the map center ──── */}
+      <View style={styles.crosshairWrap} pointerEvents="none">
+        <Animated.View style={[styles.crosshairShadow, { transform: [{ scale: pulseAnim }] }]} />
+        <View style={styles.crosshairPin}>
+          <Ionicons name="location" size={32} color={COLORS.primary} />
+        </View>
+        <View style={styles.crosshairDot} />
+        {isMoving && (
+          <View style={styles.crosshairLabel}>
+            <Text style={styles.crosshairLabelText}>Release to select</Text>
+          </View>
+        )}
+      </View>
 
       <LiquidGlass
         style={[styles.sheet, { bottom: sheetBottom }]}
@@ -107,19 +156,27 @@ export default function LocationPickerScreen({ route, navigation }) {
         radius={RADII.xl}
       >
         <View style={styles.handle} />
-        <Text style={styles.kicker}>Map location</Text>
-        <Text style={styles.title}>Pick where the service is needed</Text>
+        <Text style={styles.kicker}>LOCATION</Text>
+        <Text style={styles.title}>Drag the map to select</Text>
+        <Text style={styles.subtitle}>Move the map so the pin sits on your desired location, then confirm below.</Text>
 
         <View style={styles.locationRow}>
           <View style={styles.locationIcon}>
             <Ionicons name="location" size={18} color={COLORS.primary} />
           </View>
-          <Text style={styles.locationText} numberOfLines={2}>{pin.label}</Text>
+          <View style={styles.locationTextWrap}>
+            <Text style={styles.locationText} numberOfLines={2}>
+              {geocoding ? 'Finding address...' : pin.label}
+            </Text>
+            <Text style={styles.locationCoords}>
+              {pin.lat.toFixed(4)}°N, {pin.lng.toFixed(4)}°E
+            </Text>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.button} onPress={confirm} activeOpacity={0.84}>
+          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
           <Text style={styles.buttonText}>Use this location</Text>
-          <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
         </TouchableOpacity>
       </LiquidGlass>
     </View>
@@ -130,7 +187,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
-    paddingTop: 112,  // below AppHeader
+    paddingTop: 112,
   },
   orb: {
     position: 'absolute',
@@ -145,6 +202,53 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 16,
   },
+
+  // ── Crosshair overlay ──
+  crosshairWrap: {
+    position: 'absolute',
+    top: 112,
+    left: 16,
+    right: 16,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  crosshairShadow: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(14,143,70,0.10)',
+  },
+  crosshairPin: {
+    marginBottom: 32,
+  },
+  crosshairDot: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...SHADOWS.pressed,
+  },
+  crosshairLabel: {
+    position: 'absolute',
+    bottom: '52%',
+    backgroundColor: 'rgba(14,143,70,0.92)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  crosshairLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  // ── Sheet ──
   sheet: {
     position: 'absolute',
     left: 14,
@@ -164,14 +268,26 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
-  title: { color: COLORS.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  title: {
+    color: COLORS.textPrimary,
+    fontSize: 22,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  subtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+    lineHeight: 18,
+  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginVertical: 16,
+    marginVertical: 14,
     backgroundColor: 'rgba(255,255,255,0.68)',
     padding: 12,
     borderRadius: 18,
@@ -179,22 +295,35 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.92)',
   },
   locationIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.accentSoft,
   },
-  locationText: { color: COLORS.textSecondary, fontWeight: '800', flex: 1 },
+  locationTextWrap: { flex: 1 },
+  locationText: {
+    color: COLORS.textPrimary,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  locationCoords: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+    fontFamily: 'monospace',
+  },
   button: {
     backgroundColor: COLORS.primary,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
+    paddingVertical: 16,
     flexDirection: 'row',
     gap: 8,
+    ...SHADOWS.card,
   },
-  buttonText: { color: '#fff', fontWeight: '900' },
+  buttonText: { color: '#fff', fontWeight: '900', fontSize: 16 },
 });

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -40,6 +41,82 @@ const SERVICES_PAGES = [
   ]
 ];
 
+// ── Voice Recording Modal ──────────────────────────────────────────────────
+function VoiceModal({ visible, onClose, onResult }) {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const ringAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.2, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        ])
+      ).start();
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(ringAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(ringAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [visible]);
+
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={voiceStyles.overlay}>
+        <View style={voiceStyles.card}>
+          <TouchableOpacity style={voiceStyles.closeBtn} onPress={onClose}>
+            <Ionicons name="close" size={20} color={COLORS.textMuted} />
+          </TouchableOpacity>
+
+          <Animated.View style={[voiceStyles.ring, { opacity: ringAnim, transform: [{ scale: pulseAnim }] }]} />
+          <Animated.View style={[voiceStyles.micCircle, { transform: [{ scale: pulseAnim }] }]}>
+            <Ionicons name="mic" size={36} color="#FFFFFF" />
+          </Animated.View>
+
+          <Text style={voiceStyles.title}>Listening...</Text>
+          <Text style={voiceStyles.subtitle}>
+            Say what service you need.{'\n'}
+            e.g. "I need a plumber in Gulshan"
+          </Text>
+
+          <View style={voiceStyles.waveRow}>
+            {[0.3, 0.6, 1, 0.7, 0.4, 0.8, 0.5, 0.9, 0.3, 0.6].map((h, i) => (
+              <Animated.View key={i} style={[voiceStyles.waveBar, { height: 20 * h, opacity: ringAnim }]} />
+            ))}
+          </View>
+
+          <Text style={voiceStyles.hint}>
+            Voice input is being configured for Gemini Multimodal.{'\n'}
+            Tap a service below or type your request instead.
+          </Text>
+
+          <TouchableOpacity style={voiceStyles.doneBtn} onPress={onClose}>
+            <Text style={voiceStyles.doneBtnText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const voiceStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(9,38,22,0.55)', justifyContent: 'center', alignItems: 'center' },
+  card: { width: '82%', backgroundColor: '#FFFFFF', borderRadius: 24, padding: 28, alignItems: 'center', ...SHADOWS.elevated },
+  closeBtn: { position: 'absolute', top: 14, right: 14, padding: 6 },
+  ring: { position: 'absolute', top: 40, width: 110, height: 110, borderRadius: 55, borderWidth: 3, borderColor: COLORS.primary },
+  micCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16, ...SHADOWS.card },
+  title: { fontSize: 22, fontWeight: '900', color: COLORS.textPrimary, marginBottom: 6 },
+  subtitle: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, fontWeight: '600' },
+  waveRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginVertical: 18, height: 24 },
+  waveBar: { width: 4, borderRadius: 2, backgroundColor: COLORS.primary },
+  hint: { fontSize: 11, color: COLORS.textMuted, textAlign: 'center', lineHeight: 16, fontWeight: '600', marginBottom: 16 },
+  doneBtn: { backgroundColor: COLORS.chip, paddingHorizontal: 28, paddingVertical: 10, borderRadius: 999 },
+  doneBtnText: { color: COLORS.primary, fontWeight: '900', fontSize: 14 },
+});
+
 export default function HomeScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
@@ -51,6 +128,7 @@ export default function HomeScreen({ route, navigation }) {
   const [cityOpen, setCityOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const carouselOpacity = useRef(new Animated.Value(1)).current;
 
   const switchPage = useCallback((nextPage) => {
@@ -249,7 +327,7 @@ export default function HomeScreen({ route, navigation }) {
             ) : (
               <TouchableOpacity
                 style={[styles.sendButton, { backgroundColor: 'rgba(14,143,70,0.1)' }]}
-                onPress={() => alert('Gemini Multimodal Voice activated.\n(Integration payload ready for expo-av recording)')}
+                onPress={() => setVoiceOpen(true)}
                 activeOpacity={0.82}
               >
                 <Ionicons name="mic" size={20} color={COLORS.primary} />
@@ -363,6 +441,7 @@ export default function HomeScreen({ route, navigation }) {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <VoiceModal visible={voiceOpen} onClose={() => setVoiceOpen(false)} />
     </View>
   );
 }
