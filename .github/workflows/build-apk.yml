@@ -1,0 +1,70 @@
+name: Automated APK Build & Release
+
+on:
+  push:
+    branches:
+      - main # Triggers automatically when code is pushed to main
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+# Required to allow GitHub Actions to publish a Release
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Publish APK
+    runs-on: ubuntu-latest
+    
+    # CRITICAL FIX: Tell the GitHub runner to execute 'run' commands inside the mobile folder
+    defaults:
+      run:
+        working-directory: ./mobile
+
+    steps:
+      - name: 🏗 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './mobile/package-lock.json' # Point cache to the correct subfolder
+
+      - name: ☕ Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🏗 Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }} 
+
+      - name: 📦 Install dependencies
+        run: npm ci # Will execute inside ./mobile
+
+      - name: 🚀 Run Local EAS Build on GitHub VM
+        # Executes in ./mobile, outputting the APK inside the mobile folder
+        run: eas build --platform android --profile preview --local --non-interactive --output=./app-release.apk
+
+      - name: 📦 Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.0.${{ github.run_number }}
+          name: Release v2.0.${{ github.run_number }}
+          body: |
+            ### Automated APK Build
+            - **Version:** 2.0.${{ github.run_number }}
+            - **Build Number:** ${{ github.run_number }}
+            
+            Download the attached APK below to install on your Android device.
+          # GitHub Actions plugins run from the root, so we must point into the mobile folder here
+          files: ./mobile/app-release.apk 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
