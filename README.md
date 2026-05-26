@@ -1,137 +1,157 @@
-<div align="center">
-  <h1>🛠️ Asaaniyat (عسانیت)</h1>
-  <p><b>AI Service Orchestrator for Pakistan's Informal Economy</b></p>
-  <p><i>Google Antigravity Hackathon · Challenge 2</i></p>
+# 🌿 Asaaniyat (عسانیت)
 
-  <p>
-    <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native" />
-    <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
-    <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
-    <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js" />
-    <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-  </p>
-</div>
+<p align="center">
+  <img src="./docs/asaaniyat_banner.png" alt="Asaaniyat Banner" width="100%" />
+</p>
 
-<br />
+<p align="center">
+  <img src="https://img.shields.io/badge/Google_Antigravity_Hackathon-Challenge_2-22C55E?style=for-the-badge&logo=google&logoColor=white" alt="Google Antigravity Hackathon" />
+</p>
 
-## 🌟 Overview
-
-**Asaaniyat** is a mobile-first, agentic AI platform designed to bridge the gap between users and informal service providers (electricians, plumbers, AC technicians, carpenters, painters, and handymen) across Pakistan. 
-
-By leveraging an advanced **8-Agent AI Pipeline**, users can simply describe their needs in **Urdu, Roman Urdu, or English**. The system autonomously parses the intent, discovers local providers, ranks them, calculates a dynamic price, and securely books the service—all within seconds.
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React Native" />
+  <img src="https://img.shields.io/badge/Expo-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo" />
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express-404D59?style=flat-square" alt="Express" />
+  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
+</p>
 
 ---
 
-## ✨ Key Features
+## 🌟 Vision & Overview
 
-- **Multilingual Intent Parsing**: Supports English, Urdu, and Roman Urdu natural language inputs.
-- **Agentic Orchestration**: An 8-stage AI pipeline manages the entire booking lifecycle transparently without user intervention.
-- **Geospatial Provider Discovery**: Matches users with service providers based on real-time distance and area caching.
-- **Intelligent RAG Chat**: Built-in Provider-Chat system powered by Retrieval-Augmented Generation (Groq/Gemini fallbacks) to handle user queries dynamically.
-- **Dark Glassmorphism UI**: A highly polished, native-feeling mobile interface with fluid animations and real-time agent trace visualization.
+**Asaaniyat** is an agentic, mobile-first AI orchestrator designed specifically to empower and organize the informal economy (electricians, plumbers, AC technicians, carpenters, painters, and handymen) across Pakistan.
+
+By leveraging a robust **8-Agent AI Pipeline**, users can state their maintenance and service requests naturally in **Urdu, Roman Urdu, or English**. The system completely automates the service cycle: parsing intent, resolving geospatial coordinates, filtering & ranking providers, determining transparent costs, committing secure transactions, and simulating feedback notifications—all completed within seconds.
 
 ---
 
-## 🤖 The 8-Agent Pipeline
+## 🚀 Key Features
 
-The core intelligence of Asaaniyat is driven by an Antigravity orchestrator managing 8 decoupled agents. They share a unified context, ensuring deterministic and traceable execution.
+* **🗣️ Multilingual Voice & Text Parsing**: Native support for English, standard Urdu, and Roman Urdu dialect inputs.
+* **🤖 Decoupled 8-Agent Pipeline**: Specialized agents executing sequentially over a centralized state manager, providing total transparency and trace logs.
+* **🌿 Light Mint Glassmorphism UI**: Beautiful, premium, native-feeling mobile components with smooth micro-animations and real-time trace timelines.
+* **🛡️ RAG-Augmented Provider Chat**: A secure user-to-provider messaging module utilizing Retrieval-Augmented Generation for contextual inquiries.
+* **📊 Comprehensive Admin Panel**: Web-based operations dashboard with visual KPI trackers, analytical charts, and automated conflict-simulation triggers.
 
-| Step | Agent | Responsibility | Input → Output |
+---
+
+## 🤖 The 8-Agent Orchestration Flow
+
+The execution cycle of any service request is handled transparently by the following specialized agents:
+
+```mermaid
+flowchart LR
+    A[Client Request] --> B[IntentParser]
+    B --> C[LocationResolver]
+    C --> D[ProviderDiscoverer]
+    D --> E[ProviderRanker]
+    E --> F[DecisionMaker]
+    F --> G[DynamicPricing]
+    G --> H[BookingExecutor]
+    H --> I[FollowUpManager]
+    I --> J[Success Confirmation]
+    
+    style A fill:#F5FBF7,stroke:#0E8F46,stroke-width:2px
+    style J fill:#F5FBF7,stroke:#0E8F46,stroke-width:2px
+    style B fill:#E6F4EA,stroke:#137333
+    style C fill:#E6F4EA,stroke:#137333
+    style D fill:#E6F4EA,stroke:#137333
+    style E fill:#E6F4EA,stroke:#137333
+    style F fill:#E6F4EA,stroke:#137333
+    style G fill:#E6F4EA,stroke:#137333
+    style H fill:#E6F4EA,stroke:#137333
+    style I fill:#E6F4EA,stroke:#137333
+```
+
+| Sequence | Agent Name | Primary Responsibility | Input → Output |
 | :---: | :--- | :--- | :--- |
-| **1** | `IntentParser` | Extracts the core service, location, and preferred time from raw multilingual text. | *Raw Text* → `Parsed Intent` |
-| **2** | `LocationResolver` | Converts neighborhood strings (e.g., "G-11/2") into precise geographic coordinates. | *Area String* → `Lat/Lng` |
-| **3** | `ProviderDiscoverer` | Filters the database of providers using geospatial queries within an adaptive radius. | *Service + Location* → `Provider List` |
-| **4** | `ProviderRanker` | Multi-factor scoring based on distance, historical rating, availability, and sentiment. | *Provider List* → `Ranked List` |
-| **5** | `DecisionMaker` | Applies hard business constraints (verified status, slot availability) to select the absolute best match. | *Ranked List* → `Selected Provider` |
-| **6** | `DynamicPricing` | Generates a transparent cost estimation adjusted for distance and urgency. | *Provider + Context* → `PKR Quote` |
-| **7** | `BookingExecutor` | Finalizes the transaction, simulates payment logic, and commits to the database. | *Quote + Provider* → `Booking ID` |
-| **8** | `FollowUpManager` | Schedules future feedback prompts and automated reminders via simulated FCM. | *Booking ID* → `Scheduled Events` |
+| **1** | `IntentParser` | Deciphers raw user query to extract primary service type, preferred schedule, and area. | *Raw Input Text* → `Parsed Intent` |
+| **2** | `LocationResolver` | Maps natural neighborhood terms (e.g., "F-8 Markaz") into high-precision GPS coordinates. | *Area Name String* → `Latitude/Longitude` |
+| **3** | `ProviderDiscoverer`| Performs spatial searches in the provider database within an adaptive geographical radius. | *Service + Coordinates* → `Provider Base List` |
+| **4** | `ProviderRanker` | Calculates multi-factor quality scores (distance, historical ratings, availability). | `Provider Base List` → `Scored Rankings` |
+| **5** | `DecisionMaker` | Applies hard operational business constraints to elect the single best matching professional. | `Scored Rankings` → `Target Selected Provider` |
+| **6** | `DynamicPricing` | Estimates a fair, transparent cost adjusted for distance complexity and task details. | `Selected Provider` → `PKR Quotation` |
+| **7** | `BookingExecutor` | Generates secure transactions, logs analytical tokens, and registers the booking. | `PKR Quotation` → `Unique Booking ID` |
+| **8** | `FollowUpManager` | Prepares automated reminders and scheduling hooks for feedback surveys via FCM. | `Unique Booking ID` → `FCM Triggers` |
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## 🛠️ Local Development & Quick Start
 
-To run the entire stack locally, you will need two separate terminal windows.
+To run the entire ecosystem locally, open separate terminal shells for each service:
 
-### 1. Backend API Server (Node.js)
-
-The backend houses the Antigravity orchestrator, MongoDB database, and REST API.
-
+### 1. Backend Engine (Node.js API)
 ```bash
 cd backend
 npm install
 npm run dev
 ```
+> [!NOTE]
+> Copy `backend/.env.example` to `backend/.env` and supply your `GEMINI_API_KEY` or `GROQ_API_KEY` for live agentic chat. Otherwise, the app gracefully boots in zero-config **Demo Mode** using local fallback rules.
 
-> **Note on LLM Integration:** The backend functions perfectly in "Demo Mode" without any API keys. If you wish to enable the live RAG chat and dynamic reasoning, copy `backend/.env.example` to `backend/.env` and insert your `GROQ_API_KEY` or `GEMINI_API_KEY`.
-
-### 2. Mobile Application (React Native / Expo)
-
-The frontend is built with Expo SDK 54 and automatically attempts to connect to your local backend.
-
+### 2. Mobile Frontend (React Native & Expo)
 ```bash
 cd mobile
 npm install
 npx expo start
 ```
+> [!TIP]
+> Scan the QR code with your phone (iOS Camera or Expo Go App for Android). Ensure both devices share the same local Wi-Fi to establish real-time connections automatically.
 
-> **Network Requirement:** Ensure your mobile device (running the Expo Go app) and your development machine are connected to the same Wi-Fi network. The app will auto-resolve the LAN IP address to connect to the Node.js server.
-
-### 3. Admin Dashboard (Vite / React)
-
-A separate web interface for managing providers and viewing system analytics.
-
+### 3. Operations Panel (Admin Dashboard)
 ```bash
 cd "admin dashboard"
 npm install
 npm run dev
 ```
+> Navigate to [http://localhost:5173](http://localhost:5173) in your web browser. Create an account to gain administrative metrics, charts, and tracing tables.
 
 ---
 
-## 📡 Core API Reference
+## 📡 Essential Core API Endpoints
 
-The backend exposes a clean REST interface. By default, it runs on `http://localhost:3001`.
+The server defaults to port `3001` and supports the following endpoints:
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/service-request` | Executes the main 8-Agent pipeline to fulfill a user request. |
-| `POST` | `/api/chat/message` | Sends a message to the RAG pipeline for grounded provider chat. |
-| `POST` | `/api/chaos/simulate` | Simulates a provider cancellation, triggering the re-routing agents. |
-| `GET` | `/api/booking/:id` | Retrieves detailed information for a specific booking. |
-| `GET` | `/api/logs` | Fetches the raw JSON trace logs of the agent pipeline execution. |
-| `GET` | `/health` | Returns the server status, active version, and uptime. |
+* **`POST /api/service-request`**: Standard entry point executing the entire 8-Agent Pipeline.
+* **`POST /api/chat/message`**: Feeds text queries directly into the localized RAG retrieval context.
+* **`POST /api/chaos/simulate`**: Mimics structural cancellations to demonstrate provider re-routing mechanics.
+* **`GET /api/booking/:id`**: Returns deep database properties for any active booking.
+* **`GET /api/logs`**: Exposes JSON metrics containing trace history records of pipeline executions.
 
 ---
 
-## 📁 Repository Structure
+## 📂 Repository Blueprint
 
 ```text
 Asaaniyat/
-├── backend/                  # Express server & Antigravity 8-Agent Orchestrator
-│   ├── agents/               # Individual Agent logic classes
-│   ├── orchestrator/         # Pipeline control flow
-│   ├── data/                 # Mock databases (Providers, Coordinates)
-│   └── routes/               # API Endpoints
-├── mobile/                   # React Native (Expo SDK 54) Application
-│   ├── assets/               # Image resources
-│   └── screens/              # UI Views (Home, Loading, Provider Results, etc.)
-├── admin dashboard/          # React/Vite Admin Single Page Application
-├── docs/                     # Additional architectural diagrams and assets
-└── tests/                    # Unit and integration test suites
+├── backend/                  # Express APIs, SQLite Engine, and Antigravity orchestrators
+│   ├── agents/               # Structural Agent classes
+│   ├── orchestrator/         # Shared state context and pipeline sequencer
+│   ├── rag/                  # RAG context and data store
+│   └── server.js             # Entry Express configuration
+├── mobile/                   # React Native & Expo SDK 54 mobile application
+│   ├── screens/              # UI pages (Tracing, Results, Search, Booking Confirmation)
+│   ├── assets/               # Branding icons and loading files
+│   └── theme.js              # Palette configuration for Light Mint Glassmorphism
+├── admin dashboard/          # React & Vite Administration Panel
+│   ├── src/pages/            # Dashboard Analytics, Bookings, Users management
+│   └── src/App.css           # Custom Glassmorphism styles
+├── docs/                     # Visual assets, testing diagrams, and walkthroughs
+└── tests/                    # Analytical tests validating orchestrator execution
 ```
 
 ---
 
-## 📖 Deep Dive Documentation
+## 📖 In-Depth Sub-Documentation
 
-For a more granular look at how the system is built, tested, and deployed, please refer to the dedicated documentation files:
+Explore the specific areas of the platform through our dedicated documentation sheets:
 
-- 🏗️ **[System Architecture (ARCHITECTURE.md)](./ARCHITECTURE.md)** — Core backend structure, 8-Agent pipeline logic, and database schemas.
-- 🎨 **[UI/UX Design & Theming (DESIGN.md)](./DESIGN.md)** — "Dark Glassmorphism" aesthetic, color tokens, and frontend component design.
-- 🧪 **[Quality Assurance (QA.md)](./QA.md)** — Test cases, pipeline verification, and security checklists.
-- ☁️ **[Deployment Guide (DEPLOYMENT.md)](./DEPLOYMENT.md)** — Step-by-step instructions for Google Cloud Run and Expo EAS.
-- 📊 **[Admin Dashboard Guide](./admin%20dashboard/ADMIN_DASHBOARD_README.md)** — Operations and setup for the admin panel.
+* 🏗️ **[System Architecture (ARCHITECTURE.md)](./ARCHITECTURE.md)** — Core backend pipelines, shared state context, and databases.
+* 🎨 **[UI/UX Design Language (DESIGN.md)](./DESIGN.md)** — "Light Mint Glassmorphism" specifications, color tokens, and layout guidelines.
+* 📊 **[Admin Dashboard Operations (admin dashboard/README.md)](./admin%20dashboard/README.md)** — KPI structures, API lists, and management setup.
+* 🧪 **[Quality Assurance & Testing (QA.md)](./QA.md)** — Test scenarios, automated check lists, and pipeline assertions.
+* ☁️ **[Deployment Runbook (DEPLOYMENT.md)](./DEPLOYMENT.md)** — Cloud Run steps and Expo EAS compilation structures.
 
 ---
 
