@@ -343,7 +343,6 @@ export default function ChatScreen({ navigation }) {
               {activeBooking.area || activeBooking.subtitle || 'Assistant'}
             </Text>
           </View>
-          </View>
         </View>
 
         {/* Message Scroll View */}
