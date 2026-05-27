@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Animated,
   KeyboardAvoidingView,
   Keyboard,
   Platform,
@@ -16,6 +18,13 @@ import { useTabBarVisibility } from '../components/TabBarVisibility';
 import { COLORS, SHADOWS } from '../theme';
 import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
+import {
+  requestMicPermission,
+  startRecording,
+  stopRecording,
+  cancelRecording,
+} from '../lib/voiceRecorder';
+import { transcribeAudio } from '../lib/speechToText';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -72,6 +81,9 @@ export default function ChatScreen({ navigation }) {
     kind: 'assistant',
   });
   const [input, setInput] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const micPulse = useRef(new Animated.Value(1)).current;
   
   const [messages, setMessages] = useState([]);
   
@@ -431,7 +443,7 @@ export default function ChatScreen({ navigation }) {
           )}
         </ScrollView>
 
-        {/* Message Composer — send button directly beside input */}
+        {/* Message Composer — send button + voice mic */}
         <View style={styles.composerWrap}>
           <View style={styles.composer}>
             <TextInput
@@ -444,14 +456,73 @@ export default function ChatScreen({ navigation }) {
               returnKeyType="send"
               onSubmitEditing={send}
             />
-            <TouchableOpacity
-              style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
-              onPress={send}
-              activeOpacity={0.85}
-              disabled={!input.trim()}
-            >
-              <Ionicons name="send" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
+            {input.trim() ? (
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={send}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="send" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : isTranscribing ? (
+              <View style={[styles.sendButton, { backgroundColor: '#D97706' }]}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              </View>
+            ) : isRecording ? (
+              <TouchableOpacity
+                style={[styles.sendButton, styles.micRecordingBtn]}
+                onPress={async () => {
+                  setIsRecording(false);
+                  setIsTranscribing(true);
+                  micPulse.stopAnimation();
+                  micPulse.setValue(1);
+                  try {
+                    const { base64, durationMs } = await stopRecording();
+                    if (durationMs < 500) {
+                      setIsTranscribing(false);
+                      return;
+                    }
+                    const result = await transcribeAudio({ base64, mimeType: 'audio/m4a' });
+                    if (result.text) {
+                      setInput('');
+                      await handleSend(result.text);
+                    }
+                  } catch (err) {
+                    console.error('[ChatScreen] Voice transcription error:', err);
+                  } finally {
+                    setIsTranscribing(false);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Animated.View style={{ transform: [{ scale: micPulse }] }}>
+                  <Ionicons name="stop" size={20} color="#FFFFFF" />
+                </Animated.View>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.sendButton, styles.micIdleBtn]}
+                onPress={async () => {
+                  const hasPerm = await requestMicPermission();
+                  if (!hasPerm) return;
+                  try {
+                    await startRecording();
+                    setIsRecording(true);
+                    Animated.loop(
+                      Animated.sequence([
+                        Animated.timing(micPulse, { toValue: 1.2, duration: 500, useNativeDriver: true }),
+                        Animated.timing(micPulse, { toValue: 1, duration: 500, useNativeDriver: true }),
+                      ])
+                    ).start();
+                  } catch (err) {
+                    console.error('[ChatScreen] Recording start error:', err);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="mic" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -659,6 +730,12 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.45,
+  },
+  micIdleBtn: {
+    backgroundColor: 'rgba(14,143,70,0.1)',
+  },
+  micRecordingBtn: {
+    backgroundColor: '#DC2626',
   },
   
   // Message bubbles containers

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from './LiquidGlass';
 import { COLORS, RADII, SHADOWS } from '../theme';
 
-const DASHBOARD_URL = 'https://antigravity-hackathon.vercel.app';
+const DASHBOARD_URL = 'https://asaaniyat-admin.vercel.app/';
 
 // Initials-based avatar — no external image dependency
 function InitialsAvatar({ name, size = 72 }) {
