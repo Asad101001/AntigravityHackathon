@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SHADOWS, RADII } from '../theme';
+import { COLORS, SHADOWS, RADII, FONTS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
 import LiquidGlass from '../components/LiquidGlass';
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   // Typography
   cardHeading: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#0B2A18', // forest black/dark green contrast color
     textAlign: 'center',
     letterSpacing: -0.2,
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   narrationText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -563,16 +563,16 @@ const styles = StyleSheet.create({
   checkLabel: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.textSecondary,
   },
   checkLabelActive: {
     color: '#0B2A18',
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   checkLabelDone: {
     color: COLORS.primary,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
   checkLabelPending: {
     color: 'rgba(81,100,90,0.46)',
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   runningBadgeText: {
     color: '#FFFFFF',
     fontSize: 8,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     textTransform: 'uppercase',
   },
 
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   cardFooterText: {
     fontSize: 12,
     color: COLORS.textMuted,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 
   // Error States
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.danger,
     marginBottom: 8,
   },
@@ -643,6 +643,6 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
 });

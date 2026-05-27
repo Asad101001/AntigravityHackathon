@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config';
+import { COLORS, FONTS } from '../theme';
 
 export default function MapPanel({ style, markers = [] }) {
   return (
@@ -28,10 +28,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
-  title: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', marginTop: 8 },
+  title: { color: COLORS.textPrimary, fontSize: 16, fontFamily: FONTS.heading.fontFamily, marginTop: 8 },
   subtitle: { color: COLORS.textSecondary, textAlign: 'center', fontSize: 12, marginTop: 4, lineHeight: 18 },
   markerList: { alignSelf: 'stretch', marginTop: 12, gap: 6 },
   markerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.bgCard, borderRadius: 12, padding: 8 },
   dot: { width: 9, height: 9, borderRadius: 5 },
-  markerText: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700', flex: 1 },
+  markerText: { color: COLORS.textSecondary, fontSize: 11, fontFamily: FONTS.bold.fontFamily, flex: 1 },
 });

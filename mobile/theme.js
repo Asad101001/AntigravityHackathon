@@ -13,8 +13,11 @@ export const PALETTE = {
   emeraldInk: '#0B2A18',
   white: '#FFFFFF',
   amber: '#D97706',
+  gold: '#F59E0B',
+  goldGlow: 'rgba(245, 158, 11, 0.2)',
   red: '#DC2626',
   blue: '#2F80ED',
+  teal: '#0D9488',
 };
 
 export const lightTheme = {
@@ -32,6 +35,9 @@ export const lightTheme = {
     primaryGlow: 'rgba(14,143,70,0.16)',
     accent: PALETTE.green500,
     accentSoft: 'rgba(34,197,94,0.13)',
+    accentGold: PALETTE.gold,
+    accentGoldSoft: PALETTE.goldGlow,
+    accentTeal: PALETTE.teal,
     success: '#16A34A',
     warning: PALETTE.amber,
     danger: PALETTE.red,
@@ -103,35 +109,32 @@ export const LINE_HEIGHTS = {
 export const FONTS = {
   regular: {
     fontSize: 15,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
+    fontFamily: 'Inter_400Regular',
     color: COLORS.textPrimary,
     lineHeight: 22,
   },
   bold: {
     fontSize: 15,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: COLORS.textPrimary,
     lineHeight: 22,
   },
   heading: {
     fontSize: 24,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
-    fontWeight: '900',
+    fontFamily: 'Outfit_900Black',
     color: COLORS.textPrimary,
     lineHeight: 30,
     letterSpacing: -0.3,
   },
   subheading: {
     fontSize: 17,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-medium' }),
-    fontWeight: '800',
+    fontFamily: 'Outfit_700Bold',
     color: COLORS.textPrimary,
     lineHeight: 23,
   },
   caption: {
     fontSize: 13,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
+    fontFamily: 'Inter_400Regular',
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
@@ -141,30 +144,30 @@ export const FONTS = {
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
-  // Urdu typography preset — larger, right-aligned, with appropriate weight
+  // Urdu typography preset
   urdu: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'NotoNastaliqUrdu_400Regular',
     color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
-    lineHeight: 24,
+    lineHeight: 32, // increased line height for nastaliq
   },
   urduLarge: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: 'NotoNastaliqUrdu_700Bold',
     color: COLORS.textPrimary,
     textAlign: 'center',
     writingDirection: 'rtl',
-    lineHeight: 32,
+    lineHeight: 44, // increased line height
   },
   urduDisplay: {
     fontSize: 46,
-    fontWeight: '700',
+    fontFamily: 'NotoNastaliqUrdu_700Bold',
     color: PALETTE.emeraldInk,
     textAlign: 'center',
     writingDirection: 'rtl',
-    lineHeight: 58,
+    lineHeight: 70, // increased line height
   },
 };
 

@@ -8,7 +8,8 @@ import React, { createContext, useCallback, useContext, useRef, useState } from 
 import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import LiquidGlass from './LiquidGlass';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 
 const TOAST_TYPES = {
   success: { bg: '#0E8F46', icon: 'checkmark-circle', iconColor: '#FFFFFF', textColor: '#FFFFFF' },
@@ -135,36 +136,40 @@ function ToastItem({ toast, onDismiss }) {
   return (
     <Animated.View
       style={[
-        styles.toast,
-        { backgroundColor: config.bg },
-        !isLight && styles.toastDark,
-        isLight && styles.toastLight,
+        styles.toastContainer,
         { transform: [{ translateY: slideAnim }], opacity: opacityAnim },
       ]}
     >
-      <Ionicons name={config.icon} size={20} color={config.iconColor} style={{ flexShrink: 0 }} />
-      <Text style={[styles.toastText, { color: config.textColor }]} numberOfLines={3}>
-        {toast.message}
-      </Text>
+      <LiquidGlass
+        style={[styles.toastGlass, !isLight && { backgroundColor: config.bg }]}
+        contentStyle={[styles.toast, isLight && styles.toastLight]}
+        intensity={isLight ? 45 : 15}
+        radius={RADII.lg}
+      >
+        <Ionicons name={config.icon} size={20} color={config.iconColor} style={{ flexShrink: 0 }} />
+        <Text style={[styles.toastText, { color: config.textColor }]} numberOfLines={3}>
+          {toast.message}
+        </Text>
 
-      {toast.action && (
-        <TouchableOpacity
-          onPress={() => {
-            toast.action.onPress?.();
-            onDismiss(toast.id);
-          }}
-          style={[styles.toastAction, { borderColor: config.iconColor + '50' }]}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.toastActionText, { color: config.iconColor }]}>
-            {toast.action.label}
-          </Text>
+        {toast.action && (
+          <TouchableOpacity
+            onPress={() => {
+              toast.action.onPress?.();
+              onDismiss(toast.id);
+            }}
+            style={[styles.toastAction, { borderColor: config.iconColor + '50' }]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.toastActionText, { color: config.iconColor }]}>
+              {toast.action.label}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={() => onDismiss(toast.id)} style={styles.toastClose} activeOpacity={0.7}>
+          <Ionicons name="close" size={16} color={config.iconColor} />
         </TouchableOpacity>
-      )}
-
-      <TouchableOpacity onPress={() => onDismiss(toast.id)} style={styles.toastClose} activeOpacity={0.7}>
-        <Ionicons name="close" size={16} color={config.iconColor} />
-      </TouchableOpacity>
+      </LiquidGlass>
     </Animated.View>
   );
 }
@@ -178,27 +183,28 @@ const styles = StyleSheet.create({
     gap: 10,
     pointerEvents: 'box-none',
   },
+  toastContainer: {
+    ...SHADOWS.floating,
+  },
+  toastGlass: {
+    borderRadius: RADII.lg,
+    overflow: 'hidden',
+  },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderRadius: RADII.lg,
-    ...SHADOWS.floating,
-  },
-  toastDark: {
-    // Colored toasts (success, error, warning)
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   toastLight: {
     // Light info toast
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
   },
   toastText: {
     flex: 1,
+    fontFamily: FONTS.bold.fontFamily,
     fontSize: 13,
-    fontWeight: '700',
     lineHeight: 18,
   },
   toastAction: {
@@ -208,8 +214,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   toastActionText: {
-    fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.bold.fontFamily,
+    fontSize: 12,
   },
   toastClose: {
     padding: 2,

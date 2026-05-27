@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   // Calligraphy — larger, bolder Urdu
   urduTitle: {
     fontSize: 46,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: '#0B2A18',
     textAlign: 'center',
     marginBottom: 6,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   // English — bigger
   englishTitle: {
     fontSize: 28,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     textAlign: 'center',
     letterSpacing: 0.5,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   // Subtitle — slightly bigger
   subtitle: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     color: COLORS.textSecondary,
     letterSpacing: 2.5,
     textTransform: 'uppercase',

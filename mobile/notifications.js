@@ -78,7 +78,7 @@ export async function configureNotifications() {
   try {
     // Android: create notification channel with MAX importance for banner display
     if (Platform.OS === 'android') {
-      await N.setNotificationChannelAsync('asaaniyat-service', {
+      await N.setNotificationChannelAsync('asaaniyat-service-v2', {
         name: 'Asaaniyat Service Updates',
         description: 'Real-time updates for your service bookings',
         importance: N.AndroidImportance.MAX,
@@ -129,7 +129,7 @@ export async function sendLocalNotification(title, body, data = {}) {
         data,
         sound: 'default',
         ...(Platform.OS === 'android' && !isExpoGo()
-          ? { channelId: 'asaaniyat-service' }
+          ? { channelId: 'asaaniyat-service-v2' }
           : {}),
       },
       trigger: null, // fire immediately

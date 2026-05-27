@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import { addSessionBooking } from '../sessionBookings';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   },
   localHeaderTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     letterSpacing: -0.4,
   },
@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 4,
   },
-  title: { fontSize: 30, fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
-  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontSize: 14, marginTop: 10, marginBottom: 24, fontWeight: '700', paddingHorizontal: 12 },
+  title: { fontSize: 30, fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
+  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontSize: 14, marginTop: 10, marginBottom: 24, fontFamily: FONTS.bold.fontFamily, paddingHorizontal: 12 },
 
   // Summary Card
   summaryCard: {
@@ -369,13 +369,13 @@ const styles = StyleSheet.create({
   bookingIdLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1,
   },
   bookingIdValue: {
     color: COLORS.textPrimary,
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     marginTop: 2,
   },
   scheduledBadge: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   scheduledBadgeText: {
     color: '#2F80ED',
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 0.5,
   },
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 14 },
@@ -410,19 +410,19 @@ const styles = StyleSheet.create({
   summaryRowLabel: {
     color: COLORS.textMuted,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1,
   },
   summaryRowValue: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     marginTop: 1,
   },
   summaryRowSub: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 1,
   },
 
@@ -450,12 +450,12 @@ const styles = StyleSheet.create({
   proTitle: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   proSubtitle: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
   },
 
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   secondaryButton: {
     width: '100%',
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: COLORS.primary,
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
 
   // Ambient backgrounds

@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 
@@ -364,36 +364,36 @@ const voiceStyles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 18, ...SHADOWS.card,
   },
-  title: { fontSize: 24, fontWeight: '900', color: COLORS.textPrimary, marginBottom: 6, letterSpacing: -0.3 },
-  subtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontWeight: '600', marginBottom: 8 },
-  duration: { fontSize: 32, fontWeight: '900', color: '#DC2626', fontVariant: ['tabular-nums'], marginBottom: 8, letterSpacing: 1 },
+  title: { fontSize: 24, fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, marginBottom: 6, letterSpacing: -0.3 },
+  subtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontFamily: FONTS.bold.fontFamily, marginBottom: 8 },
+  duration: { fontSize: 32, fontFamily: FONTS.heading.fontFamily, color: '#DC2626', fontVariant: ['tabular-nums'], marginBottom: 8, letterSpacing: 1 },
   waveRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginVertical: 14, height: 40 },
   waveBar: { width: 4, borderRadius: 2, minHeight: 4 },
-  hint: { fontSize: 12, color: COLORS.textMuted, textAlign: 'center', fontWeight: '700', marginTop: 4, marginBottom: 8 },
+  hint: { fontSize: 12, color: COLORS.textMuted, textAlign: 'center', fontFamily: FONTS.bold.fontFamily, marginTop: 4, marginBottom: 8 },
   langRow: { flexDirection: 'row', gap: 8, marginTop: 14, marginBottom: 4 },
   langChip: {
     paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999,
     backgroundColor: 'rgba(14,143,70,0.08)', borderWidth: 1, borderColor: 'rgba(14,143,70,0.12)',
   },
-  langChipText: { fontSize: 12, fontWeight: '800', color: COLORS.primary },
+  langChipText: { fontSize: 12, fontFamily: FONTS.subheading.fontFamily, color: COLORS.primary },
   transcriptBox: {
     width: '100%', backgroundColor: '#F5FBF7', borderRadius: 14,
     borderWidth: 1.5, borderColor: 'rgba(22,163,74,0.2)',
     padding: 16, marginBottom: 16, marginTop: 4,
   },
-  transcriptText: { fontSize: 16, fontWeight: '700', color: COLORS.textPrimary, lineHeight: 24, textAlign: 'center' },
+  transcriptText: { fontSize: 16, fontFamily: FONTS.bold.fontFamily, color: COLORS.textPrimary, lineHeight: 24, textAlign: 'center' },
   useBtn: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.primary, paddingHorizontal: 24, paddingVertical: 13,
     borderRadius: 999, marginBottom: 10, ...SHADOWS.card,
   },
-  useBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 15 },
+  useBtnText: { color: '#FFFFFF', fontFamily: FONTS.heading.fontFamily, fontSize: 15 },
   retryBtn: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: 'rgba(14,143,70,0.08)', paddingHorizontal: 20, paddingVertical: 10,
     borderRadius: 999,
   },
-  retryBtnText: { color: COLORS.primary, fontWeight: '900', fontSize: 13 },
+  retryBtnText: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 13 },
 });
 */
 
@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   selectedCityText: {
     color: COLORS.primary,
     fontSize: 13,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   cityOverlayMenu: {
     position: 'absolute',
@@ -779,11 +779,11 @@ const styles = StyleSheet.create({
   cityOverlayText: {
     color: COLORS.textPrimary,
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
   cityOverlayTextActive: {
     color: COLORS.primary,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   pillarLine: {
     width: 1.5,
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
   fetchedLocationText: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
 
   // Focus centerpiece search input box
@@ -828,7 +828,7 @@ const styles = StyleSheet.create({
     height: 54,
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     lineHeight: 22,
   },
   sendButton: {
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: COLORS.textPrimary,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.3,
   },
 
@@ -889,14 +889,14 @@ const styles = StyleSheet.create({
   serviceLabel: {
     color: COLORS.primary,
     fontSize: 15,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     textAlign: 'center',
     lineHeight: 20,
   },
   serviceUrdu: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
     textAlign: 'center',
     writingDirection: 'rtl',
@@ -959,7 +959,7 @@ const styles = StyleSheet.create({
   promoKicker: {
     color: COLORS.primary,
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     marginBottom: 6,
     letterSpacing: -0.2,
   },
@@ -973,7 +973,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 13,
     lineHeight: 19,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginBottom: 12,
   },
   promoDarkText: {
@@ -992,12 +992,12 @@ const styles = StyleSheet.create({
   promoDarkButtonText: {
     color: '#0B2A18',
     fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   promoButtonText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   promoRight: {
     flex: 1,

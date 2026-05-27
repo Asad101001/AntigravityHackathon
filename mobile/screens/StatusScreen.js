@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
-import { COLORS } from '../theme';
+import { COLORS, FONTS } from '../theme';
 import { getActiveBooking, subscribeSessionBookings } from '../sessionBookings';
 import { sendLocalNotification } from '../notifications';
 
@@ -110,28 +110,28 @@ function Action({ icon, label }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.bg },
   content: { paddingHorizontal: 18 },
-  eyebrow: { color: COLORS.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { color: COLORS.textPrimary, fontSize: 30, lineHeight: 36, fontWeight: '900', marginTop: 8, marginBottom: 18 },
+  eyebrow: { color: COLORS.primary, fontSize: 11, fontFamily: FONTS.heading.fontFamily, letterSpacing: 1, textTransform: 'uppercase' },
+  title: { color: COLORS.textPrimary, fontSize: 30, lineHeight: 36, fontFamily: FONTS.heading.fontFamily, marginTop: 8, marginBottom: 18 },
   card: { marginBottom: 16 },
   cardContent: { padding: 18, gap: 18 },
   emptyContent: { padding: 22, alignItems: 'center' },
   emptyIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.accentSoft, marginBottom: 12 },
-  emptyTitle: { color: COLORS.textPrimary, fontSize: 18, fontWeight: '900' },
+  emptyTitle: { color: COLORS.textPrimary, fontSize: 18, fontFamily: FONTS.heading.fontFamily },
   emptyText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 6 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary },
   headerCopy: { flex: 1 },
-  service: { color: COLORS.textPrimary, fontSize: 20, fontWeight: '900' },
-  meta: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '700', marginTop: 3 },
+  service: { color: COLORS.textPrimary, fontSize: 20, fontFamily: FONTS.heading.fontFamily },
+  meta: { color: COLORS.textSecondary, fontSize: 12, fontFamily: FONTS.bold.fontFamily, marginTop: 3 },
   progressTrack: { height: 8, borderRadius: 6, backgroundColor: 'rgba(14,143,70,0.12)', overflow: 'hidden', flexDirection: 'row' },
   progressFill: { height: 8, borderRadius: 6, backgroundColor: COLORS.accent },
   stageRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 5 },
   stageItem: { flex: 1, alignItems: 'center' },
   stageDot: { width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: COLORS.border },
   stageDotDone: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  stageText: { color: COLORS.textMuted, textAlign: 'center', fontSize: 9, fontWeight: '800', marginTop: 5, lineHeight: 12 },
+  stageText: { color: COLORS.textMuted, textAlign: 'center', fontSize: 9, fontFamily: FONTS.subheading.fontFamily, marginTop: 5, lineHeight: 12 },
   stageTextDone: { color: COLORS.textPrimary },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   actionButton: { width: '48%', minHeight: 94, borderRadius: 20, padding: 15, justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: COLORS.borderLight },
-  actionText: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '900' },
+  actionText: { color: COLORS.textPrimary, fontSize: 13, fontFamily: FONTS.heading.fontFamily },
 });

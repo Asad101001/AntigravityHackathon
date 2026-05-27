@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
-import { GLASS, SHADOWS, RADII, COLORS } from '../theme';
+import { GLASS, SHADOWS, RADII, COLORS, FONTS } from '../theme';
 
 export default function LiquidGlass({ children, style, contentStyle, strong = false, radius = RADII.lg }) {
   // Animated shimmer sweep — gives the "liquid" movement feel

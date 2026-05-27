@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Callout, Circle, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SHADOWS } from '../theme';
+import { COLORS, SHADOWS, FONTS } from '../theme';
 
 const DEFAULT_LAT = Number(process.env.EXPO_PUBLIC_DEFAULT_MAP_LAT || 24.8607);
 const DEFAULT_LNG = Number(process.env.EXPO_PUBLIC_DEFAULT_MAP_LNG || 67.0104);
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: COLORS.primary,
     fontSize: 12,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     backgroundColor: 'rgba(255,255,255,0.94)',
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.pressed,
   },
   distanceBadgeInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  distanceText: { fontSize: 12, fontWeight: '900', letterSpacing: 0.3 },
+  distanceText: { fontSize: 12, fontFamily: FONTS.heading.fontFamily, letterSpacing: 0.3 },
 
   pinShell: {
     width: 56,
@@ -569,13 +569,13 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 5,
   },
-  calloutBadgeText: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.6 },
-  calloutName:      { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', lineHeight: 22 },
+  calloutBadgeText: { fontSize: 11, fontFamily: FONTS.heading.fontFamily, textTransform: 'uppercase', letterSpacing: 0.6 },
+  calloutName:      { color: COLORS.textPrimary, fontSize: 16, fontFamily: FONTS.heading.fontFamily, lineHeight: 22 },
   calloutMetaRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  calloutMeta:      { color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
+  calloutMeta:      { color: COLORS.textSecondary, fontSize: 14, fontFamily: FONTS.bold.fontFamily },
   calloutMetaDot:   { color: COLORS.textMuted },
-  calloutPrice:     { color: COLORS.primary, fontSize: 16, fontWeight: '900', marginTop: 4 },
-  calloutCta:       { color: COLORS.primary, fontSize: 13, fontWeight: '900', textAlign: 'right', marginTop: 5 },
+  calloutPrice:     { color: COLORS.primary, fontSize: 16, fontFamily: FONTS.heading.fontFamily, marginTop: 4 },
+  calloutCta:       { color: COLORS.primary, fontSize: 13, fontFamily: FONTS.heading.fontFamily, textAlign: 'right', marginTop: 5 },
 
   // Legend — TOP-LEFT corner, fully visible, wider
   legend: {
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   },
   legendTitle: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textMuted,
     letterSpacing: 1.5,
     marginBottom: 3,
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  legendText: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '800', flex: 1 },
+  legendText: { color: COLORS.textPrimary, fontSize: 13, fontFamily: FONTS.subheading.fontFamily, flex: 1 },
 
   // Re-center button — LARGER with label
   recenterBtn: {
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   recenterText: {
     color: COLORS.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
 
   // Map loading skeleton & fallback
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   mapFallbackText: {
     color: COLORS.textMuted,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 });
 

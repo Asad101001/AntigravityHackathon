@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
 const ICON = require('../assets/icon.png');
@@ -293,7 +293,7 @@ const inputStyles = StyleSheet.create({
   wrap: { marginBottom: 16 },
   label: {
     fontSize: 12,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
     marginBottom: 7,
     letterSpacing: 0.3,
@@ -399,13 +399,13 @@ const styles = StyleSheet.create({
   brand: {
     color: COLORS.primary,
     fontSize: 26,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.5,
   },
   brandUrdu: {
     color: COLORS.textSecondary,
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
     writingDirection: 'rtl',
   },
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 14,
     lineHeight: 21,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginBottom: 20,
   },
 
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   },
   segmentText: {
     color: COLORS.textSecondary,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     fontSize: 13,
   },
   segmentTextActive: { color: '#FFFFFF' },
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#DC2626',
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     lineHeight: 18,
   },
 
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
 
   // Footer
@@ -496,6 +496,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: 11,
     lineHeight: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
   },
 });

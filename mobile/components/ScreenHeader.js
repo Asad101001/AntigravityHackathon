@@ -8,7 +8,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 
 /**
  * @param {object} props
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   stepLabel: {
     color: COLORS.primary,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     marginBottom: 2,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
     letterSpacing: -0.3,
     textAlign: 'center',

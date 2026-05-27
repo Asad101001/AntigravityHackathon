@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 
 const SERVICE_ICON_MAP = {
@@ -261,12 +261,12 @@ const styles = StyleSheet.create({
   stepLabel: {
     color: COLORS.primary,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1.2,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
     letterSpacing: -0.3,
     marginTop: 2,
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   aiBadgeText: {
     color: COLORS.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     letterSpacing: 0.3,
   },
 
@@ -323,18 +323,18 @@ const styles = StyleSheet.create({
   rowLabel: {
     color: COLORS.textMuted,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   rowValue: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     marginTop: 3,
     lineHeight: 22,
   },
-  rowValueSoft: { color: COLORS.textSecondary, fontWeight: '700', fontStyle: 'italic' },
+  rowValueSoft: { color: COLORS.textSecondary, fontFamily: FONTS.bold.fontFamily, fontStyle: 'italic' },
   rowValueUrgent: { color: COLORS.danger },
   rowValueMissing: { color: COLORS.danger },
   statusDot: {
@@ -355,12 +355,12 @@ const styles = StyleSheet.create({
   confidenceLabel: {
     color: COLORS.textMuted,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1,
   },
   confidenceValue: {
     fontSize: 26,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     marginTop: 2,
   },
   confidenceBarTrack: {
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.warning,
     lineHeight: 19,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 
   // Sticky bottom actions
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#FFFFFF',
   },
   editButton: {
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     color: COLORS.primary,
   },
 });

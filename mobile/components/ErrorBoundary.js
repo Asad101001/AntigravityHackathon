@@ -16,6 +16,7 @@ import {
   Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FONTS } from '../theme';
 
 // ---------------------------------------------------------------------------
 class ErrorBoundaryClass extends React.Component {
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#0B2A18',
     textAlign: 'center',
     marginBottom: 8,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     color: '#4B6B58',
     textAlign: 'center',
     lineHeight: 20,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginBottom: 20,
     paddingHorizontal: 8,
   },
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   },
   errorBoxLabel: {
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#DC2626',
     letterSpacing: 1.5,
     marginBottom: 6,
@@ -226,13 +227,13 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 0.2,
   },
   footerText: {
     fontSize: 9,
     color: '#8BA898',
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     textAlign: 'center',

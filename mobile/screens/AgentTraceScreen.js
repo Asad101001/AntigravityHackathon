@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../theme';
+import { COLORS, FONTS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { useAppContext } from '../context/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
@@ -255,7 +255,7 @@ export default function AgentTraceScreen({ route, navigation }) {
                     <DetailBlock icon="📤" title="Output (Raw & Parsed)" color={meta.color}>
                       <SmartSummaryBlock logName={log.name} value={log.output} />
                       <View style={{ marginTop: 8 }}>
-                        <Text style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 4, fontWeight: '700' }}>RAW JSON:</Text>
+                        <Text style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.bold.fontFamily }}>RAW JSON:</Text>
                         <CodeBlock value={log.output} maxLen={400} />
                       </View>
                     </DetailBlock>
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
 
   sectionLabel: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1.5,
     color: COLORS.textMuted,
     textTransform: 'uppercase',
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   reasoningBadgeText: {
     color: COLORS.primary,
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1.5,
   },
   llmChip: {
@@ -441,10 +441,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  llmChipText: { color: COLORS.primary, fontSize: 9, fontWeight: '700' },
+  llmChipText: { color: COLORS.primary, fontSize: 9, fontFamily: FONTS.bold.fontFamily },
   reasoningHeadline: {
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
     marginBottom: 12,
   },
@@ -487,14 +487,14 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.textPrimary,
     textAlign: 'center',
     marginBottom: 14,
   },
   summaryRow:     { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
   summaryItem:    { alignItems: 'center' },
-  summaryValue:   { fontSize: 22, fontWeight: '800', color: COLORS.accent || COLORS.primary },
+  summaryValue:   { fontSize: 22, fontFamily: FONTS.subheading.fontFamily, color: COLORS.accent || COLORS.primary },
   summaryLabel:   { fontSize: 10, color: COLORS.textMuted, marginTop: 4, textTransform: 'uppercase' },
   summaryDivider: { width: 1, height: 30, backgroundColor: COLORS.border },
 
@@ -515,14 +515,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  stepCircleText: { fontSize: 14, fontWeight: '800' },
-  logName:        { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+  stepCircleText: { fontSize: 14, fontFamily: FONTS.subheading.fontFamily },
+  logName:        { fontSize: 14, fontFamily: FONTS.bold.fontFamily, color: COLORS.textPrimary },
   logTiming:      { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
   expandIcon:     { fontSize: 12, color: COLORS.textMuted, marginLeft: 8 },
 
   logDetails: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: COLORS.border },
   detailSection: { marginBottom: 12 },
-  detailTitle:   { fontSize: 11, fontWeight: '700', marginBottom: 6 },
+  detailTitle:   { fontSize: 11, fontFamily: FONTS.bold.fontFamily, marginBottom: 6 },
   detailText:    { fontSize: 12, color: COLORS.textSecondary, lineHeight: 18 },
   codeBlock: {
     backgroundColor: COLORS.bg,
@@ -547,15 +547,15 @@ const styles = StyleSheet.create({
   },
   humanReadableTitle: {
     fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     marginBottom: 6,
     textTransform: 'uppercase',
   },
   hrRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 },
-  hrKey: { fontSize: 12, fontWeight: '800', color: COLORS.textPrimary, textTransform: 'capitalize' },
+  hrKey: { fontSize: 12, fontFamily: FONTS.subheading.fontFamily, color: COLORS.textPrimary, textTransform: 'capitalize' },
   hrValue: { fontSize: 12, color: COLORS.textSecondary, flexShrink: 1, lineHeight: 18 },
-  hrBold: { fontWeight: '900', color: COLORS.textPrimary },
+  hrBold: { fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary },
   timestamp: { fontSize: 10, color: COLORS.textMuted, marginTop: 4 },
 
   timelineCard: {
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   timelineRow:     { flexDirection: 'row', alignItems: 'center', marginBottom: 7 },
-  timelineIdx:     { fontSize: 11, fontWeight: '700', color: COLORS.textSecondary, width: 22, textAlign: 'center' },
+  timelineIdx:     { fontSize: 11, fontFamily: FONTS.bold.fontFamily, color: COLORS.textSecondary, width: 22, textAlign: 'center' },
   timelineBarBg:   { flex: 1, height: 9, backgroundColor: COLORS.border, borderRadius: 5, overflow: 'hidden', marginHorizontal: 8 },
   timelineBarFill: { height: '100%', borderRadius: 5 },
   timelineMs:      { fontSize: 10, color: COLORS.textMuted, width: 44, textAlign: 'right' },
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  exportButtonText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
+  exportButtonText: { fontSize: 14, fontFamily: FONTS.bold.fontFamily, color: '#FFFFFF' },
 
   emptyState: { alignItems: 'center', paddingVertical: 32, gap: 12 },
   emptyStateText: { color: COLORS.textMuted, fontSize: 13, textAlign: 'center', lineHeight: 20 },

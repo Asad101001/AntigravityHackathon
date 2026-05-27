@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
-import { COLORS, SHADOWS } from '../theme';
+import { COLORS, SHADOWS, FONTS } from '../theme';
 
 const STAGES = [
   { key: 'confirmed', label: 'Confirmed',  icon: 'checkmark-circle-outline' },
@@ -233,7 +233,7 @@ const trackerStyles = StyleSheet.create({
   endpointLabel: {
     marginTop: 4,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textSecondary,
     backgroundColor: 'rgba(255,255,255,0.9)',
     paddingHorizontal: 6,
@@ -282,7 +282,7 @@ const trackerStyles = StyleSheet.create({
   },
   statusPillText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     letterSpacing: 0.2,
   },
   etaRow: {
@@ -301,7 +301,7 @@ const trackerStyles = StyleSheet.create({
   etaText: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
   etaBadge: {
     paddingHorizontal: 10,
@@ -310,7 +310,7 @@ const trackerStyles = StyleSheet.create({
   },
   etaBadgeText: {
     fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 0.3,
   },
 });
@@ -450,8 +450,8 @@ const styles = StyleSheet.create({
   },
   content: { padding: 18, paddingTop: 14 },
 
-  heading: { fontSize: 28, fontWeight: '900', color: COLORS.textPrimary, letterSpacing: -0.3, lineHeight: 34 },
-  sub: { color: COLORS.textSecondary, fontSize: 14, fontWeight: '700', marginTop: 4, marginBottom: 18, lineHeight: 20 },
+  heading: { fontSize: 28, fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, letterSpacing: -0.3, lineHeight: 34 },
+  sub: { color: COLORS.textSecondary, fontSize: 14, fontFamily: FONTS.bold.fontFamily, marginTop: 4, marginBottom: 18, lineHeight: 20 },
 
   // Progress bar — taller with glow
   progressTrack: {
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
     ...SHADOWS.iconGlow,
   },
-  stageLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '800', textAlign: 'center' },
+  stageLabel: { color: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.subheading.fontFamily, textAlign: 'center' },
   stageLabelDone: { color: COLORS.primary },
 
   // Info card
@@ -524,8 +524,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(14,143,70,0.06)',
   },
   infoContent: { flex: 1 },
-  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  infoValue: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '700', marginTop: 2, lineHeight: 21 },
+  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.heading.fontFamily, letterSpacing: 0.5 },
+  infoValue: { color: COLORS.textPrimary, fontSize: 15, fontFamily: FONTS.bold.fontFamily, marginTop: 2, lineHeight: 21 },
 
   // Update button
   updateBtn: {
@@ -537,5 +537,5 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     ...SHADOWS.card,
   },
-  updateBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  updateBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: FONTS.heading.fontFamily },
 });

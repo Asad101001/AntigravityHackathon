@@ -19,7 +19,7 @@ import MapPanel from '../components/MapPanel';
 import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 
 export default function ProviderResultsScreen({ route, navigation }) {
   const fullResult = route.params?.fullResult;
@@ -29,7 +29,7 @@ export default function ProviderResultsScreen({ route, navigation }) {
   if (!fullResult) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
-        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>No Results</Text>
+        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontFamily: FONTS.heading.fontFamily, marginBottom: 8 }}>No Results</Text>
         <Text style={{ color: COLORS.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 24 }}>
           Something went wrong retrieving providers. Please go back and try again.
         </Text>
@@ -37,7 +37,7 @@ export default function ProviderResultsScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
           style={{ backgroundColor: COLORS.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 }}
         >
-          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Go Back</Text>
+          <Text style={{ color: '#fff', fontFamily: FONTS.heading.fontFamily, fontSize: 14 }}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -59,9 +59,9 @@ export default function ProviderResultsScreen({ route, navigation }) {
     longitudeDelta: 0.06,
   };
 
-  // Expandable map height
-  const [mapExpanded, setMapExpanded] = useState(false);
-  const mapHeight = useRef(new Animated.Value(320)).current;
+  // Expandable map height - expanded by default
+  const [mapExpanded, setMapExpanded] = useState(true);
+  const mapHeight = useRef(new Animated.Value(420)).current;
   const toggleMapExpand = () => {
     const toValue = mapExpanded ? 320 : 420;
     Animated.spring(mapHeight, { toValue, useNativeDriver: false, bounciness: 4, speed: 14 }).start();
@@ -174,8 +174,8 @@ function ProviderCard({ provider, estimatedPkr, onPress }) {
         >
           {provider.isRecommended && (
             <View style={styles.recommendedBadge}>
-              <Ionicons name="trophy" size={10} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={styles.recommendedText}>AI RECOMMENDED MATCH</Text>
+              <Ionicons name="sparkles" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={styles.recommendedText}>AI CHOICE · BEST MATCH</Text>
             </View>
           )}
 
@@ -275,12 +275,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   emptySubtitle: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     textAlign: 'center',
   },
   sectionRow: {
@@ -290,14 +290,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
+    fontFamily: FONTS.heading.fontFamily,
     fontSize: 20,
-    fontWeight: '900',
     color: COLORS.textPrimary,
     letterSpacing: -0.3,
   },
   sectionSub: {
+    fontFamily: FONTS.bold.fontFamily,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.textMuted,
   },
 
@@ -311,17 +311,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: COLORS.primary,
-    borderRadius: RADII.xs,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginBottom: 10,
+    backgroundColor: COLORS.accentGold || '#F59E0B',
+    borderRadius: RADII.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 12,
+    ...SHADOWS.iconGlow,
   },
   recommendedText: {
+    fontFamily: FONTS.bold.fontFamily,
     color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.6,
+    fontSize: 10,
+    letterSpacing: 0.8,
   },
 
   cardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -342,11 +343,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: '#D8F5E8',
   },
-  avatarText: { color: COLORS.primary, fontSize: 20, fontWeight: '900' },
+  avatarText: { fontFamily: FONTS.heading.fontFamily, color: COLORS.primary, fontSize: 20 },
 
-  providerName: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 },
-  serviceLabel:  { color: COLORS.primary, fontSize: 12, fontWeight: '800', marginTop: 2, textTransform: 'capitalize' },
-  companyLabel:  { color: COLORS.textSecondary, fontSize: 12, marginTop: 2, fontWeight: '700' },
+  providerName: { fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, fontSize: 18, letterSpacing: -0.2 },
+  serviceLabel:  { fontFamily: FONTS.bold.fontFamily, color: COLORS.primary, fontSize: 12, marginTop: 2, textTransform: 'capitalize' },
+  companyLabel:  { fontFamily: FONTS.regular.fontFamily, color: COLORS.textSecondary, fontSize: 12, marginTop: 2 },
 
   metricsRow: { flexDirection: 'row', gap: 5, marginTop: 8, flexWrap: 'wrap' },
   chip: {
@@ -358,12 +359,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 4,
   },
-  chipText: { fontSize: 11, fontWeight: '800', color: COLORS.textSecondary },
+  chipText: { fontSize: 11, fontFamily: FONTS.subheading.fontFamily, color: COLORS.textSecondary },
 
   priceBlock: { alignItems: 'flex-end', justifyContent: 'center', flexShrink: 0, marginLeft: 4 },
-  priceLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 0.4 },
-  priceValue: { color: COLORS.primary, fontWeight: '900', fontSize: 18, marginTop: 1 },
-  priceEst:   { color: COLORS.textMuted, fontSize: 10, fontWeight: '700' },
+  priceLabel: { color: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.heading.fontFamily, letterSpacing: 0.4 },
+  priceValue: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 18, marginTop: 1 },
+  priceEst:   { color: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.bold.fontFamily },
 
   arrowRow: {
     flexDirection: 'row',
@@ -375,5 +376,5 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(14,143,70,0.06)',
     gap: 4,
   },
-  arrowText: { color: COLORS.primary, fontSize: 13, fontWeight: '800' },
+  arrowText: { color: COLORS.primary, fontSize: 13, fontFamily: FONTS.subheading.fontFamily },
 });

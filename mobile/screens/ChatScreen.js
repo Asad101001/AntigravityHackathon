@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
-import { COLORS, SHADOWS } from '../theme';
+import { COLORS, SHADOWS, FONTS } from '../theme';
 import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
 
@@ -569,8 +569,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   navTitleBlock: { flex: 1 },
-  navTitle: { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 },
-  navSub: { color: COLORS.primary, fontSize: 11, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
+  navTitle: { color: COLORS.textPrimary, fontSize: 17, fontFamily: FONTS.heading.fontFamily, letterSpacing: -0.2 },
+  navSub: { color: COLORS.primary, fontSize: 11, fontFamily: FONTS.subheading.fontFamily, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
 
   // Thread selector strip
   threadStripWrap: { maxHeight: 42, marginBottom: 4 },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   threadChipText: {
     color: COLORS.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     maxWidth: 110,
   },
   threadChipTextActive: {
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
   switchButtonText: {
     fontSize: 11,
     color: COLORS.primary,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
 
   // Message area
@@ -730,20 +730,20 @@ const styles = StyleSheet.create({
     color: '#10251A',
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
   },
   userText: {
     color: '#FFFFFF',
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
   },
   timestamp: {
     alignSelf: 'flex-end',
     marginTop: 6,
     color: COLORS.textMuted,
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
   userTimestamp: {
     color: 'rgba(255,255,255,0.72)',
@@ -772,13 +772,13 @@ const styles = StyleSheet.create({
   },
   tierLabel: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textSecondary,
     letterSpacing: 0.5,
   },
   tierValue: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
   },
   cardDivider: {
@@ -793,12 +793,12 @@ const styles = StyleSheet.create({
   },
   feeLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.textSecondary,
   },
   feeValue: {
     fontSize: 15,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#10251A',
   },
 
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
   },
   bookingCardTitle: {
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
   bookingCardText: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 
   // SELECT INQUIRY actions drawer at bottom of scroll view
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
   },
   quickReplyHeader: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textSecondary,
     letterSpacing: 2,
     marginBottom: 12,
@@ -882,11 +882,11 @@ const styles = StyleSheet.create({
   },
   quickReplyText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.primary,
   },
   quickReplyConfirmText: {
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
   },
 
@@ -900,7 +900,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   composerInner: { minHeight: 54, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  input: { flex: 1, maxHeight: 100, color: COLORS.textPrimary, fontSize: 15, fontWeight: '700' },
+  input: { flex: 1, maxHeight: 100, color: COLORS.textPrimary, fontSize: 15, fontFamily: FONTS.bold.fontFamily },
   send: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
   sendDisabled: { opacity: 0.42 },
 
@@ -929,7 +929,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
   },
   bookingsList: {
@@ -966,20 +966,20 @@ const styles = StyleSheet.create({
   },
   bookingProvider: {
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
   },
   bookingMeta: {
     fontSize: 11,
     color: COLORS.textSecondary,
     marginTop: 2,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
   },
   bookingTime: {
     fontSize: 10,
     color: COLORS.textMuted,
     marginTop: 2,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
   bookingRowRight: {
     alignItems: 'center',
@@ -994,7 +994,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
   pinnedThread: {
     backgroundColor: 'rgba(250, 204, 21, 0.06)',

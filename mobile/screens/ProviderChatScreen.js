@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 import apiClient from '../lib/apiClient';
@@ -373,8 +373,8 @@ const styles = StyleSheet.create({
   providerPanelInner: { minHeight: 68, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary },
   providerCopy: { flex: 1 },
-  name: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900' },
-  online: { color: COLORS.primary, fontSize: 10, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.7 },
+  name: { color: COLORS.textPrimary, fontSize: 16, fontFamily: FONTS.heading.fontFamily },
+  online: { color: COLORS.primary, fontSize: 10, fontFamily: FONTS.subheading.fontFamily, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.7 },
   
   // Message bubbles lists
   messages: { padding: 16, paddingTop: 12, paddingBottom: 24, gap: 14 },
@@ -435,11 +435,11 @@ const styles = StyleSheet.create({
     color: '#10251A',
     fontSize: 15,
     lineHeight: 22,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
   },
-  message: { color: COLORS.textPrimary, fontSize: 15, lineHeight: 22, fontWeight: '600' },
-  userText: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, fontWeight: '600' },
-  timestamp: { alignSelf: 'flex-end', marginTop: 6, color: COLORS.textMuted, fontSize: 9, fontWeight: '800' },
+  message: { color: COLORS.textPrimary, fontSize: 15, lineHeight: 22, fontFamily: FONTS.bold.fontFamily },
+  userText: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, fontFamily: FONTS.bold.fontFamily },
+  timestamp: { alignSelf: 'flex-end', marginTop: 6, color: COLORS.textMuted, fontSize: 9, fontFamily: FONTS.subheading.fontFamily },
   userTimestamp: { color: 'rgba(255,255,255,0.72)' },
   
   typingBubble: { alignSelf: 'flex-start', flexDirection: 'row', gap: 5, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 20, borderTopLeftRadius: 8, backgroundColor: 'rgba(255,255,255,0.90)' },
@@ -468,13 +468,13 @@ const styles = StyleSheet.create({
   },
   tierLabel: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textSecondary,
     letterSpacing: 0.5,
   },
   tierValue: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
   },
   cardDivider: {
@@ -489,12 +489,12 @@ const styles = StyleSheet.create({
   },
   feeLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.textSecondary,
   },
   feeValue: {
     fontSize: 15,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#10251A',
   },
 
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   },
   bookingCardTitle: {
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   bookingCardText: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 
   // SELECT INQUIRY actions drawer at bottom of scroll view
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   },
   quickReplyHeader: {
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textSecondary,
     letterSpacing: 2,
     marginBottom: 12,
@@ -577,11 +577,11 @@ const styles = StyleSheet.create({
   },
   quickReplyText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     color: COLORS.primary,
   },
   quickReplyConfirmText: {
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
   },
 
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   composerInner: { minHeight: 54, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  input: { flex: 1, maxHeight: 100, color: COLORS.textPrimary, fontSize: 15, fontWeight: '700' },
+  input: { flex: 1, maxHeight: 100, color: COLORS.textPrimary, fontSize: 15, fontFamily: FONTS.bold.fontFamily },
   send: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
   sendDisabled: { opacity: 0.42 },
 });

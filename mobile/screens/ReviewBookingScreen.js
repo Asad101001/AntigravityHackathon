@@ -13,7 +13,7 @@ import {
   ScrollView, Animated, Modal, ActivityIndicator, Image, Platform
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SHADOWS, RADII } from '../theme';
+import { COLORS, SHADOWS, RADII, FONTS } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../lib/apiClient';
 import LiquidGlass from '../components/LiquidGlass';
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   localHeaderTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
     letterSpacing: -0.4,
   },
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
 
   content: { padding: 20, paddingBottom: 220 }, // Added generous padding to allow navbar auto-hide
 
-  title: { fontSize: 28, color: COLORS.primary, fontWeight: '900', marginTop: 12, marginBottom: 20 },
+  title: { fontSize: 28, color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, marginTop: 12, marginBottom: 20 },
 
   // Booking details card
   card: {
@@ -414,25 +414,25 @@ const styles = StyleSheet.create({
   profileAvatarText: {
     color: COLORS.primary,
     fontSize: 24,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   profileName: {
     color: COLORS.textPrimary,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.2,
   },
   profileService: {
     color: COLORS.primary,
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     marginTop: 2,
     textTransform: 'capitalize',
   },
   profileCompany: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
   },
   profileDivider: {
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   urduText: {
     color: COLORS.primary,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   detailsList: {
     gap: 12,
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   detailRowText: {
     color: COLORS.textSecondary,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
   expertImageContainer: {
     width: '100%',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   verifiedBannerText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
   },
 
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 14 },
@@ -513,23 +513,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quoteHeaderTitle: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 18, letterSpacing: -0.3 },
+  quoteHeaderTitle: { color: COLORS.textPrimary, fontFamily: FONTS.heading.fontFamily, fontSize: 18, letterSpacing: -0.3 },
 
   aiBadge: { backgroundColor: 'rgba(14,143,70,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  aiBadgeText: { color: COLORS.primary, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  aiBadgeText: { color: COLORS.primary, fontSize: 9, fontFamily: FONTS.heading.fontFamily, letterSpacing: 1 },
 
   quoteRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  quoteRowLabel: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 15 },
-  quoteRowValue: { color: COLORS.textPrimary, fontWeight: '900', fontSize: 15 },
+  quoteRowLabel: { color: COLORS.textSecondary, fontFamily: FONTS.bold.fontFamily, fontSize: 15 },
+  quoteRowValue: { color: COLORS.textPrimary, fontFamily: FONTS.heading.fontFamily, fontSize: 15 },
 
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  totalLabel: { color: COLORS.primary, fontWeight: '900', fontSize: 20 },
-  totalValue: { color: COLORS.primary, fontWeight: '900', fontSize: 28 },
+  totalLabel: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 20 },
+  totalValue: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 28 },
 
   priceDisclaimer: {
     color: COLORS.textMuted,
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 12,
     lineHeight: 16,
   },
@@ -544,15 +544,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 12, letterSpacing: 0.5 },
-  reasoningText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '700' },
-  reasoningLink: { color: COLORS.primary, fontWeight: '800', fontSize: 13, marginTop: 8 },
+  reasoningTitle: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 12, letterSpacing: 0.5 },
+  reasoningText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontFamily: FONTS.bold.fontFamily },
+  reasoningLink: { color: COLORS.primary, fontFamily: FONTS.subheading.fontFamily, fontSize: 13, marginTop: 8 },
 
   // CTA
   button: { backgroundColor: COLORS.primary, borderRadius: 20, paddingVertical: 18, alignItems: 'center', marginTop: 4 },
   buttonInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#fff', fontSize: 17, fontWeight: '900' },
-  terms: { color: COLORS.textMuted, fontSize: 12, textAlign: 'center', marginTop: 12, fontWeight: '700' },
+  buttonText: { color: '#fff', fontSize: 17, fontFamily: FONTS.heading.fontFamily },
+  terms: { color: COLORS.textMuted, fontSize: 12, textAlign: 'center', marginTop: 12, fontFamily: FONTS.bold.fontFamily },
 
   // Duplicate Warning Modal
   modalOverlay: {
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#10251A',
     marginBottom: 12,
     textAlign: 'center',
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   viewScheduleButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   cancelModalButton: {
     width: '100%',
@@ -621,13 +621,13 @@ const styles = StyleSheet.create({
   cancelModalButtonText: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
   smallFooterText: {
     textAlign: 'center',
     color: COLORS.textMuted,
     fontSize: 9,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginTop: 24,

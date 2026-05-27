@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SHADOWS } from '../theme';
+import { COLORS, SHADOWS, FONTS } from '../theme';
 
 export default function AppHeader({ navigation, routeName, canGoBack, onProfilePress }) {
   const resetToHome = () => {
@@ -82,13 +82,13 @@ const styles = StyleSheet.create({
   logoText: {
     color: COLORS.primary,
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.3,
   },
   subtextMarker: {
     color: COLORS.textSecondary,
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     letterSpacing: 1.5,
     marginTop: 2,
   },
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   avatarLetter: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   onlineDot: {
     position: 'absolute',

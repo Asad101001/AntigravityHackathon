@@ -33,6 +33,11 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
+import { useFonts } from 'expo-font';
+import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
+import { Outfit_400Regular, Outfit_600SemiBold, Outfit_700Bold, Outfit_900Black } from '@expo-google-fonts/outfit';
+import { NotoNastaliqUrdu_400Regular, NotoNastaliqUrdu_700Bold } from '@expo-google-fonts/noto-nastaliq-urdu';
+
 // Initialize notification handler as early as possible
 // This must run before any notification is scheduled
 void initNotificationHandler();
@@ -266,6 +271,12 @@ function AppNavigator() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black,
+    Outfit_400Regular, Outfit_600SemiBold, Outfit_700Bold, Outfit_900Black,
+    NotoNastaliqUrdu_400Regular, NotoNastaliqUrdu_700Bold,
+  });
+
   function AuthGate() {
     const { isLoading, user } = useAuth();
 
@@ -347,6 +358,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      {!fontsLoaded ? (
+        <View style={{ flex: 1, backgroundColor: '#F5FBF7' }} />
+      ) : (
       <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
@@ -354,6 +368,7 @@ export default function App() {
           </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
+      )}
     </SafeAreaProvider>
   );
 }

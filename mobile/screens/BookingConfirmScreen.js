@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../theme';
+import { COLORS, FONTS } from '../theme';
 import { useToast } from '../components/Toast';
 import ScreenHeader from '../components/ScreenHeader';
 import apiClient from '../lib/apiClient';
@@ -37,7 +37,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
   if (!route.params?.provider || !route.params?.fullResult) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
-        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>Booking Error</Text>
+        <Text style={{ color: COLORS.textPrimary, fontSize: 18, fontFamily: FONTS.heading.fontFamily, marginBottom: 8 }}>Booking Error</Text>
         <Text style={{ color: COLORS.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 24 }}>
           Booking details could not be loaded. Please go back and try again.
         </Text>
@@ -45,7 +45,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
           style={{ backgroundColor: COLORS.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 }}
         >
-          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Go Back</Text>
+          <Text style={{ color: '#fff', fontFamily: FONTS.heading.fontFamily, fontSize: 14 }}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -374,7 +374,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             
             <Text style={styles.modalTitleCenter}>Duplicate Booking</Text>
             <Text style={styles.modalDescription}>
-              You already have a confirmed booking scheduled with <Text style={{ fontWeight: '900', color: COLORS.textPrimary }}>{provider.name}</Text> around this time slot.
+              You already have a confirmed booking scheduled with <Text style={{ fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary }}>{provider.name}</Text> around this time slot.
               {"\n\n"}
               To avoid double scheduling, this duplicate reservation has been blocked.
             </Text>
@@ -555,12 +555,12 @@ const styles = StyleSheet.create({
   headerStepText: {
     color: COLORS.primary,
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 1,
   },
   localHeaderTitle: {
     fontSize: 16,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.textPrimary,
     letterSpacing: -0.4,
     marginTop: 2,
@@ -569,8 +569,8 @@ const styles = StyleSheet.create({
 
   content:   { padding: 20, paddingBottom: 150 }, // Added generous scroll spacing for auto-hide
 
-  sectionHeading: { fontSize: 26, color: COLORS.textPrimary, fontWeight: '900', marginTop: 12 },
-  subtitle: { color: COLORS.textSecondary, fontSize: 13, marginTop: 4, marginBottom: 20, fontWeight: '700' },
+  sectionHeading: { fontSize: 26, color: COLORS.textPrimary, fontFamily: FONTS.heading.fontFamily, marginTop: 12 },
+  subtitle: { color: COLORS.textSecondary, fontSize: 13, marginTop: 4, marginBottom: 20, fontFamily: FONTS.bold.fontFamily },
 
   // Provider card
   card: {
@@ -597,25 +597,25 @@ const styles = StyleSheet.create({
   profileAvatarText: {
     color: COLORS.primary,
     fontSize: 24,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   profileName: {
     color: COLORS.textPrimary,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.2,
   },
   profileService: {
     color: COLORS.primary,
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     marginTop: 2,
     textTransform: 'capitalize',
   },
   profileCompany: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
   },
   profileDivider: {
@@ -625,8 +625,8 @@ const styles = StyleSheet.create({
   },
   infoRow:   { flexDirection: 'row', gap: 12, alignItems: 'center' },
   infoIcon:  { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.chip },
-  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
-  infoValue: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', marginTop: 2 },
+  infoLabel: { color: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.heading.fontFamily, textTransform: 'uppercase', letterSpacing: 0.8 },
+  infoValue: { color: COLORS.textPrimary, fontSize: 16, fontFamily: FONTS.heading.fontFamily, marginTop: 2 },
 
   // Reasoning snippet
   reasoningCard: {
@@ -638,15 +638,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  reasoningTitle: { color: COLORS.primary, fontWeight: '900', fontSize: 12, letterSpacing: 0.5 },
-  reasoningText:  { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '700' },
-  reasoningLink:  { color: COLORS.primary, fontWeight: '800', fontSize: 13, marginTop: 8 },
+  reasoningTitle: { color: COLORS.primary, fontFamily: FONTS.heading.fontFamily, fontSize: 12, letterSpacing: 0.5 },
+  reasoningText:  { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontFamily: FONTS.bold.fontFamily },
+  reasoningLink:  { color: COLORS.primary, fontFamily: FONTS.subheading.fontFamily, fontSize: 13, marginTop: 8 },
  
   // CTAs
   primaryButton:  { backgroundColor: COLORS.primary, borderRadius: 20, paddingVertical: 17, alignItems: 'center', marginTop: 4 },
-  primaryText:    { color: '#fff', fontSize: 17, fontWeight: '900' },
+  primaryText:    { color: '#fff', fontSize: 17, fontFamily: FONTS.heading.fontFamily },
   secondaryButton:{ alignItems: 'center', paddingVertical: 14 },
-  secondaryText:  { color: COLORS.primary, fontWeight: '800', fontSize: 14 },
+  secondaryText:  { color: COLORS.primary, fontFamily: FONTS.subheading.fontFamily, fontSize: 14 },
  
   // Dev section
   devSection: { marginTop: 24 },
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   devDot:        { width: 24, height: 1, backgroundColor: 'rgba(14,143,70,0.16)' },
-  devSectionTitle: { color: COLORS.textMuted, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.5 },
+  devSectionTitle: { color: COLORS.textMuted, fontSize: 11, fontFamily: FONTS.heading.fontFamily, textTransform: 'uppercase', letterSpacing: 1.5 },
  
   chaosButton: {
     flexDirection: 'row',
@@ -670,8 +670,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(220, 38, 38, 0.16)',
     borderStyle: 'dashed',
   },
-  chaosButtonTitle: { color: COLORS.danger, fontWeight: '800', fontSize: 14 },
-  chaosButtonSub:   { color: COLORS.textMuted, fontSize: 11, marginTop: 3, fontWeight: '700' },
+  chaosButtonTitle: { color: COLORS.danger, fontFamily: FONTS.subheading.fontFamily, fontSize: 14 },
+  chaosButtonSub:   { color: COLORS.textMuted, fontSize: 11, marginTop: 3, fontFamily: FONTS.bold.fontFamily },
   chaosArrow:       { width: 28, alignItems: 'center' },
 
   // Modal
@@ -693,17 +693,17 @@ const styles = StyleSheet.create({
 
   // Modal — loading
   modalLoadingBody: { alignItems: 'center', paddingVertical: 24 },
-  modalLoadingTitle:{ color: COLORS.textPrimary, fontSize: 20, fontWeight: '900', marginTop: 16, marginBottom: 12 },
+  modalLoadingTitle:{ color: COLORS.textPrimary, fontSize: 20, fontFamily: FONTS.heading.fontFamily, marginTop: 16, marginBottom: 12 },
   modalLoadingSteps:{ color: COLORS.textSecondary, fontSize: 12, lineHeight: 20, textAlign: 'center', fontFamily: 'monospace' },
 
   // Modal — error
-  modalTitle:   { color: COLORS.danger, fontSize: 18, fontWeight: '900', marginBottom: 12 },
+  modalTitle:   { color: COLORS.danger, fontSize: 18, fontFamily: FONTS.heading.fontFamily, marginBottom: 12 },
   errorText:    { color: COLORS.textSecondary, fontSize: 13, lineHeight: 20, marginBottom: 20 },
 
   // Modal — success
   chaosResultHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   chaosResultIcon:   { fontSize: 32 },
-  chaosResultTitle:  { color: COLORS.textPrimary, fontSize: 18, fontWeight: '900' },
+  chaosResultTitle:  { color: COLORS.textPrimary, fontSize: 18, fontFamily: FONTS.heading.fontFamily },
   chaosResultSub:    { color: COLORS.textMuted, fontSize: 11, marginTop: 2 },
 
   providerChip: {
@@ -714,9 +714,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.chip,
     borderColor: 'rgba(14,143,70,0.12)',
   },
-  providerChipLabel: { color: COLORS.danger, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
-  providerChipName:  { color: COLORS.textPrimary, fontSize: 17, fontWeight: '900', marginTop: 4 },
-  providerChipPrice: { color: COLORS.primary, fontSize: 15, fontWeight: '700', marginTop: 4 },
+  providerChipLabel: { color: COLORS.danger, fontSize: 11, fontFamily: FONTS.heading.fontFamily, textTransform: 'uppercase', letterSpacing: 1 },
+  providerChipName:  { color: COLORS.textPrimary, fontSize: 17, fontFamily: FONTS.heading.fontFamily, marginTop: 4 },
+  providerChipPrice: { color: COLORS.primary, fontSize: 15, fontFamily: FONTS.bold.fontFamily, marginTop: 4 },
 
   chaosArrowDown: { textAlign: 'center', fontSize: 18, color: COLORS.textMuted, marginVertical: 4 },
 
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 4,
   },
-  chaosReasoningTitle: { color: COLORS.primary, fontSize: 11, fontWeight: '800', marginBottom: 8 },
+  chaosReasoningTitle: { color: COLORS.primary, fontSize: 11, fontFamily: FONTS.subheading.fontFamily, marginBottom: 8 },
   chaosReasoningText:  { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18 },
 
   acceptButton: {
@@ -739,15 +739,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
   },
-  acceptButtonText: { color: '#fff', fontWeight: '900', fontSize: 15 },
+  acceptButtonText: { color: '#fff', fontFamily: FONTS.heading.fontFamily, fontSize: 15 },
 
   modalDismiss:     { alignItems: 'center', paddingVertical: 14 },
-  modalDismissText: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 13 },
+  modalDismissText: { color: COLORS.textSecondary, fontFamily: FONTS.bold.fontFamily, fontSize: 13 },
   smallFooterText: {
     textAlign: 'center',
     color: COLORS.textMuted,
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginTop: 24,
@@ -793,7 +793,7 @@ const styles = StyleSheet.create({
   },
   modalTitleCenter: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     color: '#10251A',
     marginBottom: 12,
     textAlign: 'center',
@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
   viewScheduleButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
   },
   cancelModalButton: {
     width: '100%',
@@ -819,6 +819,6 @@ const styles = StyleSheet.create({
   cancelModalButtonText: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FONTS.bold.fontFamily,
   },
 });

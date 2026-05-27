@@ -5,7 +5,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import MapPanel from '../components/MapPanel';
 import LiquidGlass from '../components/LiquidGlass';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 
 const TAB_BAR_HEIGHT = 74;
 const SHEET_EXTRA_PAD = 16;
@@ -138,9 +138,14 @@ export default function LocationPickerScreen({ route, navigation }) {
       {/* ── CENTER CROSSHAIR — always visible on the map center ──── */}
       <View style={styles.crosshairWrap} pointerEvents="none">
         <Animated.View style={[styles.crosshairShadow, { transform: [{ scale: pulseAnim }] }]} />
-        <View style={styles.crosshairPin}>
-          <Ionicons name="location" size={32} color={COLORS.primary} />
+        
+        <View style={styles.pinAssembly}>
+          <LiquidGlass style={styles.crosshairPinGlass} contentStyle={styles.crosshairPinContent} intensity={40} strong radius={24}>
+            <Ionicons name="location" size={26} color={COLORS.primary} />
+          </LiquidGlass>
+          <View style={styles.crosshairStem} />
         </View>
+
         <View style={styles.crosshairDot} />
         {isMoving && (
           <View style={styles.crosshairLabel}>
@@ -215,20 +220,43 @@ const styles = StyleSheet.create({
   },
   crosshairShadow: {
     position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(14,143,70,0.10)',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(14,143,70,0.12)',
   },
-  crosshairPin: {
-    marginBottom: 32,
+  pinAssembly: {
+    alignItems: 'center',
+    marginBottom: 44, // So the dot is exactly at the center
+  },
+  crosshairPinGlass: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.9)',
+    ...SHADOWS.floating,
+  },
+  crosshairPinContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crosshairStem: {
+    width: 3,
+    height: 14,
+    backgroundColor: COLORS.primary,
+    marginTop: -2,
+    borderBottomLeftRadius: 1.5,
+    borderBottomRightRadius: 1.5,
+    ...SHADOWS.pressed,
   },
   crosshairDot: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.primary,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.accentGold || '#F59E0B',
     borderWidth: 2,
     borderColor: '#FFFFFF',
     ...SHADOWS.pressed,
@@ -244,7 +272,7 @@ const styles = StyleSheet.create({
   crosshairLabelText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     letterSpacing: 0.3,
   },
 
@@ -266,20 +294,20 @@ const styles = StyleSheet.create({
   kicker: {
     color: COLORS.primary,
     fontSize: 11,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
   },
   title: {
     color: COLORS.textPrimary,
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     marginTop: 4,
   },
   subtitle: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 4,
     lineHeight: 18,
   },
@@ -305,13 +333,13 @@ const styles = StyleSheet.create({
   locationTextWrap: { flex: 1 },
   locationText: {
     color: COLORS.textPrimary,
-    fontWeight: '800',
+    fontFamily: FONTS.subheading.fontFamily,
     fontSize: 14,
   },
   locationCoords: {
     color: COLORS.textMuted,
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: FONTS.bold.fontFamily,
     marginTop: 2,
     fontFamily: 'monospace',
   },
@@ -325,5 +353,5 @@ const styles = StyleSheet.create({
     gap: 8,
     ...SHADOWS.card,
   },
-  buttonText: { color: '#fff', fontWeight: '900', fontSize: 16 },
+  buttonText: { color: '#fff', fontFamily: FONTS.heading.fontFamily, fontSize: 16 },
 });

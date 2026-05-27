@@ -3,7 +3,7 @@ import { Animated, Linking, Modal, Pressable, StyleSheet, Switch, Text, Touchabl
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from './LiquidGlass';
-import { COLORS, RADII, SHADOWS } from '../theme';
+import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 
 const DASHBOARD_URL = 'https://asaaniyat-admin.vercel.app/';
 
@@ -35,7 +35,7 @@ const avatarStyles = StyleSheet.create({
   },
   text: {
     color: '#FFFFFF',
-    fontWeight: '900',
+    fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 0.5,
   },
 });
@@ -159,9 +159,9 @@ const styles = StyleSheet.create({
   profileHeaderRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
   profileBlock: { alignItems: 'flex-start', gap: 12, marginBottom: 16, paddingHorizontal: 4 },
   profileCopy: { width: '100%' },
-  profileName: { color: COLORS.textPrimary, fontSize: 20, fontWeight: '900', marginTop: 8 },
-  profileEmail: { color: COLORS.primary, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  profileMeta: { marginTop: 2, color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
+  profileName: { color: COLORS.textPrimary, fontSize: 20, fontFamily: FONTS.heading.fontFamily, marginTop: 8 },
+  profileEmail: { color: COLORS.primary, fontSize: 12, fontFamily: FONTS.bold.fontFamily, marginTop: 2 },
+  profileMeta: { marginTop: 2, color: COLORS.textSecondary, fontSize: 13, fontFamily: FONTS.bold.fontFamily },
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 12, width: '100%' },
   closeButton: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
   section: { flex: 1, marginTop: 4 },
@@ -169,9 +169,9 @@ const styles = StyleSheet.create({
   rowIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.chip },
   rowIconDanger: { backgroundColor: 'rgba(220,38,38,0.1)' },
   rowCopy: { flex: 1 },
-  rowLabel: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
+  rowLabel: { color: COLORS.textPrimary, fontSize: 15, fontFamily: FONTS.heading.fontFamily },
   rowLabelDanger: { color: '#DC2626' },
-  rowHelper: { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
+  rowHelper: { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontFamily: FONTS.bold.fontFamily },
   footer: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: 'rgba(14,143,70,0.06)', paddingTop: 16 },
-  versionText: { textAlign: 'center', color: COLORS.textMuted, fontSize: 11, fontWeight: '600', marginTop: 12, letterSpacing: 0.3 },
+  versionText: { textAlign: 'center', color: COLORS.textMuted, fontSize: 11, fontFamily: FONTS.bold.fontFamily, marginTop: 12, letterSpacing: 0.3 },
 });
