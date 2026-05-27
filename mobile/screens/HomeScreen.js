@@ -18,14 +18,6 @@ import * as Location from 'expo-location';
 import { COLORS, RADII, SHADOWS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
-import {
-  requestMicPermission,
-  startRecording,
-  stopRecording,
-  cancelRecording,
-  getMeteringLevel,
-} from '../lib/voiceRecorder';
-import { transcribeAudio } from '../lib/speechToText';
 
 const SUPPORTED_CITIES = ['Karachi', 'Islamabad', 'Lahore'];
 
@@ -50,6 +42,7 @@ const SERVICES_PAGES = [
   ]
 ];
 
+/*
 const MAX_RECORD_SECONDS = 30;
 const WAVE_BAR_COUNT = 14;
 
@@ -402,6 +395,7 @@ const voiceStyles = StyleSheet.create({
   },
   retryBtnText: { color: COLORS.primary, fontWeight: '900', fontSize: 13 },
 });
+*/
 
 export default function HomeScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -414,7 +408,6 @@ export default function HomeScreen({ route, navigation }) {
   const [cityOpen, setCityOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
-  const [voiceOpen, setVoiceOpen] = useState(false);
   const carouselOpacity = useRef(new Animated.Value(1)).current;
 
   const switchPage = useCallback((nextPage) => {
@@ -610,15 +603,7 @@ export default function HomeScreen({ route, navigation }) {
               >
                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={[styles.sendButton, { backgroundColor: 'rgba(14,143,70,0.1)' }]}
-                onPress={() => setVoiceOpen(true)}
-                activeOpacity={0.82}
-              >
-                <Ionicons name="mic" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-            )}
+            ) : null}
           </View>
 
           {/* Popular Services Header */}
@@ -727,7 +712,6 @@ export default function HomeScreen({ route, navigation }) {
 
         </ScrollView>
       </KeyboardAvoidingView>
-      <VoiceModal visible={voiceOpen} onClose={() => setVoiceOpen(false)} onResult={(transcribed) => setText(transcribed)} />
     </View>
   );
 }

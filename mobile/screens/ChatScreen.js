@@ -18,13 +18,6 @@ import { useTabBarVisibility } from '../components/TabBarVisibility';
 import { COLORS, SHADOWS } from '../theme';
 import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
-import {
-  requestMicPermission,
-  startRecording,
-  stopRecording,
-  cancelRecording,
-} from '../lib/voiceRecorder';
-import { transcribeAudio } from '../lib/speechToText';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -81,10 +74,6 @@ export default function ChatScreen({ navigation }) {
     kind: 'assistant',
   });
   const [input, setInput] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const micPulse = useRef(new Animated.Value(1)).current;
-  
   const [messages, setMessages] = useState([]);
   
   const [chatThreads, setChatThreads] = useState([]);
@@ -465,69 +454,7 @@ export default function ChatScreen({ navigation }) {
               >
                 <Ionicons name="send" size={18} color="#FFFFFF" />
               </TouchableOpacity>
-            ) : isTranscribing ? (
-              <View style={[styles.sendButton, { backgroundColor: '#D97706' }]}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              </View>
-            ) : isRecording ? (
-              <TouchableOpacity
-                style={[styles.sendButton, styles.micRecordingBtn]}
-                onPress={async () => {
-                  setIsRecording(false);
-                  setIsTranscribing(true);
-                  micPulse.stopAnimation();
-                  micPulse.setValue(1);
-                  try {
-                    const resultVoice = await stopRecording();
-                    if (!resultVoice || !resultVoice.base64) {
-                      throw new Error('Recording failed. Please try again.');
-                    }
-                    const { base64, durationMs } = resultVoice;
-                    if (durationMs < 500) {
-                      setIsTranscribing(false);
-                      return;
-                    }
-                    const result = await transcribeAudio({ base64, mimeType: 'audio/m4a' });
-                    if (result.text) {
-                      setInput('');
-                      await handleSend(result.text);
-                    }
-                  } catch (err) {
-                    console.error('[ChatScreen] Voice transcription error:', err);
-                  } finally {
-                    setIsTranscribing(false);
-                  }
-                }}
-                activeOpacity={0.85}
-              >
-                <Animated.View style={{ transform: [{ scale: micPulse }] }}>
-                  <Ionicons name="stop" size={20} color="#FFFFFF" />
-                </Animated.View>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={[styles.sendButton, styles.micIdleBtn]}
-                onPress={async () => {
-                  const hasPerm = await requestMicPermission();
-                  if (!hasPerm) return;
-                  try {
-                    await startRecording();
-                    setIsRecording(true);
-                    Animated.loop(
-                      Animated.sequence([
-                        Animated.timing(micPulse, { toValue: 1.2, duration: 500, useNativeDriver: true }),
-                        Animated.timing(micPulse, { toValue: 1, duration: 500, useNativeDriver: true }),
-                      ])
-                    ).start();
-                  } catch (err) {
-                    console.error('[ChatScreen] Recording start error:', err);
-                  }
-                }}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="mic" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-            )}
+            ) : null}
           </View>
         </View>
         </View>
