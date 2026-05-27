@@ -246,15 +246,18 @@ export default function AgentTraceScreen({ route, navigation }) {
                     </DetailBlock>
                   )}
                   {log.input && (
-                    <DetailBlock icon="📥" title="Input (Raw & Parsed)" color={meta.color}>
+                    <DetailBlock icon="📥" title="Input (Raw)" color={meta.color}>
                       <CodeBlock value={log.input} />
-                      <HumanReadableBlock value={log.input} />
+                      <SmartSummaryBlock logName={log.name} value={log.input} />
                     </DetailBlock>
                   )}
                   {log.output && (
                     <DetailBlock icon="📤" title="Output (Raw & Parsed)" color={meta.color}>
-                      <CodeBlock value={log.output} maxLen={900} />
-                      <HumanReadableBlock value={log.output} />
+                      <SmartSummaryBlock logName={log.name} value={log.output} />
+                      <View style={{ marginTop: 8 }}>
+                        <Text style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 4, fontWeight: '700' }}>RAW JSON:</Text>
+                        <CodeBlock value={log.output} maxLen={400} />
+                      </View>
                     </DetailBlock>
                   )}
                   {log.error && (
@@ -348,27 +351,48 @@ function CodeBlock({ value, maxLen = 800 }) {
   );
 }
 
-function HumanReadableBlock({ value }) {
+function SmartSummaryBlock({ logName, value }) {
   if (!value) return null;
-  let parsed = value;
+  let p = value;
   if (typeof value === 'string') {
-    try { parsed = JSON.parse(value); } catch (_) { return null; }
+    try { p = JSON.parse(value); } catch (_) { return null; }
   }
-  if (typeof parsed !== 'object' || parsed === null) return null;
+  if (typeof p !== 'object' || p === null) return null;
+
+  // Generate a human-readable smart sentence based on the agent type and payload
+  let summaryNode = null;
+
+  if (logName === 'parse_intent') {
+    summaryNode = <Text style={styles.hrValue}>User wants <Text style={styles.hrBold}>{p.service_type || 'a service'}</Text> in <Text style={styles.hrBold}>{p.extracted_area || 'their area'}</Text>. The urgency is {p.urgency || 'normal'}.</Text>;
+  } else if (logName === 'resolve_location') {
+    summaryNode = <Text style={styles.hrValue}>Resolved coordinates to <Text style={styles.hrBold}>{p.latitude}, {p.longitude}</Text> (Confidence: {p.confidence || 'High'}).</Text>;
+  } else if (logName === 'discover_providers') {
+    const count = p.count || (p.providers ? p.providers.length : 0);
+    summaryNode = <Text style={styles.hrValue}>Discovered <Text style={styles.hrBold}>{count} candidate providers</Text> nearby.</Text>;
+  } else if (logName === 'rank_providers') {
+    summaryNode = <Text style={styles.hrValue}>Ranked providers and identified <Text style={styles.hrBold}>{p.best_match?.name || 'the best match'}</Text> as the optimal choice.</Text>;
+  } else if (logName === 'dynamic_pricing') {
+    summaryNode = <Text style={styles.hrValue}>Calculated a base quote of <Text style={styles.hrBold}>PKR {p.base_fare || p.total_quote}</Text> with a surge multiplier of {p.surge_multiplier || '1.0x'}.</Text>;
+  } else if (logName === 'execute_booking') {
+    summaryNode = <Text style={styles.hrValue}>Successfully created booking <Text style={styles.hrBold}>#{p.booking_id || p.id}</Text> with status {p.status || 'active'}.</Text>;
+  } else {
+    // Fallback logic for generic or unknown agent traces
+    summaryNode = Object.entries(p).slice(0, 3).map(([k, v]) => {
+      let valStr = typeof v === 'object' ? (Array.isArray(v) ? `Array(${v.length})` : 'Object') : String(v);
+      if (valStr.length > 60) valStr = valStr.slice(0, 60) + '...';
+      return (
+        <View key={k} style={styles.hrRow}>
+          <Text style={styles.hrKey}>• {k.replace(/_/g, ' ')}: </Text>
+          <Text style={styles.hrValue}>{valStr}</Text>
+        </View>
+      );
+    });
+  }
 
   return (
     <View style={styles.humanReadableBox}>
-      <Text style={styles.humanReadableTitle}>Summary</Text>
-      {Object.entries(parsed).map(([k, v]) => {
-        let valStr = typeof v === 'object' ? JSON.stringify(v) : String(v);
-        if (valStr.length > 100) valStr = valStr.slice(0, 100) + '...';
-        return (
-          <View key={k} style={styles.hrRow}>
-            <Text style={styles.hrKey}>• {k.replace(/_/g, ' ')}: </Text>
-            <Text style={styles.hrValue}>{valStr}</Text>
-          </View>
-        );
-      })}
+      <Text style={styles.humanReadableTitle}>✨ AI Smart Summary</Text>
+      <View style={{ marginTop: 2 }}>{summaryNode}</View>
     </View>
   );
 }
@@ -530,7 +554,8 @@ const styles = StyleSheet.create({
   },
   hrRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 },
   hrKey: { fontSize: 12, fontWeight: '800', color: COLORS.textPrimary, textTransform: 'capitalize' },
-  hrValue: { fontSize: 12, color: COLORS.textSecondary, flexShrink: 1 },
+  hrValue: { fontSize: 12, color: COLORS.textSecondary, flexShrink: 1, lineHeight: 18 },
+  hrBold: { fontWeight: '900', color: COLORS.textPrimary },
   timestamp: { fontSize: 10, color: COLORS.textMuted, marginTop: 4 },
 
   timelineCard: {

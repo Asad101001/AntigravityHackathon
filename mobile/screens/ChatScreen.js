@@ -316,18 +316,19 @@ export default function ChatScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 20}
-    >
-      {/* Ambient background tints */}
-      <View style={styles.ambientTop} />
-      <View style={styles.ambientBottom} />
+    <View style={styles.screen}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={undefined}
+        keyboardVerticalOffset={0}
+      >
+        {/* Ambient background tints */}
+        <View style={styles.ambientTop} />
+        <View style={styles.ambientBottom} />
 
-      <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 8) }]}>
+        <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: 12 }]}>
 
-        {/* Minimal back-button nav bar */}
+          {/* Minimal back-button nav bar */}
         <View style={styles.minimalNav}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -477,7 +478,11 @@ export default function ChatScreen({ navigation }) {
                   micPulse.stopAnimation();
                   micPulse.setValue(1);
                   try {
-                    const { base64, durationMs } = await stopRecording();
+                    const resultVoice = await stopRecording();
+                    if (!resultVoice || !resultVoice.base64) {
+                      throw new Error('Recording failed. Please try again.');
+                    }
+                    const { base64, durationMs } = resultVoice;
                     if (durationMs < 500) {
                       setIsTranscribing(false);
                       return;
@@ -525,8 +530,9 @@ export default function ChatScreen({ navigation }) {
             )}
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

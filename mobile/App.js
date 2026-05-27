@@ -27,7 +27,7 @@ import LiquidGlass from './components/LiquidGlass';
 import { ToastProvider } from './components/Toast';
 import { COLORS, SHADOWS, darkTheme } from './theme';
 import { TabBarVisibilityContext } from './components/TabBarVisibility';
-import { initNotificationHandler, configureNotifications } from './notifications';
+import { initNotificationHandler, configureNotifications, syncPushToken } from './notifications';
 import { AppContextProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -151,8 +151,14 @@ function AppNavigator() {
   const lastOffset = useRef(0);
 
   useEffect(() => {
-    void configureNotifications();
-  }, []);
+    const setupPush = async () => {
+      await configureNotifications();
+      if (user && user.token) {
+        syncPushToken(user.token);
+      }
+    };
+    setupPush();
+  }, [user]);
 
   const hideTabBar = useCallback(() => {
     setTabVisible(prev => {

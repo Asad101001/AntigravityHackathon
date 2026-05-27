@@ -179,7 +179,11 @@ function VoiceModal({ visible, onClose, onResult }) {
     setPhase('processing');
 
     try {
-      const { base64, durationMs } = await stopRecording();
+      const result = await stopRecording();
+      if (!result || !result.base64) {
+        throw new Error('Recording failed. Please try again.');
+      }
+      const { base64, durationMs } = result;
 
       // Reject very short recordings (< 0.5 seconds)
       if (durationMs < 500) {
