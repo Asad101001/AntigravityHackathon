@@ -222,9 +222,12 @@ export default function ConfirmationScreen({ route, navigation }) {
           <Ionicons name="checkmark-circle" size={64} color={COLORS.primary} />
         </Animated.View>
 
-        <Text style={styles.copy}>
-          Your request has been successfully scheduled. A professional will be assigned shortly.
-        </Text>
+        <View style={{ alignItems: 'center', marginBottom: 24 }}>
+          <Text style={styles.copy}>
+            Your request has been successfully scheduled. A professional will be assigned shortly.
+          </Text>
+          <Text style={styles.urduCopy}>بکنگ کامیاب</Text>
+        </View>
 
         {/* ── Booking Summary Card (Glassmorphic) ────────────────────── */}
         <LiquidGlass style={styles.summaryCard} radius={24}>
@@ -287,8 +290,8 @@ export default function ConfirmationScreen({ route, navigation }) {
         </LiquidGlass>
 
         {/* ── Primary Action CTAs ─────────────────────────────────────── */}
-        <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.popToTop()} activeOpacity={0.84}>
-          <Text style={styles.primaryButtonText}>View Schedule</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('Bookings')} activeOpacity={0.84}>
+          <Text style={styles.primaryButtonText}>View Bookings</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -345,7 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(14,143,70,0.12)',
+    borderColor: 'rgba(217,119,6,0.3)', // accentGold
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.12,
@@ -353,7 +356,8 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   title: { fontSize: 30, fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, textAlign: 'center', letterSpacing: -0.6 },
-  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontSize: 14, marginTop: 10, marginBottom: 24, fontFamily: FONTS.bold.fontFamily, paddingHorizontal: 12 },
+  copy: { color: COLORS.textSecondary, textAlign: 'center', lineHeight: 21, fontSize: 14, marginTop: 10, fontFamily: FONTS.bold.fontFamily, paddingHorizontal: 12 },
+  urduCopy: { color: COLORS.textPrimary, textAlign: 'center', fontSize: 18, fontFamily: FONTS.urdu.fontFamily, writingDirection: 'rtl', marginTop: 4 },
 
   // Summary Card
   summaryCard: {
@@ -379,15 +383,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   scheduledBadge: {
-    backgroundColor: 'rgba(47,128,237,0.08)',
+    backgroundColor: 'rgba(13,148,136,0.08)',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(47,128,237,0.14)',
+    borderColor: 'rgba(13,148,136,0.2)', // accentTeal
   },
   scheduledBadgeText: {
-    color: '#2F80ED',
+    color: '#0D9488', // accentTeal
     fontSize: 10,
     fontFamily: FONTS.heading.fontFamily,
     letterSpacing: 0.5,

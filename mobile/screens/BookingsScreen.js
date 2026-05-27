@@ -16,11 +16,10 @@ function money(value) {
 function getStatusColor(status) {
   switch (status?.toLowerCase()) {
     case 'confirmed':
-      return '#4CAF50';
     case 'operating':
-      return '#2196F3';
+      return 'rgba(217,119,6,1)'; // accentGold
     case 'completed':
-      return '#9C27B0';
+      return '#0D9488'; // accentTeal
     case 'canceled':
       return '#F44336';
     default:

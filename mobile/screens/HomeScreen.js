@@ -170,6 +170,15 @@ export default function HomeScreen({ route, navigation }) {
     setText(`${label} needed`);
   }, []);
 
+  const quickBook = useCallback((label) => {
+    navigation.navigate('Loading', {
+      userText: `${label} needed`,
+      userLocation: pickedLocation,
+      locationSource: pickedLocation ? 'gps' : 'typed',
+      city: selectedCity,
+    });
+  }, [pickedLocation, selectedCity, navigation]);
+
   return (
     <View style={styles.background}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
@@ -255,6 +264,7 @@ export default function HomeScreen({ route, navigation }) {
           {/* Popular Services Header */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Popular Services</Text>
+            <Text style={styles.sectionUrdu}>مشہور خدمات</Text>
           </View>
 
           {/* Service Carousel Component */}
@@ -266,7 +276,7 @@ export default function HomeScreen({ route, navigation }) {
                   <Animated.View key={service.id} style={{ width: '48%', transform: [{ scale: scaleAnim }] }}>
                     <TouchableOpacity
                       style={styles.serviceCard}
-                      onPress={() => prefill(service.label)}
+                      onPress={() => quickBook(service.label)}
                       onPressIn={() => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true, speed: 50, bounciness: 4 }).start()}
                       onPressOut={() => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start()}
                       activeOpacity={1}
@@ -306,6 +316,7 @@ export default function HomeScreen({ route, navigation }) {
           {/* ── Exclusive Offers ── */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Exclusive Offers</Text>
+            <Text style={styles.sectionUrdu}>خصوصی پیشکش</Text>
           </View>
 
           {/* Promo Card 1: Summer Cooling Promo */}
@@ -315,7 +326,7 @@ export default function HomeScreen({ route, navigation }) {
               <Text style={styles.promoText}>
                 Get 20% off all AC maintenance services this month. Stay cool and beat the heat with our expert services.
               </Text>
-              <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('AC Repair')}>
+              <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => quickBook('AC Repair')}>
                 <Text style={styles.promoButtonText}>Book Now</Text>
               </TouchableOpacity>
             </View>
@@ -331,7 +342,7 @@ export default function HomeScreen({ route, navigation }) {
               <Text style={[styles.promoText, styles.promoDarkText]}>
                 Save 15% on professional painting & carpentry. Refresh your space and transform your home today.
               </Text>
-              <TouchableOpacity style={[styles.promoButton, styles.promoDarkButton]} activeOpacity={0.84} onPress={() => prefill('Painter')}>
+              <TouchableOpacity style={[styles.promoButton, styles.promoDarkButton]} activeOpacity={0.84} onPress={() => quickBook('Painter')}>
                 <Text style={styles.promoDarkButtonText}>Explore Deal</Text>
               </TouchableOpacity>
             </View>
@@ -347,7 +358,7 @@ export default function HomeScreen({ route, navigation }) {
               <Text style={styles.promoText}>
                 Get a deep home cleaning & sanitization with a complimentary disinfection upgrade. Limited availability!
               </Text>
-              <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => prefill('Cleaning')}>
+              <TouchableOpacity style={styles.promoButton} activeOpacity={0.84} onPress={() => quickBook('Cleaning')}>
                 <Text style={styles.promoButtonText}>Claim Now</Text>
               </TouchableOpacity>
             </View>
@@ -441,9 +452,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(13,148,136,0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   fetchedLocationText: {
-    color: COLORS.textSecondary,
+    color: COLORS.accentTeal || '#0D9488',
     fontSize: 12,
     fontFamily: FONTS.subheading.fontFamily,
   },
@@ -500,6 +515,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.heading.fontFamily,
     letterSpacing: -0.3,
   },
+  sectionUrdu: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontFamily: FONTS.urdu.fontFamily,
+    writingDirection: 'rtl',
+    marginTop: 2,
+    lineHeight: 28,
+  },
 
   // Carousel & Grid styles
   carouselContainer: {
@@ -527,10 +550,12 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: RADII.sm,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: 'rgba(245,158,11,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.12)',
   },
   serviceLabel: {
     color: COLORS.primary,
@@ -542,7 +567,7 @@ const styles = StyleSheet.create({
   serviceUrdu: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: FONTS.bold.fontFamily,
+    fontFamily: FONTS.urdu.fontFamily,
     marginTop: 2,
     textAlign: 'center',
     writingDirection: 'rtl',

@@ -115,7 +115,7 @@ export default function AuthScreen() {
               </View>
               <View style={styles.brandText}>
                 <Text style={styles.brand}>Asaaniyat</Text>
-                <Text style={styles.brandUrdu}>آسانیات</Text>
+                <Text style={styles.brandUrdu}>خوش آمدید</Text>
               </View>
             </View>
 
@@ -404,8 +404,8 @@ const styles = StyleSheet.create({
   },
   brandUrdu: {
     color: COLORS.textSecondary,
-    fontSize: 18,
-    fontFamily: FONTS.bold.fontFamily,
+    fontSize: 16,
+    fontFamily: FONTS.urdu.fontFamily,
     marginTop: 2,
     writingDirection: 'rtl',
   },

@@ -121,14 +121,14 @@ export const FONTS = {
   },
   heading: {
     fontSize: 24,
-    fontFamily: 'Outfit_900Black',
+    fontFamily: 'Poppins_800ExtraBold',
     color: COLORS.textPrimary,
     lineHeight: 30,
     letterSpacing: -0.3,
   },
   subheading: {
     fontSize: 17,
-    fontFamily: 'Outfit_700Bold',
+    fontFamily: 'Poppins_700Bold',
     color: COLORS.textPrimary,
     lineHeight: 23,
   },

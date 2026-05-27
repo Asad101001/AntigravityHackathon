@@ -77,7 +77,7 @@ export default function ChatScreen({ navigation }) {
   const [messages, setMessages] = useState([]);
   
   const [chatThreads, setChatThreads] = useState([]);
-  
+  const [isThreadsLoading, setIsThreadsLoading] = useState(true);
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -88,6 +88,8 @@ export default function ChatScreen({ navigation }) {
         }
       } catch (error) {
         console.error('Failed to fetch chats:', error);
+      } finally {
+        setIsThreadsLoading(false);
       }
     };
     fetchThreads();
@@ -308,7 +310,7 @@ export default function ChatScreen({ navigation }) {
     <View style={styles.screen}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
         {/* Ambient background tints */}
@@ -338,14 +340,38 @@ export default function ChatScreen({ navigation }) {
         </View>
 
         {/* ── Thread Selector Strip ─────────────────────────────── */}
-        {chatThreads.length > 0 && (
+        <View style={styles.threadStripWrap}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.threadStrip}
-            style={styles.threadStripWrap}
           >
-            {chatThreads.map(thread => {
+            {/* Always pinned General AI chat */}
+            <TouchableOpacity
+              style={[
+                styles.threadChip,
+                styles.pinnedThread,
+                activeBooking.id === 'general' && styles.threadChipActive
+              ]}
+              onPress={() => setActiveBooking({ id: 'general', service: 'Asaaniyat AI', provider: 'Asaaniyat AI', area: 'Pinned assistant chat', status: 'active', kind: 'assistant' })}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="sparkles" size={12} color={activeBooking.id === 'general' ? '#FFFFFF' : '#D97706'} />
+              <Text style={[styles.threadChipText, activeBooking.id === 'general' && styles.threadChipTextActive]} numberOfLines={1}>
+                Asaaniyat AI
+              </Text>
+            </TouchableOpacity>
+
+            {/* Skeletons while loading */}
+            {isThreadsLoading && (
+              <>
+                <View style={[styles.threadChip, { width: 120, opacity: 0.5 }]} />
+                <View style={[styles.threadChip, { width: 100, opacity: 0.3 }]} />
+              </>
+            )}
+
+            {/* Loaded threads */}
+            {!isThreadsLoading && chatThreads.filter(t => t.id !== 'general').map(thread => {
               const isActive = activeBooking.id === thread.id;
               return (
                 <TouchableOpacity
@@ -383,7 +409,7 @@ export default function ChatScreen({ navigation }) {
               );
             })}
           </ScrollView>
-        )}
+        </View>
 
         {/* Message Scroll View */}
         <ScrollView
@@ -434,7 +460,7 @@ export default function ChatScreen({ navigation }) {
         </ScrollView>
 
         {/* Message Composer — send button + voice mic */}
-        <View style={styles.composerWrap}>
+        <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) + 85 }]}>
           <View style={styles.composer}>
             <TextInput
               style={styles.composerInput}

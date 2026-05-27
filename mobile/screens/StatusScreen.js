@@ -40,7 +40,10 @@ export default function StatusScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.eyebrow}>Live status</Text>
-      <Text style={styles.title}>Service progress</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Service progress</Text>
+        <Text style={styles.urduTitle}>سروس کی پیشرفت</Text>
+      </View>
 
       {!booking ? (
         <LiquidGlass style={styles.card} contentStyle={styles.emptyContent} strong>
@@ -111,7 +114,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.bg },
   content: { paddingHorizontal: 18 },
   eyebrow: { color: COLORS.primary, fontSize: 11, fontFamily: FONTS.heading.fontFamily, letterSpacing: 1, textTransform: 'uppercase' },
-  title: { color: COLORS.textPrimary, fontSize: 30, lineHeight: 36, fontFamily: FONTS.heading.fontFamily, marginTop: 8, marginBottom: 18 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 18 },
+  title: { color: COLORS.textPrimary, fontSize: 26, lineHeight: 32, fontFamily: FONTS.heading.fontFamily },
+  urduTitle: { color: COLORS.textSecondary, fontSize: 14, fontFamily: FONTS.urdu.fontFamily, writingDirection: 'rtl' },
   card: { marginBottom: 16 },
   cardContent: { padding: 18, gap: 18 },
   emptyContent: { padding: 22, alignItems: 'center' },
@@ -128,7 +133,8 @@ const styles = StyleSheet.create({
   stageRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 5 },
   stageItem: { flex: 1, alignItems: 'center' },
   stageDot: { width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: COLORS.border },
-  stageDotDone: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  stageDotDone: { backgroundColor: 'rgba(217,119,6,1)', borderColor: 'rgba(217,119,6,1)' }, // accentGold
+
   stageText: { color: COLORS.textMuted, textAlign: 'center', fontSize: 9, fontFamily: FONTS.subheading.fontFamily, marginTop: 5, lineHeight: 12 },
   stageTextDone: { color: COLORS.textPrimary },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Linking, Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Linking, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LiquidGlass from './LiquidGlass';
@@ -55,6 +55,84 @@ function SidebarRow({ icon, label, helper, onPress, right, isDanger }) {
   );
 }
 
+// Prominent theme toggle pill
+function ThemeTogglePill({ darkMode, onToggle }) {
+  const slideAnim = useRef(new Animated.Value(darkMode ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: darkMode ? 1 : 0,
+      useNativeDriver: true,
+      damping: 16,
+      stiffness: 200,
+    }).start();
+  }, [darkMode]);
+
+  const thumbTranslate = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [2, 50],
+  });
+
+  return (
+    <TouchableOpacity
+      style={[toggleStyles.pill, darkMode && toggleStyles.pillDark]}
+      onPress={onToggle}
+      activeOpacity={0.85}
+    >
+      <Animated.View style={[toggleStyles.thumb, { transform: [{ translateX: thumbTranslate }] }]}>
+        <Text style={{ fontSize: 18 }}>{darkMode ? '🌙' : '☀️'}</Text>
+      </Animated.View>
+      <View style={toggleStyles.labels}>
+        <Text style={[toggleStyles.label, !darkMode && toggleStyles.labelActive]}>Light</Text>
+        <Text style={[toggleStyles.label, darkMode && toggleStyles.labelActive]}>Dark</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const toggleStyles = StyleSheet.create({
+  pill: {
+    width: 100,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(14,143,70,0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.14)',
+    position: 'relative',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  pillDark: {
+    backgroundColor: 'rgba(11,42,24,0.85)',
+    borderColor: 'rgba(34,197,94,0.3)',
+  },
+  thumb: {
+    position: 'absolute',
+    width: 40,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.pressed,
+    top: 3,
+  },
+  labels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+  },
+  label: {
+    fontSize: 10,
+    fontFamily: FONTS.subheading.fontFamily,
+    color: COLORS.textMuted,
+    letterSpacing: 0.3,
+  },
+  labelActive: {
+    color: COLORS.primary,
+  },
+});
+
 export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, onToggleTheme, currentUser, onLogout }) {
   const insets = useSafeAreaInsets();
   const translateX = useRef(new Animated.Value(-340)).current;
@@ -86,11 +164,14 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
 
             {/* Profile block with initials avatar */}
             <View style={styles.profileBlock}>
-              <InitialsAvatar name={currentUser?.displayName} size={72} />
+              <View style={styles.profileTopRow}>
+                <InitialsAvatar name={currentUser?.displayName} size={72} />
+                <ThemeTogglePill darkMode={darkMode} onToggle={onToggleTheme} />
+              </View>
               <View style={styles.profileCopy}>
                 <Text style={styles.profileName}>{currentUser?.displayName || 'Asaaniyat User'}</Text>
                 <Text style={styles.profileEmail} numberOfLines={1}>{currentUser?.email || 'user@asaaniyat.pk'}</Text>
-                <Text style={styles.profileMeta}>Karachi, Pakistan</Text>
+                <Text style={styles.profileUrdu}>آسانیت صارف</Text>
               </View>
             </View>
 
@@ -117,19 +198,6 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
                 helper="Share your feedback"
                 onPress={openRate}
               />
-              <SidebarRow
-                icon={darkMode ? 'moon' : 'sunny-outline'}
-                label="Dark Mode"
-                helper={darkMode ? 'Dim theme active' : 'Light branding active'}
-                right={
-                  <Switch
-                    value={darkMode}
-                    onValueChange={onToggleTheme}
-                    trackColor={{ false: '#DDEBE3', true: COLORS.accent }}
-                    thumbColor="#FFFFFF"
-                  />
-                }
-              />
             </View>
 
             {/* Footer */}
@@ -141,7 +209,7 @@ export default function Sidebar({ visible, onClose, onNavigateTrace, darkMode, o
                 right={<View />}
                 onPress={async () => { await onLogout?.(); onClose?.(); }}
               />
-              <Text style={styles.versionText}>Asaaniyat v1.0.0 · AI Seekho 2026</Text>
+              <Text style={styles.versionText}>آسانیت v1.0.0 · AI Seekho 2026</Text>
             </View>
           </LiquidGlass>
         </Animated.View>
@@ -158,10 +226,11 @@ const styles = StyleSheet.create({
   drawerContent: { flex: 1, padding: 18, backgroundColor: 'rgba(255,255,255,0.2)' },
   profileHeaderRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
   profileBlock: { alignItems: 'flex-start', gap: 12, marginBottom: 16, paddingHorizontal: 4 },
+  profileTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
   profileCopy: { width: '100%' },
   profileName: { color: COLORS.textPrimary, fontSize: 20, fontFamily: FONTS.heading.fontFamily, marginTop: 8 },
   profileEmail: { color: COLORS.primary, fontSize: 12, fontFamily: FONTS.bold.fontFamily, marginTop: 2 },
-  profileMeta: { marginTop: 2, color: COLORS.textSecondary, fontSize: 13, fontFamily: FONTS.bold.fontFamily },
+  profileUrdu: { color: COLORS.textSecondary, fontSize: 14, fontFamily: FONTS.urdu.fontFamily, marginTop: 4, writingDirection: 'rtl' },
   divider: { height: 1, backgroundColor: 'rgba(14,143,70,0.08)', marginVertical: 12, width: '100%' },
   closeButton: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
   section: { flex: 1, marginTop: 4 },
@@ -173,5 +242,5 @@ const styles = StyleSheet.create({
   rowLabelDanger: { color: '#DC2626' },
   rowHelper: { marginTop: 2, color: COLORS.textSecondary, fontSize: 12, fontFamily: FONTS.bold.fontFamily },
   footer: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: 'rgba(14,143,70,0.06)', paddingTop: 16 },
-  versionText: { textAlign: 'center', color: COLORS.textMuted, fontSize: 11, fontFamily: FONTS.bold.fontFamily, marginTop: 12, letterSpacing: 0.3 },
+  versionText: { textAlign: 'center', color: COLORS.textMuted, fontSize: 12, fontFamily: FONTS.urdu.fontFamily, marginTop: 12, writingDirection: 'rtl' },
 });

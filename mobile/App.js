@@ -35,7 +35,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 import { useFonts } from 'expo-font';
 import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
-import { Outfit_400Regular, Outfit_600SemiBold, Outfit_700Bold, Outfit_900Black } from '@expo-google-fonts/outfit';
+import { Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold, Poppins_900Black } from '@expo-google-fonts/poppins';
 import { NotoNastaliqUrdu_400Regular, NotoNastaliqUrdu_700Bold } from '@expo-google-fonts/noto-nastaliq-urdu';
 
 // Initialize notification handler as early as possible
@@ -273,7 +273,7 @@ function AppNavigator() {
 export default function App() {
   const [fontsLoaded] = useFonts({
     Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black,
-    Outfit_400Regular, Outfit_600SemiBold, Outfit_700Bold, Outfit_900Black,
+    Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold, Poppins_900Black,
     NotoNastaliqUrdu_400Regular, NotoNastaliqUrdu_700Bold,
   });
 
