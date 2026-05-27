@@ -22,6 +22,31 @@ import * as FileSystem from 'expo-file-system';
 let _recording = null;
 let _isRecording = false;
 
+// Pre-defined recording options — compatible with Expo SDK 54
+const RECORDING_OPTIONS = {
+  isMeteringEnabled: true,
+  android: {
+    extension: '.m4a',
+    outputFormat: 2, // Audio.AndroidOutputFormat.MPEG_4
+    audioEncoder: 3, // Audio.AndroidAudioEncoder.AAC
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+  ios: {
+    extension: '.m4a',
+    outputFormat: 'aac', // simplified — avoids referencing enums that may be undefined
+    audioQuality: 127,   // IOSAudioQuality.MAX
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+  web: {
+    mimeType: 'audio/webm',
+    bitsPerSecond: 64000,
+  },
+};
+
 /**
  * Request microphone permission from the user.
  * @returns {Promise<boolean>} true if permission was granted.
@@ -45,7 +70,7 @@ export async function startRecording() {
   if (_recording) {
     try {
       await _recording.stopAndUnloadAsync();
-    } catch (_) {}
+    } catch (_e) {}
     _recording = null;
   }
 
@@ -56,34 +81,11 @@ export async function startRecording() {
     staysActiveInBackground: false,
   });
 
-  // Create recording with high-quality preset optimised for speech
+  // Create recording — use the safe numeric constants instead of enums
   const { recording } = await Audio.Recording.createAsync(
-    {
-      isMeteringEnabled: true,
-      android: {
-        extension: '.m4a',
-        outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-        audioEncoder: Audio.AndroidAudioEncoder.AAC,
-        sampleRate: 16000,
-        numberOfChannels: 1,
-        bitRate: 64000,
-      },
-      ios: {
-        extension: '.m4a',
-        outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
-        audioQuality: Audio.IOSAudioQuality.HIGH,
-        sampleRate: 16000,
-        numberOfChannels: 1,
-        bitRate: 64000,
-      },
-      web: {
-        mimeType: 'audio/webm',
-        bitsPerSecond: 64000,
-      },
-    },
-    // Status update callback for metering (UI can poll _recording.getStatusAsync())
-    null,
-    100 // update interval ms
+    RECORDING_OPTIONS,
+    null, // status update callback
+    100   // update interval ms
   );
 
   _recording = recording;
@@ -100,28 +102,52 @@ export async function stopRecording() {
   }
 
   _isRecording = false;
-  const status = await _recording.getStatusAsync();
-  const durationMs = status.durationMillis || 0;
 
-  await _recording.stopAndUnloadAsync();
+  // CRITICAL FIX: Capture the URI BEFORE calling stopAndUnloadAsync,
+  // because on some devices the recording object gets cleaned up
+  // and getURI() returns null after unloading.
+  let uri = _recording.getURI();
+  let durationMs = 0;
+
+  try {
+    const status = await _recording.getStatusAsync();
+    durationMs = status.durationMillis || 0;
+  } catch (_e) {
+    // Status may fail if already stopped — that's fine
+  }
+
+  try {
+    await _recording.stopAndUnloadAsync();
+  } catch (_e) {
+    // May throw if already stopped — that's fine
+  }
 
   // Reset audio mode
-  await Audio.setAudioModeAsync({
-    allowsRecordingIOS: false,
-    playsInSilentModeIOS: false,
-  });
+  try {
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: false,
+    });
+  } catch (_e) {}
 
-  const uri = _recording.getURI();
+  // Fallback: try getting URI after stop in case it wasn't available before
+  if (!uri) {
+    uri = _recording.getURI();
+  }
   _recording = null;
 
   if (!uri) {
-    throw new Error('[VoiceRecorder] Recording URI is null');
+    throw new Error('[VoiceRecorder] Recording URI is null — microphone may not be available');
   }
 
   // Read file as base64
   const base64 = await FileSystem.readAsStringAsync(uri, {
     encoding: FileSystem.EncodingType.Base64,
   });
+
+  if (!base64 || base64.length === 0) {
+    throw new Error('[VoiceRecorder] Recording produced empty audio data');
+  }
 
   return { base64, uri, durationMs };
 }
@@ -133,14 +159,16 @@ export async function cancelRecording() {
   if (_recording) {
     try {
       await _recording.stopAndUnloadAsync();
-    } catch (_) {}
+    } catch (_e) {}
     _recording = null;
     _isRecording = false;
   }
-  await Audio.setAudioModeAsync({
-    allowsRecordingIOS: false,
-    playsInSilentModeIOS: false,
-  });
+  try {
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: false,
+    });
+  } catch (_e) {}
 }
 
 /**

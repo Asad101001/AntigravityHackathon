@@ -34,7 +34,7 @@ const BADGE_ICONS = {
 };
 
 const BADGE_LABELS = {
-  overall_best:    'Best Match',
+  overall_best:    'Best Choice',
   most_affordable: 'Most Affordable',
   closest_fastest: 'Closest',
 };
@@ -130,7 +130,7 @@ function ProviderCallout({ provider, onPress }) {
     <TouchableOpacity style={styles.callout} onPress={() => onPress(provider)} activeOpacity={0.85}>
       {badge && (
         <View style={[styles.calloutBadge, { backgroundColor: badgeColor + '22', borderColor: badgeColor + '55' }]}>
-          <Ionicons name={BADGE_ICONS[badge]} size={11} color={badgeColor} />
+          <Ionicons name={BADGE_ICONS[badge]} size={13} color={badgeColor} />
           <Text style={[styles.calloutBadgeText, { color: badgeColor }]}>{BADGE_LABELS[badge]}</Text>
         </View>
       )}
@@ -355,14 +355,14 @@ export default function MapPanel({
                 <View style={[styles.distanceBadge, { borderColor: color + '60' }]}>
                   {badge ? (
                     <View style={styles.distanceBadgeInner}>
-                      <Ionicons name={BADGE_ICONS[badge]} size={10} color={color} />
+                      <Ionicons name={BADGE_ICONS[badge]} size={12} color={color} />
                       <Text style={[styles.distanceText, { color }]}>
-                        {provider.distance_km != null ? `${provider.distance_km}km` : 'near'}
+                        {BADGE_LABELS[badge]}
                       </Text>
                     </View>
                   ) : (
                     <Text style={[styles.distanceText, { color }]}>
-                      {provider.distance_km != null ? `${provider.distance_km}km` : 'near'}
+                      {provider.distance_km != null ? `${provider.distance_km} km` : 'nearby'}
                     </Text>
                   )}
                 </View>
@@ -375,7 +375,7 @@ export default function MapPanel({
                   badge === 'overall_best' && styles.pinShellBest,
                 ]}>
                   <View style={[styles.pinCore, { backgroundColor: color }]}>
-                    <Ionicons name={icon} size={19} color="#FFFFFF" />
+                    <Ionicons name={icon} size={22} color="#FFFFFF" />
                   </View>
                 </View>
 
@@ -409,13 +409,13 @@ export default function MapPanel({
       {/* ── Legend — TOP-LEFT, fully visible, wider ────────────── */}
       {providerMarkers.length > 0 && (
         <View style={styles.legend} pointerEvents="none">
-          <Text style={styles.legendTitle}>LEGEND</Text>
+          <Text style={styles.legendTitle}>MAP LEGEND</Text>
           {Object.entries(BADGE_LABELS)
             .filter(([key]) => providerMarkers.some(({ provider: p }) => p.multi_factor_badge === key))
             .map(([key, label]) => (
               <View key={key} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: BADGE_COLORS[key] }]}>
-                  <Ionicons name={BADGE_ICONS[key]} size={8} color="#FFFFFF" />
+                  <Ionicons name={BADGE_ICONS[key]} size={10} color="#FFFFFF" />
                 </View>
                 <Text style={styles.legendText}>{label}</Text>
               </View>
@@ -423,7 +423,7 @@ export default function MapPanel({
           {providerMarkers.some(({ provider: p }) => !p.multi_factor_badge) && (
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: COLORS.textMuted }]} />
-              <Text style={styles.legendText}>Other</Text>
+              <Text style={styles.legendText}>Other Providers</Text>
             </View>
           )}
         </View>
@@ -506,108 +506,109 @@ const styles = StyleSheet.create({
   pinWrapActive: { transform: [{ scale: 1.14 }] },
 
   distanceBadge: {
-    marginBottom: 4,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    marginBottom: 5,
+    backgroundColor: 'rgba(255,255,255,0.98)',
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1.5,
     ...SHADOWS.pressed,
   },
-  distanceBadgeInner: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  distanceText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.2 },
+  distanceBadgeInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  distanceText: { fontSize: 12, fontWeight: '900', letterSpacing: 0.3 },
 
   pinShell: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2.5,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: 'rgba(255,255,255,0.98)',
     ...SHADOWS.card,
   },
-  pinShellActive: { borderWidth: 3 },
-  pinShellBest:   { borderWidth: 3 },
+  pinShellActive: { borderWidth: 3.5, transform: [{ scale: 1.08 }] },
+  pinShellBest:   { borderWidth: 3.5 },
   pinCore: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pinTail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
-    borderTopWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 12,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    marginTop: -1,
+    marginTop: -2,
   },
 
   // Callout — WIDER with clearer text
   callout: {
     backgroundColor: 'rgba(255,255,255,0.99)',
-    borderRadius: 18,
-    padding: 16,
-    width: 260,
+    borderRadius: 20,
+    padding: 18,
+    width: 290,
     borderWidth: 1,
     borderColor: 'rgba(14,143,70,0.1)',
     ...SHADOWS.floating,
-    gap: 4,
+    gap: 5,
   },
   calloutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: 6,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     alignSelf: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 5,
   },
-  calloutBadgeText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
-  calloutName:      { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900', lineHeight: 20 },
+  calloutBadgeText: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.6 },
+  calloutName:      { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900', lineHeight: 22 },
   calloutMetaRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  calloutMeta:      { color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
+  calloutMeta:      { color: COLORS.textSecondary, fontSize: 14, fontWeight: '700' },
   calloutMetaDot:   { color: COLORS.textMuted },
-  calloutPrice:     { color: COLORS.primary, fontSize: 14, fontWeight: '900', marginTop: 3 },
-  calloutCta:       { color: COLORS.primary, fontSize: 12, fontWeight: '900', textAlign: 'right', marginTop: 4 },
+  calloutPrice:     { color: COLORS.primary, fontSize: 16, fontWeight: '900', marginTop: 4 },
+  calloutCta:       { color: COLORS.primary, fontSize: 13, fontWeight: '900', textAlign: 'right', marginTop: 5 },
 
   // Legend — TOP-LEFT corner, fully visible, wider
   legend: {
     position: 'absolute',
     top: 14,
     left: 12,
-    backgroundColor: 'rgba(255,255,255,0.96)',
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.12)',
-    borderRadius: 14,
-    padding: 10,
-    paddingTop: 8,
-    gap: 5,
-    maxWidth: 180,
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.14)',
+    borderRadius: 16,
+    padding: 12,
+    paddingTop: 10,
+    gap: 6,
+    maxWidth: 220,
+    minWidth: 170,
     ...SHADOWS.card,
   },
   legendTitle: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     color: COLORS.textMuted,
-    letterSpacing: 1.2,
-    marginBottom: 2,
+    letterSpacing: 1.5,
+    marginBottom: 3,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  legendText: { color: COLORS.textPrimary, fontSize: 11, fontWeight: '700', flex: 1 },
+  legendText: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '800', flex: 1 },
 
   // Re-center button — LARGER with label
   recenterBtn: {

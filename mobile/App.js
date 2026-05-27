@@ -265,14 +265,66 @@ export default function App() {
 
     if (isLoading) {
       return (
-        <View style={[styles.authGate, { alignItems: 'center', justifyContent: 'center', flex: 1, backgroundColor: COLORS.bg }]}>
-          <LiquidGlass style={StyleSheet.absoluteFill} contentStyle={{ alignItems: 'center', justifyContent: 'center' }} strong radius={0}>
-             <ActivityIndicator size="large" color={COLORS.primary} style={{ marginBottom: 20 }} />
-             <Text style={{ fontSize: 32, fontWeight: '900', color: COLORS.textPrimary, letterSpacing: -0.8 }}>Asaaniyat</Text>
-             <Text style={{ fontSize: 11, fontWeight: '900', color: COLORS.primary, marginTop: 8, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-               Checking secure session...
-             </Text>
-          </LiquidGlass>
+        <View style={{ flex: 1, backgroundColor: '#F5FBF7' }}>
+          {/* Ambient tonal layers */}
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', backgroundColor: '#E8F4FD', opacity: 0.85 }} />
+          <View style={{ position: 'absolute', top: '30%', left: 0, right: 0, height: '30%', backgroundColor: '#EDF9F0', opacity: 0.6 }} />
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%', backgroundColor: '#E0F5E8', opacity: 0.75 }} />
+
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+            {/* Premium card */}
+            <View style={{
+              width: '100%', maxWidth: 340, backgroundColor: '#FFFFFF',
+              borderRadius: 28, paddingVertical: 44, paddingHorizontal: 28,
+              alignItems: 'center', borderWidth: 1, borderColor: 'rgba(14,143,70,0.1)',
+              shadowColor: '#087238', shadowOffset: { width: 0, height: 20 },
+              shadowOpacity: 0.18, shadowRadius: 32, elevation: 12,
+            }}>
+              {/* Icon container */}
+              <View style={{
+                width: 78, height: 78, borderRadius: 20,
+                backgroundColor: '#EAF8EF', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 24, borderWidth: 1.5, borderColor: 'rgba(14,143,70,0.14)',
+                ...SHADOWS.iconGlow,
+              }}>
+                <Ionicons name="shield-checkmark" size={36} color={COLORS.primary} />
+              </View>
+
+              {/* Urdu */}
+              <Text style={{
+                fontSize: 38, fontWeight: '700', color: '#0B2A18',
+                textAlign: 'center', marginBottom: 4, writingDirection: 'rtl', lineHeight: 50,
+              }}>
+                آسانیات
+              </Text>
+
+              {/* English */}
+              <Text style={{
+                fontSize: 24, fontWeight: '900', color: COLORS.primary,
+                textAlign: 'center', letterSpacing: 0.5, lineHeight: 30,
+              }}>
+                Asaaniyat
+              </Text>
+
+              {/* Divider */}
+              <View style={{
+                width: 50, height: 3, backgroundColor: COLORS.primary,
+                borderRadius: 1.5, marginVertical: 20, opacity: 0.8,
+              }} />
+
+              {/* Status text */}
+              <Text style={{
+                fontSize: 11, fontWeight: '900', color: COLORS.primary,
+                letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center',
+                marginBottom: 22, lineHeight: 16,
+              }}>
+                Securing your session
+              </Text>
+
+              {/* Loading indicator */}
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            </View>
+          </View>
         </View>
       );
     }
