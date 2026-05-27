@@ -193,14 +193,14 @@ function VoiceModal({ visible, onClose, onResult }) {
       }
 
       // Send to backend for transcription
-      const result = await transcribeAudio({
+      const transcriptionResult = await transcribeAudio({
         base64,
         mimeType: 'audio/m4a',
         languageHint: 'auto',
       });
 
-      setTranscribedText(result.text);
-      setDetectedLang(result.language === 'ur' ? 'اردو' : result.language === 'ur-roman' ? 'Roman Urdu' : 'English');
+      setTranscribedText(transcriptionResult.text);
+      setDetectedLang(transcriptionResult.language === 'ur' ? 'اردو' : transcriptionResult.language === 'ur-roman' ? 'Roman Urdu' : 'English');
       setPhase('success');
 
     } catch (err) {
