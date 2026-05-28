@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-28T23-39-48",
+  "timestamp": "2026-05-28T23:41:10.040Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the shortest response time and highest on-time scores. Among these, AC069 stood out for its excellent rating, low cancellation risk, and competitive base rate. Although AC179 had a slightly higher rating, AC069's more balanced profile and shorter distance made it the overall best choice.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "AC069's excellent rating, low cancellation risk, and competitive base rate make it the best choice for this service request.",
+        "most_affordable_id": "AC179 has the lowest base rate among verified and available providers.",
+        "closest_fastest_id": "AC069 has the shortest distance and response time among available providers."
+      }
+    }
+  },
+  "durationMs": 753
+}

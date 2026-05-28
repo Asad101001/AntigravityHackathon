@@ -63,7 +63,13 @@ const authLimiter = rateLimit({
 });
 
 // Input sanitization
-app.use(sanitizeInput);
+// Skip sanitization for speech-to-text (audio is binary, not text)
+app.use((req, res, next) => {
+  if (req.path === '/api/speech-to-text') {
+    return next();
+  }
+  sanitizeInput(req, res, next);
+});
 
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);

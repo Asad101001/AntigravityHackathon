@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-28T23-39-48",
+  "timestamp": "2026-05-28T23:41:06.443Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "i need an ac technician at 2 am",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "today_0200",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "Extracted service type from user request, inferred urgency level as high due to late hour, and price sensitivity as neutral as no specific mention."
+  },
+  "durationMs": 1608
+}
