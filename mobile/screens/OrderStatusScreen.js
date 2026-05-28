@@ -11,8 +11,22 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import ScreenHeader from '../components/ScreenHeader';
+
+let MapView = () => null;
+let Marker = () => null;
+let Polyline = () => null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default || Maps;
+    Marker = Maps.Marker;
+    Polyline = Maps.Polyline;
+  } catch (e) {
+    console.warn('Failed to load react-native-maps', e);
+  }
+}
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, SHADOWS, FONTS } from '../theme';
 import { sendLocalNotification } from '../notifications';
@@ -88,7 +102,7 @@ export default function OrderStatusScreen({ route, navigation }) {
       }).start();
     });
 
-    if (mapRef.current) {
+    if (mapRef.current && Platform.OS !== 'web') {
       mapRef.current.fitToCoordinates([providerStartLoc, userLoc], {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
         animated: true,
@@ -137,38 +151,45 @@ export default function OrderStatusScreen({ route, navigation }) {
     <View style={styles.shell}>
       {/* Map View taking top 55% */}
       <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          style={StyleSheet.absoluteFillObject}
-          initialRegion={{
-            ...KARACHI_COORD,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-          showsUserLocation={false}
-        >
-          {/* Path line */}
-          <Polyline
-            coordinates={[providerStartLoc, userLoc]}
-            strokeColor={COLORS.primary}
-            strokeWidth={4}
-            lineDashPattern={[10, 10]}
-          />
+        {Platform.OS !== 'web' ? (
+          <MapView
+            ref={mapRef}
+            style={StyleSheet.absoluteFillObject}
+            initialRegion={{
+              ...KARACHI_COORD,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }}
+            showsUserLocation={false}
+          >
+            {/* Path line */}
+            <Polyline
+              coordinates={[providerStartLoc, userLoc]}
+              strokeColor={COLORS.primary}
+              strokeWidth={4}
+              lineDashPattern={[10, 10]}
+            />
 
-          {/* User Destination Marker */}
-          <Marker coordinate={userLoc} anchor={{ x: 0.5, y: 0.5 }}>
-            <View style={styles.userMarker}>
-              <Ionicons name="home" size={14} color="#FFFFFF" />
-            </View>
-          </Marker>
+            {/* User Destination Marker */}
+            <Marker coordinate={userLoc} anchor={{ x: 0.5, y: 0.5 }}>
+              <View style={styles.userMarker}>
+                <Ionicons name="home" size={14} color="#FFFFFF" />
+              </View>
+            </Marker>
 
-          {/* Provider Marker (Animated) */}
-          <Marker coordinate={currentProviderLoc} anchor={{ x: 0.5, y: 0.5 }}>
-            <View style={styles.providerMarker}>
-              <Ionicons name="storefront" size={14} color="#FFFFFF" />
-            </View>
-          </Marker>
-        </MapView>
+            {/* Provider Marker (Animated) */}
+            <Marker coordinate={currentProviderLoc} anchor={{ x: 0.5, y: 0.5 }}>
+              <View style={styles.providerMarker}>
+                <Ionicons name="storefront" size={14} color="#FFFFFF" />
+              </View>
+            </Marker>
+          </MapView>
+        ) : (
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#EAF8EF', alignItems: 'center', justifyContent: 'center' }]}>
+            <Ionicons name="map-outline" size={48} color={COLORS.primary} style={{ opacity: 0.5, marginBottom: 12 }} />
+            <Text style={{ fontFamily: FONTS.bold.fontFamily, color: COLORS.primary, opacity: 0.7 }}>Live Tracking Not Available on Web</Text>
+          </View>
+        )}
         <View style={styles.mapOverlayTop}>
           <ScreenHeader navigation={navigation} title="" stepLabel="LIVE TRACKER" noBorder />
         </View>

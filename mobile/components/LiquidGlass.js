@@ -2,12 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
 import { GLASS, SHADOWS, RADII, COLORS } from '../theme';
 
-let BlurView = null;
-try {
-  BlurView = require('expo-blur').BlurView;
-} catch (e) {
-  // expo-blur not available — fallback to View
-}
+import { BlurView } from 'expo-blur';
 
 export default function LiquidGlass({ children, style, contentStyle, strong = false, radius = RADII.lg }) {
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
@@ -43,7 +38,6 @@ export default function LiquidGlass({ children, style, contentStyle, strong = fa
         <BlurView
           intensity={strong ? 60 : 42}
           tint="light"
-          experimentalBlurMethod="dimezisBlurView"
           style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
         />
       )}

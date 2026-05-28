@@ -18,6 +18,7 @@ import * as Location from 'expo-location';
 import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
+import VoiceModal from '../components/VoiceModal';
 
 const SUPPORTED_CITIES = ['Karachi', 'Islamabad', 'Lahore'];
 
@@ -55,6 +56,7 @@ export default function HomeScreen({ route, navigation }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
   const carouselOpacity = useRef(new Animated.Value(1)).current;
+  const [isRecording, setIsRecording] = useState(false);
 
   const switchPage = useCallback((nextPage) => {
     Animated.timing(carouselOpacity, {
@@ -181,6 +183,8 @@ export default function HomeScreen({ route, navigation }) {
 
   return (
     <View style={styles.background}>
+      <VoiceModal visible={isRecording} onClose={() => setIsRecording(false)} />
+
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView
           contentContainerStyle={[
@@ -258,7 +262,15 @@ export default function HomeScreen({ route, navigation }) {
               >
                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
               </TouchableOpacity>
-            ) : null}
+            ) : (
+              <TouchableOpacity
+                style={[styles.sendButton, styles.micButton]}
+                onPress={() => setIsRecording(true)}
+                activeOpacity={0.82}
+              >
+                <Ionicons name="mic" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Popular Services Header */}
@@ -499,6 +511,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  micButton: {
+    backgroundColor: 'rgba(14,143,70,0.1)',
   },
   disabled: {
     opacity: 0.42,

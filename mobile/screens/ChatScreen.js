@@ -4,6 +4,7 @@ import {
   Animated,
   KeyboardAvoidingView,
   Keyboard,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -18,6 +19,7 @@ import { useTabBarVisibility } from '../components/TabBarVisibility';
 import { COLORS, SHADOWS, FONTS } from '../theme';
 import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
+import VoiceModal from '../components/VoiceModal';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -75,6 +77,7 @@ export default function ChatScreen({ navigation }) {
   });
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
   
   const [chatThreads, setChatThreads] = useState([]);
   const [isThreadsLoading, setIsThreadsLoading] = useState(true);
@@ -308,6 +311,8 @@ export default function ChatScreen({ navigation }) {
 
   return (
     <View style={styles.screen}>
+      <VoiceModal visible={isRecording} onClose={() => setIsRecording(false)} />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -421,7 +426,13 @@ export default function ChatScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.map((message) => <ChatBubble key={message.id} message={message} />)}
+          {messages.map((message) => (
+            <ChatBubble 
+              key={message.id} 
+              message={message} 
+              isGeneralChat={activeBooking?.id === 'general'} 
+            />
+          ))}
           
           {/* Select Inquiry drawer inside scroll view at the bottom of standard messages */}
           {activeBooking && activeBooking.id !== 'general' && (
@@ -480,6 +491,14 @@ export default function ChatScreen({ navigation }) {
               >
                 <Ionicons name="send" size={18} color="#FFFFFF" />
               </TouchableOpacity>
+            ) : activeBooking?.id === 'general' ? (
+              <TouchableOpacity
+                style={[styles.sendButton, styles.micButtonChat]}
+                onPress={() => setIsRecording(true)}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="mic" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
             ) : null}
           </View>
         </View>
@@ -489,8 +508,9 @@ export default function ChatScreen({ navigation }) {
   );
 }
 
-function ChatBubble({ message }) {
+function ChatBubble({ message, isGeneralChat }) {
   const isUser = message.role === 'user';
+  const [isPlaying, setIsPlaying] = useState(false);
   
   if (isUser) {
     return (
@@ -545,6 +565,23 @@ function ChatBubble({ message }) {
                 </View>
               );
             })}
+          </View>
+        )}
+
+        {/* Voice output control for AI assistant */}
+        {isGeneralChat && !hasDiagnosticCard && !isBookingSelected && (
+          <View style={styles.voiceOutputContainer}>
+            <TouchableOpacity 
+              style={styles.playVoiceBtn}
+              onPress={() => setIsPlaying(!isPlaying)}
+              activeOpacity={0.7}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+            >
+              <Ionicons name={isPlaying ? "stop" : "volume-medium"} size={16} color={isPlaying ? COLORS.primary : COLORS.textSecondary} />
+            </TouchableOpacity>
+            {isPlaying && (
+              <Text style={styles.playingText}>Speaking...</Text>
+            )}
           </View>
         )}
 
@@ -690,6 +727,9 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     opacity: 0.45,
   },
+  micButtonChat: {
+    backgroundColor: 'rgba(14,143,70,0.1)',
+  },
   micIdleBtn: {
     backgroundColor: 'rgba(14,143,70,0.1)',
   },
@@ -724,6 +764,24 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(14,143,70,0.15)',
     ...SHADOWS.card,
     elevation: 2,
+  },
+
+  // Voice Output
+  voiceOutputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  playVoiceBtn: {
+    padding: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playingText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    marginLeft: 4,
+    fontFamily: FONTS.heading.fontFamily,
   },
 
   // Message Bubbles
