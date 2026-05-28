@@ -34,7 +34,7 @@ const BADGE_ICONS = {
 };
 
 const BADGE_LABELS = {
-  overall_best:    'Best Choice',
+  overall_best:    'Top Rated',
   most_affordable: 'Most Affordable',
   closest_fastest: 'Closest',
 };
@@ -79,7 +79,12 @@ function toCoordinate(input) {
 }
 
 function resolveServiceKey(provider) {
-  return provider.service_type || provider.service || provider.type || 'default';
+  let s = provider.service_type || provider.service || provider.type || 'default';
+  if (typeof s === 'string' && s !== 'default') {
+    s = s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    if (s === 'Ac Technician') return 'AC Technician';
+  }
+  return s;
 }
 
 function colorFor(provider) {

@@ -45,6 +45,25 @@ function getInitialStageIndex(status) {
   return map[status?.toLowerCase()] ?? 0;
 }
 
+// ── Offline City Block Path Generator ─────────────────────────────────────
+function generateCityBlockPath(start, end) {
+  const segments = 5;
+  const path = [start];
+  const latStep = (end.latitude - start.latitude) / segments;
+  const lngStep = (end.longitude - start.longitude) / segments;
+  
+  let curLat = start.latitude;
+  let curLng = start.longitude;
+
+  for (let i = 0; i < segments; i++) {
+    curLat += latStep;
+    path.push({ latitude: curLat, longitude: curLng });
+    curLng += lngStep;
+    path.push({ latitude: curLat, longitude: curLng });
+  }
+  return path;
+}
+
 // Map Configuration
 const KARACHI_COORD = { latitude: 24.8607, longitude: 67.0011 };
 const DEFAULT_PROVIDER_START = { latitude: 24.8700, longitude: 67.0200 }; // Fake start
@@ -73,22 +92,49 @@ export default function OrderStatusScreen({ route, navigation }) {
   }, []);
 
   const [currentProviderLoc, setCurrentProviderLoc] = useState(providerStartLoc);
+  const routePath = useMemo(() => generateCityBlockPath(providerStartLoc, userLoc), [providerStartLoc, userLoc]);
+  const pathProgressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const id = progressAnim.addListener(({ value }) => {
-      setCurrentProviderLoc({
-        latitude: providerStartLoc.latitude + (userLoc.latitude - providerStartLoc.latitude) * value,
-        longitude: providerStartLoc.longitude + (userLoc.longitude - providerStartLoc.longitude) * value,
-      });
+    const id = pathProgressAnim.addListener(({ value }) => {
+      const totalSegments = routePath.length - 1;
+      const exactIndex = value * totalSegments;
+      const lowerIndex = Math.floor(exactIndex);
+      const upperIndex = Math.min(lowerIndex + 1, totalSegments);
+      const fraction = exactIndex - lowerIndex;
+
+      if (lowerIndex === upperIndex) {
+        setCurrentProviderLoc(routePath[totalSegments]);
+      } else {
+        const p1 = routePath[lowerIndex];
+        const p2 = routePath[upperIndex];
+        setCurrentProviderLoc({
+          latitude: p1.latitude + (p2.latitude - p1.latitude) * fraction,
+          longitude: p1.longitude + (p2.longitude - p1.longitude) * fraction,
+        });
+      }
     });
-    return () => progressAnim.removeListener(id);
-  }, [progressAnim, providerStartLoc, userLoc]);
+    return () => pathProgressAnim.removeListener(id);
+  }, [pathProgressAnim, routePath]);
 
   useEffect(() => {
+    // UI Progress Bar goes 0 -> 1 based on 5 stages (0/4, 1/4, 2/4, 3/4, 4/4)
     Animated.timing(progressAnim, {
       toValue: currentStage / (STAGES.length - 1),
       duration: 1000,
       easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+
+    // Map Movement Logic: Only moves between Stage 1 (Dispatched) and Stage 2 (Arriving). Locked at destination if >= 2.
+    let targetMapProgress = 0;
+    if (currentStage === 1) targetMapProgress = 0.5;
+    if (currentStage >= 2) targetMapProgress = 1;
+
+    Animated.timing(pathProgressAnim, {
+      toValue: targetMapProgress,
+      duration: 1500,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: false,
     }).start();
 
@@ -103,12 +149,12 @@ export default function OrderStatusScreen({ route, navigation }) {
     });
 
     if (mapRef.current && Platform.OS !== 'web') {
-      mapRef.current.fitToCoordinates([providerStartLoc, userLoc], {
+      mapRef.current.fitToCoordinates(routePath, {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
         animated: true,
       });
     }
-  }, [currentStage, userLoc, providerStartLoc, stageAnims, progressAnim]);
+  }, [currentStage, userLoc, providerStartLoc, stageAnims, progressAnim, pathProgressAnim, routePath]);
 
   const info = useMemo(() => [
     { label: 'SERVICE', value: booking?.service || 'Home Service', icon: 'briefcase-outline' },
@@ -120,15 +166,6 @@ export default function OrderStatusScreen({ route, navigation }) {
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
-  });
-
-  const providerLat = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [providerStartLoc.latitude, userLoc.latitude]
-  });
-  const providerLng = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [providerStartLoc.longitude, userLoc.longitude]
   });
 
   const handleUpdateStatus = async () => {
@@ -162,9 +199,9 @@ export default function OrderStatusScreen({ route, navigation }) {
             }}
             showsUserLocation={false}
           >
-            {/* Path line */}
+            {/* Path line - Using offline City Block coordinates */}
             <Polyline
-              coordinates={[providerStartLoc, userLoc]}
+              coordinates={routePath}
               strokeColor={COLORS.primary}
               strokeWidth={4}
               lineDashPattern={[10, 10]}
