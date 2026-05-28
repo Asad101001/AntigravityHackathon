@@ -16,6 +16,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, SHADOWS, FONTS } from '../theme';
 import { sendLocalNotification } from '../notifications';
+import { updateSessionBookingStatus } from '../sessionBookings';
 
 const STAGES = [
   { key: 'confirmed', label: 'Confirmed',  icon: 'checkmark-circle-outline' },
@@ -56,6 +57,18 @@ export default function OrderStatusScreen({ route, navigation }) {
   const providerStartLoc = useMemo(() => {
     return DEFAULT_PROVIDER_START;
   }, []);
+
+  const [currentProviderLoc, setCurrentProviderLoc] = useState(providerStartLoc);
+
+  useEffect(() => {
+    const id = progressAnim.addListener(({ value }) => {
+      setCurrentProviderLoc({
+        latitude: providerStartLoc.latitude + (userLoc.latitude - providerStartLoc.latitude) * value,
+        longitude: providerStartLoc.longitude + (userLoc.longitude - providerStartLoc.longitude) * value,
+      });
+    });
+    return () => progressAnim.removeListener(id);
+  }, [progressAnim, providerStartLoc, userLoc]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -108,6 +121,9 @@ export default function OrderStatusScreen({ route, navigation }) {
     if (currentStage < STAGES.length - 1) {
       const nextStage = currentStage + 1;
       setCurrentStage(nextStage);
+      if (booking?.id) {
+        updateSessionBookingStatus(booking.id, STAGES[nextStage].key, nextStage);
+      }
       await sendLocalNotification('Booking Update', `Your service is now: ${STAGES[nextStage].label}`);
     }
   };
@@ -147,12 +163,7 @@ export default function OrderStatusScreen({ route, navigation }) {
           </Marker>
 
           {/* Provider Marker (Animated) */}
-          {/* React Native Maps doesn't support Animated.View inside Marker coordinate directly without AnimatedRegion, but we can fake it by updating state or using an AnimatedRegion.
-              For simplicity without AnimatedRegion, we use a basic marker that jumps when state updates.
-              However, since we want smooth animation, we use Animated.View over the map if it was simulated, but since it's MapView we'll just snap the marker on progress, or we can just use the start and end and a static view for the car. 
-              Let's create a custom animated view overlapping the map for the car to be perfectly smooth if we map coordinates to screen, but that's complex. 
-              We will just update the Marker coordinate on interval or just let it snap for now, wait actually AnimatedRegion is standard. Let's stick to the simplest: Provider at start, User at end. */}
-          <Marker coordinate={providerStartLoc} anchor={{ x: 0.5, y: 0.5 }}>
+          <Marker coordinate={currentProviderLoc} anchor={{ x: 0.5, y: 0.5 }}>
             <View style={styles.providerMarker}>
               <Ionicons name="storefront" size={14} color="#FFFFFF" />
             </View>

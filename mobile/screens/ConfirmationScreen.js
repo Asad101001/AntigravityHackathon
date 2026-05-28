@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Platform, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
@@ -185,6 +185,16 @@ export default function ConfirmationScreen({ route, navigation }) {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Hey! I just booked ${displayServiceTitle} via Asaaniyat! Tracking ID: #${displayBookingId}`,
+      });
+    } catch (error) {
+      console.warn('Error sharing booking', error);
+    }
+  };
+
   const rawService = provider.service_type || provider.service || 'plumbing';
   const serviceKey = String(rawService).toLowerCase();
   const serviceIconName = SERVICE_ICONS[serviceKey] || 'construct-outline';
@@ -300,6 +310,17 @@ export default function ConfirmationScreen({ route, navigation }) {
           activeOpacity={0.8}
         >
           <Text style={styles.secondaryButtonText}>Go to Chat</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.secondaryButton, { marginTop: 12, backgroundColor: 'rgba(14,143,70,0.06)', borderWidth: 0 }]}
+          onPress={handleShare}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="share-social-outline" size={18} color={COLORS.primary} />
+            <Text style={[styles.secondaryButtonText, { color: COLORS.primary }]}>Share Booking</Text>
+          </View>
         </TouchableOpacity>
 
       </ScrollView>

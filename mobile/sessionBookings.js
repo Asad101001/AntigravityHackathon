@@ -47,3 +47,13 @@ export function subscribeSessionBookings(listener) {
   listener(getSessionBookings());
   return () => listeners.delete(listener);
 }
+
+export function updateSessionBookingStatus(id, newStatus, newStageIndex) {
+  const existingIndex = sessionBookings.findIndex(item => item.id === id);
+  if (existingIndex >= 0) {
+    sessionBookings[existingIndex].status = newStatus;
+    if (newStageIndex !== undefined) sessionBookings[existingIndex].stageIndex = newStageIndex;
+    emit();
+  }
+}
+

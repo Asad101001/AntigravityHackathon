@@ -367,7 +367,6 @@ export default function MapPanel({
                   )}
                 </View>
 
-                {/* Pin shell — LARGER for visibility */}
                 <View style={[
                   styles.pinShell,
                   { borderColor: color },
@@ -375,7 +374,7 @@ export default function MapPanel({
                   badge === 'overall_best' && styles.pinShellBest,
                 ]}>
                   <View style={[styles.pinCore, { backgroundColor: color }]}>
-                    <Ionicons name={icon} size={22} color="#FFFFFF" />
+                    <Ionicons name={icon} size={14} color="#FFFFFF" />
                   </View>
                 </View>
 
@@ -518,21 +517,21 @@ const styles = StyleSheet.create({
   distanceText: { fontSize: 12, fontFamily: FONTS.heading.fontFamily, letterSpacing: 0.3 },
 
   pinShell: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 3,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.98)',
     ...SHADOWS.card,
   },
-  pinShellActive: { borderWidth: 3.5, transform: [{ scale: 1.08 }] },
-  pinShellBest:   { borderWidth: 3.5 },
+  pinShellActive: { borderWidth: 2.5, transform: [{ scale: 1.08 }] },
+  pinShellBest:   { borderWidth: 2.5 },
   pinCore: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },

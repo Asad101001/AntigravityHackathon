@@ -276,7 +276,7 @@ export default function HomeScreen({ route, navigation }) {
                   <Animated.View key={service.id} style={{ width: '48%', transform: [{ scale: scaleAnim }] }}>
                     <TouchableOpacity
                       style={styles.serviceCard}
-                      onPress={() => quickBook(service.label)}
+                      onPress={() => prefill(service.label)}
                       onPressIn={() => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true, speed: 50, bounciness: 4 }).start()}
                       onPressOut={() => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start()}
                       activeOpacity={1}

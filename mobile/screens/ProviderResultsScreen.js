@@ -187,11 +187,11 @@ function ProviderCard({ provider, estimatedPkr, onPress }) {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.providerName} numberOfLines={1}>{provider.name}</Text>
-              <Text style={styles.serviceLabel}>
-                {provider.service || provider.service_type || 'Service Provider'}
-              </Text>
               <Text style={styles.companyLabel} numberOfLines={1}>
-                {provider.company || provider.agency || provider.area || 'Verified Expert'}
+                {provider.company || provider.agency || 'Independent Expert'}
+              </Text>
+              <Text style={styles.serviceLabel} numberOfLines={1}>
+                {provider.area || provider.city || 'Local Area'}
               </Text>
 
               {/* Metrics */}
@@ -345,9 +345,9 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontFamily: FONTS.heading.fontFamily, color: COLORS.primary, fontSize: 20 },
 
-  providerName: { fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, fontSize: 18, letterSpacing: -0.2 },
-  serviceLabel:  { fontFamily: FONTS.bold.fontFamily, color: COLORS.primary, fontSize: 12, marginTop: 2, textTransform: 'capitalize' },
-  companyLabel:  { fontFamily: FONTS.regular.fontFamily, color: COLORS.textSecondary, fontSize: 12, marginTop: 2 },
+  providerName: { fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, fontSize: 20, letterSpacing: -0.2 },
+  companyLabel:  { fontFamily: FONTS.bold.fontFamily, color: COLORS.primary, fontSize: 13, marginTop: 2, textTransform: 'capitalize' },
+  serviceLabel:  { fontFamily: FONTS.regular.fontFamily, color: COLORS.textSecondary, fontSize: 12, marginTop: 2 },
 
   metricsRow: { flexDirection: 'row', gap: 5, marginTop: 8, flexWrap: 'wrap' },
   chip: {
