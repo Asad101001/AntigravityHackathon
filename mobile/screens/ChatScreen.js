@@ -20,6 +20,7 @@ import { COLORS, SHADOWS, FONTS } from '../theme';
 import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
 import VoiceModal from '../components/VoiceModal';
+import useVoiceInput from '../lib/useVoiceInput';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -77,7 +78,17 @@ export default function ChatScreen({ navigation }) {
   });
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const {
+    voiceVisible,
+    voiceStatus,
+    voiceTranscript,
+    voiceError,
+    startVoiceInput,
+    stopVoiceInput,
+    cancelVoiceInput,
+  } = useVoiceInput({
+    onTranscript: (spokenText) => setInput(spokenText),
+  });
   
   const [chatThreads, setChatThreads] = useState([]);
   const [isThreadsLoading, setIsThreadsLoading] = useState(true);
@@ -311,7 +322,19 @@ export default function ChatScreen({ navigation }) {
 
   return (
     <View style={styles.screen}>
-      <VoiceModal visible={isRecording} onClose={() => setIsRecording(false)} />
+      <VoiceModal
+        visible={voiceVisible}
+        status={voiceStatus}
+        transcript={voiceTranscript}
+        error={voiceError}
+        onAction={
+          voiceStatus === 'recording'
+            ? stopVoiceInput
+            : voiceStatus === 'error'
+            ? startVoiceInput
+            : cancelVoiceInput
+        }
+      />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -494,7 +517,7 @@ export default function ChatScreen({ navigation }) {
             ) : activeBooking?.id === 'general' ? (
               <TouchableOpacity
                 style={[styles.sendButton, styles.micButtonChat]}
-                onPress={() => setIsRecording(true)}
+                onPress={startVoiceInput}
                 activeOpacity={0.85}
               >
                 <Ionicons name="mic" size={18} color={COLORS.primary} />

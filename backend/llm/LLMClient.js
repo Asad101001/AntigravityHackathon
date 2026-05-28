@@ -17,7 +17,7 @@ const GROQ_ENDPOINT   = 'https://api.groq.com/openai/v1/chat/completions';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 const DEFAULT_GROQ_MODEL   = 'llama-3.1-8b-instant'; 
-const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
+const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 const RETRY_OPTS = {
   maxAttempts: 4,

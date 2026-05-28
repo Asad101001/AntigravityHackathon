@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.asaaniyat.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Asaaniyat uses your location to find service providers near you.",
-        "NSLocationAlwaysUsageDescription": "Asaaniyat uses your location to find service providers near you."
+        "NSLocationAlwaysUsageDescription": "Asaaniyat uses your location to find service providers near you.",
+        "NSMicrophoneUsageDescription": "Asaaniyat uses your microphone to turn your voice into text in English and Roman Urdu."
       }
     },
     "android": {
@@ -32,6 +33,7 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET",
+        "RECORD_AUDIO",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "POST_NOTIFICATIONS"

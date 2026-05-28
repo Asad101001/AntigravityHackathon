@@ -19,6 +19,7 @@ import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 import VoiceModal from '../components/VoiceModal';
+import useVoiceInput from '../lib/useVoiceInput';
 
 const SUPPORTED_CITIES = ['Karachi', 'Islamabad', 'Lahore'];
 
@@ -56,7 +57,17 @@ export default function HomeScreen({ route, navigation }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
   const carouselOpacity = useRef(new Animated.Value(1)).current;
-  const [isRecording, setIsRecording] = useState(false);
+  const {
+    voiceVisible,
+    voiceStatus,
+    voiceTranscript,
+    voiceError,
+    startVoiceInput,
+    stopVoiceInput,
+    cancelVoiceInput,
+  } = useVoiceInput({
+    onTranscript: (spokenText) => setText(spokenText),
+  });
 
   const switchPage = useCallback((nextPage) => {
     Animated.timing(carouselOpacity, {
@@ -183,7 +194,19 @@ export default function HomeScreen({ route, navigation }) {
 
   return (
     <View style={styles.background}>
-      <VoiceModal visible={isRecording} onClose={() => setIsRecording(false)} />
+      <VoiceModal
+        visible={voiceVisible}
+        status={voiceStatus}
+        transcript={voiceTranscript}
+        error={voiceError}
+        onAction={
+          voiceStatus === 'recording'
+            ? stopVoiceInput
+            : voiceStatus === 'error'
+            ? startVoiceInput
+            : cancelVoiceInput
+        }
+      />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView
@@ -265,7 +288,7 @@ export default function HomeScreen({ route, navigation }) {
             ) : (
               <TouchableOpacity
                 style={[styles.sendButton, styles.micButton]}
-                onPress={() => setIsRecording(true)}
+                onPress={startVoiceInput}
                 activeOpacity={0.82}
               >
                 <Ionicons name="mic" size={20} color={COLORS.primary} />

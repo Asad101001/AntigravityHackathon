@@ -1,9 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SHADOWS, RADII } from '../theme';
 
-export default function VoiceModal({ visible, onClose }) {
+export default function VoiceModal({
+  visible,
+  status = 'preparing',
+  transcript = '',
+  error = '',
+  onAction,
+}) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -37,10 +43,24 @@ export default function VoiceModal({ visible, onClose }) {
               <Ionicons name="mic" size={32} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={styles.title}>Listening...</Text>
-          <Text style={styles.subtitle}>Speak in Urdu, English, or Roman Urdu.</Text>
-          <TouchableOpacity style={styles.stopBtn} onPress={onClose} activeOpacity={0.8}>
-            <Text style={styles.stopBtnText}>Done</Text>
+          <Text style={styles.title}>
+            {status === 'recording' ? 'Listening...' : status === 'transcribing' ? 'Writing your words...' : error ? 'Voice input issue' : 'Tap to Speak'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {status === 'recording'
+              ? 'Speak in English or Roman Urdu.'
+              : status === 'transcribing'
+              ? 'Turning your voice into text.'
+              : error || 'Speak in English or Roman Urdu.'}
+          </Text>
+          {!!transcript && (
+            <View style={styles.previewBox}>
+              <Text style={styles.previewLabel}>Captured text</Text>
+              <Text style={styles.previewText}>{transcript}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={[styles.stopBtn, status === 'transcribing' && styles.stopBtnDisabled]} onPress={onAction} activeOpacity={0.8} disabled={status === 'transcribing'}>
+            {status === 'transcribing' ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.stopBtnText}>{status === 'recording' ? 'Done' : error ? 'Try Again' : 'Cancel'}</Text>}
           </TouchableOpacity>
         </View>
       </View>
@@ -103,11 +123,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  previewBox: {
+    width: '100%',
+    borderRadius: RADII.sm,
+    backgroundColor: '#F5FBF7',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.12)',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 22,
+  },
+  previewLabel: {
+    fontSize: 11,
+    color: COLORS.primary,
+    fontFamily: FONTS.heading.fontFamily,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  previewText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    fontFamily: FONTS.bold.fontFamily,
+    lineHeight: 20,
+  },
   stopBtn: {
     paddingVertical: 12,
     paddingHorizontal: 32,
     backgroundColor: '#DC2626',
     borderRadius: RADII.sm,
+  },
+  stopBtnDisabled: {
+    opacity: 0.75,
   },
   stopBtnText: {
     color: '#FFFFFF',

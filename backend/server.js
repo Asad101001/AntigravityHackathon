@@ -30,7 +30,17 @@ const getLanUrls = (port) => {
 
 // ─── Middleware ───────────────────────────────────────────────
 app.use(cors());
-app.use(express.json({ limit: '6mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Request logging for speech-to-text
+app.use((req, res, next) => {
+  if (req.path === '/api/speech-to-text') {
+    const contentLength = req.headers['content-length'];
+    console.log(`[Server] POST /api/speech-to-text - Content-Length: ${contentLength} bytes`);
+  }
+  next();
+});
 
 // Rate limiting: 100 requests per 15 minutes per IP (global)
 const limiter = rateLimit({
