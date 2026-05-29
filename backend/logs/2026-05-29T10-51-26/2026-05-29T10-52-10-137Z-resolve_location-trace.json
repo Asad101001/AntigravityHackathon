@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-29T10-51-26",
+  "timestamp": "2026-05-29T10:52:10.137Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "location": "Gulistan-e-Johar Karachi",
+    "city": "Karachi"
+  },
+  "output": {
+    "lat": 24.9207,
+    "lng": 67.1353,
+    "area_name": "Gulistan-e-Johar Karachi",
+    "city": "Karachi",
+    "source": "local_fuzzy_catalog"
+  },
+  "durationMs": 15
+}

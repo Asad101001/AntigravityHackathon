@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-29T10-51-26",
+  "timestamp": "2026-05-29T10:52:10.119Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "I need an AC technician at Gulistan-e-Johar at 2 a.m.",
+  "output": {
+    "service_type": "AC Technician",
+    "location": "Gulistan-e-Johar Karachi",
+    "time_preference": "2 a.m.",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "english",
+    "reasoning": "Extracted service type and location from user's request. Time preference was extracted as 2 a.m. which is not a typical time for a service, so urgency level is set to low. Price sensitivity is neutral as no specific mention was made. Pre-validated \"Gulistan-e-Johar\" → \"Gulistan-e-Johar Karachi\" via local catalog."
+  },
+  "durationMs": 713
+}

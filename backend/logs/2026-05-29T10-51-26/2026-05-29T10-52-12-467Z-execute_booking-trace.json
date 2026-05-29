@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-29T10-51-26",
+  "timestamp": "2026-05-29T10:52:12.467Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "North Nazimabad Rapid AC Technician Hassan",
+    "time_slot": "10:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780051932465",
+    "confirmation_message": "Booking confirmed! North Nazimabad Rapid AC Technician Hassan arrives 30/05/2026 at 10:00 AM. Contact: 0325-3019345. Booking ID: BK_1780051932465",
+    "scheduled_time": "2026-05-30T05:00:00.000Z",
+    "time_slot": "10:00 AM"
+  },
+  "durationMs": 5
+}

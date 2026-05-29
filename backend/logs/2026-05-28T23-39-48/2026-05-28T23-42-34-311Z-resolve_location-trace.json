@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-05-28T23-39-48",
+  "timestamp": "2026-05-28T23:42:34.311Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859857232629277,
+      "lng": 67.07362117124332,
+      "label": "Karachi, Pakistan"
+    },
+    "parsed_location": null,
+    "user_text": "i need an ac technician at 2 am"
+  },
+  "output": {
+    "lat": 24.859857232629277,
+    "lng": 67.07362117124332,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 1
+}

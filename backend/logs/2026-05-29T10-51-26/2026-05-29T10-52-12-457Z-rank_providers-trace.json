@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-29T10-51-26",
+  "timestamp": "2026-05-29T10:52:12.457Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC256",
+    "ranked_ids": [
+      "AC256",
+      "AC146",
+      "AC069",
+      "AC036",
+      "AC014"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best AC technician for the job is North Nazimabad Rapid AC Technician Hassan (AC256). This decision was made after considering the normal urgency, neutral price sensitivity, and the need for an AC technician in Gulistan-e-Johar Karachi. The selected provider has a high rating, excellent on-time score, low cancellation risk, and is relatively close to the job location. While they are not the cheapest option, their quality and reliability make them the best choice for this job.",
+    "multi_factor": {
+      "overall_best_id": "AC256",
+      "most_affordable_id": "AC036",
+      "closest_fastest_id": "AC014",
+      "analysis": {
+        "overall_best_id": "AC256 was chosen as the overall best due to its high rating, excellent on-time score, and low cancellation risk, which outweighed its slightly higher base rate compared to other options.",
+        "most_affordable_id": "AC036 was the most affordable option, with a base rate of 1575 PKR, making it the best choice for customers prioritizing cost.",
+        "closest_fastest_id": "AC014 was the closest and fastest option, with a distance of 6.27 km and an available slot count of 3, making it the best choice for customers prioritizing convenience."
+      }
+    }
+  },
+  "durationMs": 784
+}

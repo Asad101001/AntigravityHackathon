@@ -1,0 +1,197 @@
+{
+  "run_id": "2026-05-28T23-39-48",
+  "timestamp": "2026-05-28T23:42:36.356Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859857232629277,
+      "lng": 67.07362117124332
+    },
+    "service_type": "AC Technician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0c",
+        "id": "AC069",
+        "name": "PECHS Clean AC Technician Zahid",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8761,
+        "lng": 67.0644,
+        "distance_km": 4.32,
+        "rating": 4.7,
+        "reviews_count": 72,
+        "available_slots": [
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0378-1538492",
+        "response_time_min": 11,
+        "verified": true,
+        "specialization": [
+          "gas_refill",
+          "installation",
+          "split_ac"
+        ],
+        "base_rate_pkr": 1395,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in PECHS, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 2.03,
+        "distance_text": "4.3 km",
+        "duration_text": "11 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29eb",
+        "id": "AC036",
+        "name": "Bahadurabad Prime AC Technician Rizwan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Bahadurabad",
+        "lat": 24.8893,
+        "lng": 67.0657,
+        "distance_km": 5.63,
+        "rating": 4.1,
+        "reviews_count": 90,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0345-1277165",
+        "response_time_min": 14,
+        "verified": true,
+        "specialization": [
+          "compressor_check",
+          "inverter_ac",
+          "coil_cleaning"
+        ],
+        "base_rate_pkr": 1575,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid ac technician option for Bahadurabad; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 3.37,
+        "distance_text": "5.6 km",
+        "duration_text": "14 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a43",
+        "id": "AC124",
+        "name": "Saddar Works AC Technician Waqar",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Saddar",
+        "lat": 24.8629,
+        "lng": 67.006,
+        "distance_km": 8.88,
+        "rating": 4.2,
+        "reviews_count": 160,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0353-1974037",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "coil_cleaning",
+          "compressor_check",
+          "inverter_ac"
+        ],
+        "base_rate_pkr": 2029,
+        "on_time_score": 60,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Verified documents are on file. Good technical skill, but recent cancellation risk is high during peak hours around Saddar.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 6.83,
+        "distance_text": "8.9 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ab1",
+        "id": "AC234",
+        "name": "Defence Rapid AC Technician Tariq",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8094,
+        "lng": 67.0678,
+        "distance_km": 11.25,
+        "rating": 4.1,
+        "reviews_count": 159,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0383-2845127",
+        "response_time_min": 23,
+        "verified": false,
+        "specialization": [
+          "compressor_check",
+          "inverter_ac",
+          "coil_cleaning"
+        ],
+        "base_rate_pkr": 1896,
+        "on_time_score": 82,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Solid ac technician option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 5.64,
+        "distance_text": "11.2 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a7a",
+        "id": "AC179",
+        "name": "Defence Home AC Technician Usman",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8083,
+        "lng": 67.0667,
+        "distance_km": 11.32,
+        "rating": 4.6,
+        "reviews_count": 71,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0328-2409582",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "installation",
+          "split_ac",
+          "gas_refill"
+        ],
+        "base_rate_pkr": 1262,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Defence, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "haversine_km": 5.78,
+        "distance_text": "11.3 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 2043
+}
