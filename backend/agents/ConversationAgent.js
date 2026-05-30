@@ -45,7 +45,7 @@ class ConversationAgent extends BaseAgent {
     } else {
       try {
         reply = await this.llm.complete({
-          system: this._buildSystemPrompt(provider, ragBlock),
+          system: this._buildSystemPrompt(provider, ragBlock, context.user_bookings || []),
           user: userPrompt,
           temperature: 0.05,
           maxTokens: 180,
@@ -75,19 +75,29 @@ class ConversationAgent extends BaseAgent {
     };
   }
 
-  _buildSystemPrompt(provider, ragBlock) {
+  _buildSystemPrompt(provider, ragBlock, userBookings = []) {
     const providerLine = provider.name
       ? `ACTIVE BOOKING: Provider "${provider.name}", service "${provider.service_type || provider.service || 'home service'}".`
       : 'ACTIVE BOOKING: Not specified.';
 
+    let userBookingsInfo = '';
+    if (userBookings && userBookings.length > 0) {
+      userBookingsInfo = 'USER BOOKING HISTORY:\n' + userBookings.map((b, i) => 
+        `[${i+1}] Service: ${b.service_type}, Provider: ${b.provider_name}, Status: ${b.status}, Date: ${new Date(b.booking_start_time || b.created_at).toLocaleDateString()}`
+      ).join('\n');
+    } else {
+      userBookingsInfo = 'USER BOOKING HISTORY: No past bookings found.';
+    }
+
     return [
       'You are Asaaniyat, a service-booking coordination assistant for Pakistani home services.',
       providerLine,
+      userBookingsInfo,
       '',
       'STRICT GROUNDING RULES:',
-      '1. Answer only from the retrieved context chunks below.',
+      '1. Answer only from the retrieved context chunks and the user booking history provided above.',
       '2. Do not invent provider names, phone numbers, prices, policies, timings, availability, or service coverage.',
-      '3. If the chunks do not contain the answer, reply exactly with: "I don\'t have specific information about that right now. Could you clarify?"',
+      '3. If the chunks or history do not contain the answer, reply exactly with: "I don\'t have specific information about that right now. Could you clarify?"',
       '4. Do not use training data or general knowledge to fill missing details.',
       '5. Keep the final answer to at most 3 concise sentences.',
       '6. LANGUAGE MATCHING: If the user writes in Urdu, Roman Urdu (Hinglish), or any mix of Urdu and English, you MUST reply in Roman Urdu (Urdu written in Latin script). Match the user\'s language naturally.',

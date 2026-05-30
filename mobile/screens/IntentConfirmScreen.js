@@ -59,7 +59,7 @@ export default function IntentConfirmScreen({ route, navigation }) {
 
   // ── Editable state ────────────────────────────────────────────────────
   const [editedService, setEditedService] = useState(parsedIntent.service_type || '');
-  const [editingService, setEditingService] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
 
   // Build initial Date object from time_preference
   const buildInitialDate = () => {
@@ -220,6 +220,9 @@ export default function IntentConfirmScreen({ route, navigation }) {
             <View style={styles.aiBadge}>
               <Ionicons name="sparkles" size={12} color={COLORS.primary} style={{ marginRight: 5 }} />
               <Text style={styles.aiBadgeText}>AI Parsed Your Request</Text>
+              <Text style={[styles.aiBadgeText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 10, marginTop: 2, marginLeft: 6 }]}>
+                مصنوعی ذہانت نے آپ کی درخواست کا تجزیہ کیا ہے
+              </Text>
             </View>
           </View>
 
@@ -243,18 +246,16 @@ export default function IntentConfirmScreen({ route, navigation }) {
                   <View style={styles.rowContent}>
                     <Text style={styles.rowLabel}>{row.label}</Text>
                     {/* Inline service editing */}
-                    {row.editable === 'service' && editingService ? (
-                      <TextInput
-                        style={styles.editInput}
-                        value={editedService}
-                        onChangeText={setEditedService}
-                        onBlur={() => setEditingService(false)}
-                        autoFocus
-                        placeholder="e.g. plumber, electrician"
-                        placeholderTextColor={COLORS.textMuted}
-                        returnKeyType="done"
-                        onSubmitEditing={() => setEditingService(false)}
-                      />
+                    {row.editable === 'service' ? (
+                      <Text style={[
+                        styles.rowValue,
+                        row.soft && styles.rowValueSoft,
+                        row.urgent && styles.rowValueUrgent,
+                        !row.success && !row.soft && styles.rowValueMissing,
+                        (editedService !== parsedIntent.service_type) && styles.rowValueEdited,
+                      ]}>
+                        {row.value || row.missing}
+                      </Text>
                     ) : (
                       <Text style={[
                         styles.rowValue,
@@ -280,14 +281,14 @@ export default function IntentConfirmScreen({ route, navigation }) {
                       <Ionicons name="calendar-outline" size={18} color={COLORS.primary} />
                     </TouchableOpacity>
                   )}
-                  {row.editable === 'service' && !editingService && (
+                  {row.editable === 'service' && (
                     <TouchableOpacity
                       style={styles.editIconBtn}
-                      onPress={() => setEditingService(true)}
+                      onPress={() => setShowServiceModal(true)}
                       activeOpacity={0.7}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <Ionicons name="pencil-outline" size={16} color={COLORS.primary} />
+                      <Ionicons name="chevron-down-outline" size={16} color={COLORS.primary} />
                     </TouchableOpacity>
                   )}
 
@@ -331,7 +332,12 @@ export default function IntentConfirmScreen({ route, navigation }) {
           activeOpacity={0.84}
         >
           <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.confirmButtonText}>Confirm & Find Providers</Text>
+          <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+            <Text style={styles.confirmButtonText}>Confirm & Find Providers</Text>
+            <Text style={[styles.confirmButtonText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 11, marginTop: 2 }]}>
+              تصدیق کریں اور فراہم کنندگان تلاش کریں
+            </Text>
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -340,7 +346,12 @@ export default function IntentConfirmScreen({ route, navigation }) {
           activeOpacity={0.7}
         >
           <Ionicons name="create-outline" size={16} color={COLORS.primary} style={{ marginRight: 6 }} />
-          <Text style={styles.editButtonText}>Edit Request</Text>
+          <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+            <Text style={styles.editButtonText}>Edit Request</Text>
+            <Text style={[styles.editButtonText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 10, marginTop: 0 }]}>
+              درخواست میں ترمیم کریں
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -351,7 +362,12 @@ export default function IntentConfirmScreen({ route, navigation }) {
             <View style={styles.datePickerOverlay}>
               <View style={styles.datePickerSheet}>
                 <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select Date & Time</Text>
+                  <View>
+                    <Text style={styles.datePickerTitle}>Select Date & Time</Text>
+                    <Text style={[styles.datePickerTitle, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 11, color: COLORS.textMuted, marginTop: -4 }]}>
+                      تاریخ اور وقت کا انتخاب کریں
+                    </Text>
+                  </View>
                   <TouchableOpacity onPress={() => setShowDatePicker(false)} activeOpacity={0.8}>
                     <Text style={styles.datePickerDone}>Done</Text>
                   </TouchableOpacity>
@@ -382,6 +398,42 @@ export default function IntentConfirmScreen({ route, navigation }) {
           />
         )
       )}
+
+      {/* Service Selection Modal */}
+      <Modal transparent animationType="slide" visible={showServiceModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Select Service Type</Text>
+                <Text style={[styles.modalTitle, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 11, color: COLORS.textMuted, marginTop: -2 }]}>
+                  سروس کا انتخاب کریں
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowServiceModal(false)}>
+                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
+              {Object.keys(SERVICE_ICON_MAP).filter(k => k !== 'default').map(key => (
+                <TouchableOpacity
+                  key={key}
+                  style={styles.modalListItem}
+                  onPress={() => {
+                    setEditedService(key.charAt(0).toUpperCase() + key.slice(1));
+                    setShowServiceModal(false);
+                  }}
+                >
+                  <Ionicons name={SERVICE_ICON_MAP[key]} size={20} color={COLORS.primary} />
+                  <Text style={styles.modalListItemText}>
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -652,5 +704,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
+  },
+
+  // Service Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    maxHeight: '70%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADII.xl,
+    padding: 20,
+    ...SHADOWS.card,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: FONTS.heading.fontFamily,
+    color: COLORS.textPrimary,
+  },
+  modalList: {
+    flexGrow: 0,
+  },
+  modalListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+    gap: 12,
+  },
+  modalListItemText: {
+    fontSize: 16,
+    fontFamily: FONTS.subheading.fontFamily,
+    color: COLORS.textPrimary,
   },
 });

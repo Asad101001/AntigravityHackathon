@@ -401,8 +401,16 @@ router.post('/chat/message', async (req, res) => {
     }
 
     // For other messages, run the full conversation pipeline
+    const resolvedUserId = user_id || req.auth.sub;
+    const userBookings = await db.getUserBookings(resolvedUserId);
     const result = await orchestrator.runConversation({
-      input: { booking_id, message, user_id, provider: provider || bookingInfo || {} },
+      input: { 
+        booking_id, 
+        message, 
+        user_id: resolvedUserId, 
+        provider: provider || bookingInfo || {},
+        user_bookings: userBookings
+      },
       options: { emit_trace: true }
     });
     return res.json({ success: true, ...result });

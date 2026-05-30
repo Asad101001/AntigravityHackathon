@@ -57,11 +57,42 @@ function formatBookingInfo(booking) {
   return lines.join('\n');
 }
 
-const QUICK_REPLIES = [
-  { text: 'How quickly can you arrive?', icon: 'time-outline', custom: false },
-  { text: 'Show technician profile', icon: 'person-outline', custom: false },
-  { text: 'Confirm Request', icon: 'checkmark-circle-outline', custom: true },
-];
+function getQuickReplies(activeBooking) {
+  if (!activeBooking) return [];
+
+  if (activeBooking.id === 'general') {
+    return [
+      { text: 'How does Asaaniyat work?', urdu: 'آسانیت کیسے کام کرتی ہے؟', icon: 'help-circle-outline', custom: false },
+      { text: 'How many bookings do I have?', urdu: 'میری کتنی بکنگز موجود ہیں؟', icon: 'list-outline', custom: false },
+      { text: 'What services do you offer?', urdu: 'آپ کون سی خدمات پیش کرتے ہیں؟', icon: 'construct-outline', custom: false },
+    ];
+  }
+  
+  const status = String(activeBooking.status || '').toLowerCase();
+  
+  if (status === 'completed') {
+    return [
+      { text: 'Leave a review for this service', urdu: 'اس سروس کے لیے اپنی رائے دیں', icon: 'star-outline', custom: true },
+      { text: 'I need to report an issue', urdu: 'مجھے ایک مسئلے کی اطلاع دینی ہے', icon: 'alert-circle-outline', custom: false },
+      { text: 'Book this provider again', urdu: 'اس فراہم کنندہ کو دوبارہ بک کریں', icon: 'refresh-outline', custom: false },
+    ];
+  }
+  
+  if (status === 'canceled') {
+    return [
+      { text: 'Why was this order canceled?', urdu: 'یہ آرڈر کیوں منسوخ کیا گیا؟', icon: 'help-circle-outline', custom: false },
+      { text: 'Book a different provider', urdu: 'کسی دوسرے فراہم کنندہ کو بک کریں', icon: 'search-outline', custom: true },
+    ];
+  }
+  
+  // Default for active/confirmed/pending
+  return [
+    { text: 'How quickly can you arrive?', urdu: 'آپ کتنی جلدی پہنچ سکتے ہیں؟', icon: 'time-outline', custom: false },
+    { text: 'Show technician profile', urdu: 'ٹیکنیشن کی پروفائل دکھائیں', icon: 'person-outline', custom: false },
+    { text: 'What is the standard diagnostic fee?', urdu: 'معیاری تشخیصی فیس کیا ہے؟', icon: 'cash-outline', custom: false },
+    { text: 'Confirm Request', urdu: 'درخواست کی تصدیق کریں', icon: 'checkmark-circle-outline', custom: true },
+  ];
+}
 
 export default function ChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -88,7 +119,10 @@ export default function ChatScreen({ navigation }) {
     stopVoiceInput,
     cancelVoiceInput,
   } = useVoiceInput({
-    onTranscript: (spokenText) => setInput(spokenText),
+    onTranscript: (spokenText) => {
+      setInput(''); // clear input
+      handleSend(spokenText, true); // Auto-send
+    },
   });
   
   const [chatThreads, setChatThreads] = useState([]);
@@ -193,10 +227,10 @@ export default function ChatScreen({ navigation }) {
     const content = input.trim();
     if (!content) return;
     setInput('');
-    await handleSend(content);
+    await handleSend(content, false);
   };
 
-  const handleSend = async (content) => {
+  const handleSend = async (content, isVoice = false) => {
     // Add user message immediately
     setMessages(prev => [
       ...prev,
@@ -213,6 +247,7 @@ export default function ChatScreen({ navigation }) {
             role: 'assistant',
             content: 'I can help once a booking is active. For now, start from Home and submit a service request.',
             time: stamp(),
+            isVoiceReply: isVoice,
           },
         ]);
       }, 500);
@@ -239,6 +274,7 @@ export default function ChatScreen({ navigation }) {
               role: 'assistant',
               content: response.data.reply,
               time: stamp(),
+              isVoiceReply: isVoice,
             },
           ]);
           
@@ -252,6 +288,7 @@ export default function ChatScreen({ navigation }) {
               role: 'assistant',
               content: response.data.reply || 'I am here to help. What would you like to do?',
               time: stamp(),
+              isVoiceReply: isVoice,
             },
           ]);
         }
@@ -259,11 +296,11 @@ export default function ChatScreen({ navigation }) {
     } catch (error) {
       console.error('Chat error:', error);
       // Fallback answers so chat is always fully functional even offline
-      simulateFallbackReplies(content);
+      simulateFallbackReplies(content, isVoice);
     }
   };
 
-  const simulateFallbackReplies = (text) => {
+  const simulateFallbackReplies = (text, isVoice = false) => {
     setTimeout(() => {
       let reply = "I am scanning our verified provider grid to optimize your schedule. What else would you like to know?";
       if (text.toLowerCase().includes('arrive') || text.toLowerCase().includes('time')) {
@@ -278,7 +315,7 @@ export default function ChatScreen({ navigation }) {
 
       setMessages(prev => [
         ...prev,
-        { id: generateMessageId(), role: 'assistant', content: reply, time: stamp() },
+        { id: generateMessageId(), role: 'assistant', content: reply, time: stamp(), isVoiceReply: isVoice },
       ]);
     }, 600);
   };
@@ -459,11 +496,11 @@ export default function ChatScreen({ navigation }) {
           ))}
           
           {/* Select Inquiry drawer inside scroll view at the bottom of standard messages */}
-          {activeBooking && activeBooking.id !== 'general' && (
+          {activeBooking && (
             <View style={styles.quickReplySection}>
               <Text style={styles.quickReplyHeader}>SELECT INQUIRY</Text>
               <View style={styles.quickReplyContainer}>
-                {QUICK_REPLIES.map((reply, idx) => (
+                {getQuickReplies(activeBooking).map((reply, idx) => (
                   <TouchableOpacity
                     key={idx}
                     style={[
@@ -479,14 +516,21 @@ export default function ChatScreen({ navigation }) {
                       color={reply.custom ? COLORS.primary : COLORS.primary}
                       style={styles.quickReplyIcon}
                     />
-                    <Text
-                      style={[
-                        styles.quickReplyText,
-                        reply.custom && styles.quickReplyConfirmText
-                      ]}
-                    >
-                      {reply.text}
-                    </Text>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.quickReplyText,
+                          reply.custom && styles.quickReplyConfirmText
+                        ]}
+                      >
+                        {reply.text}
+                      </Text>
+                      {reply.urdu && (
+                        <Text style={[styles.quickReplyText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 10, color: COLORS.textMuted, marginTop: 2, textAlign: 'left' }]}>
+                          {reply.urdu}
+                        </Text>
+                      )}
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -551,8 +595,10 @@ function ChatBubble({ message, isGeneralChat }) {
       setIsPlaying(false);
     } else {
       setIsPlaying(true);
-      Speech.speak(message.content, {
-        language: 'en',  // Default to English; expo-speech auto-handles mixed content
+      // Strip emojis and weird characters from TTS
+      const cleanText = message.content.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
+      Speech.speak(cleanText, {
+        language: 'ur',  // Use urdu/en
         rate: 0.95,
         pitch: 1.0,
         onDone: () => setIsPlaying(false),
@@ -561,6 +607,13 @@ function ChatBubble({ message, isGeneralChat }) {
       });
     }
   };
+
+  // Auto-play TTS if this reply was generated via voice
+  useEffect(() => {
+    if (message.isVoiceReply && !isUser && !isPlaying) {
+      handleTalkback();
+    }
+  }, [message.id]);
   
   if (isUser) {
     return (

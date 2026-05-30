@@ -567,12 +567,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   sectionUrdu: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    fontFamily: FONTS.urdu.fontFamily,
+    color: COLORS.textMuted,
+    fontSize: 12,
+    fontFamily: FONTS.urduCaption.fontFamily,
     writingDirection: 'rtl',
-    marginTop: 2,
-    lineHeight: 28,
+    marginTop: -2,
   },
 
   // Carousel & Grid styles
@@ -616,9 +615,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   serviceUrdu: {
-    color: COLORS.textSecondary,
-    fontSize: 13,
-    fontFamily: FONTS.urdu.fontFamily,
+    color: COLORS.textMuted,
+    fontSize: 10,
+    fontFamily: FONTS.urduCaption.fontFamily,
     marginTop: 2,
     textAlign: 'center',
     writingDirection: 'rtl',

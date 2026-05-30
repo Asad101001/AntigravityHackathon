@@ -153,6 +153,13 @@ export const FONTS = {
     writingDirection: 'rtl',
     lineHeight: 32, // increased line height for nastaliq
   },
+  urduCaption: {
+    fontSize: 11,
+    fontFamily: 'NotoNastaliqUrdu_400Regular',
+    color: COLORS.textMuted,
+    lineHeight: 20,
+    writingDirection: 'rtl',
+  },
   urduLarge: {
     fontSize: 22,
     fontFamily: 'NotoNastaliqUrdu_700Bold',

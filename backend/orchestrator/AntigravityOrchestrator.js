@@ -206,6 +206,8 @@ class AntigravityOrchestrator {
       cancellation_risk:  provider.cancellation_risk   || null,
       specialization:     provider.specialization      || [],
       recent_sentiment:   provider.recent_sentiment    || null,
+      avatar:             provider.avatar              || null,
+      company:            provider.company             || null,
       // Multi-factor badge attached by LLMRankerAgent
       multi_factor_badge: provider.multi_factor_badge  || null,
     };
@@ -218,6 +220,7 @@ class AntigravityOrchestrator {
       chat_message:   input.message,
       user_id:        input.user_id    || 'anonymous',
       provider:       input.provider   || {},
+      user_bookings:  input.user_bookings || [],
       execution_logs: [],
       workflow_id:    workflowId,
     };
