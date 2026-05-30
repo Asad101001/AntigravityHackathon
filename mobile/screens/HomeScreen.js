@@ -66,7 +66,20 @@ export default function HomeScreen({ route, navigation }) {
     stopVoiceInput,
     cancelVoiceInput,
   } = useVoiceInput({
-    onTranscript: (spokenText) => setText(spokenText),
+    onTranscript: (spokenText) => {
+      setText(spokenText);
+      // Auto-advance: immediately navigate to Loading screen after transcript is received
+      if (spokenText.trim()) {
+        setTimeout(() => {
+          navigation.navigate('Loading', {
+            userText: spokenText.trim(),
+            userLocation: pickedLocation,
+            locationSource: pickedLocation ? 'gps' : 'typed',
+            city: selectedCity,
+          });
+        }, 300); // Small delay so the user sees their transcript briefly
+      }
+    },
   });
 
   const switchPage = useCallback((nextPage) => {

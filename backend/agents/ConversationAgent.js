@@ -90,6 +90,7 @@ class ConversationAgent extends BaseAgent {
       '3. If the chunks do not contain the answer, reply exactly with: "I don\'t have specific information about that right now. Could you clarify?"',
       '4. Do not use training data or general knowledge to fill missing details.',
       '5. Keep the final answer to at most 3 concise sentences.',
+      '6. LANGUAGE MATCHING: If the user writes in Urdu, Roman Urdu (Hinglish), or any mix of Urdu and English, you MUST reply in Roman Urdu (Urdu written in Latin script). Match the user\'s language naturally.',
       '',
       'RETRIEVED CONTEXT CHUNKS:',
       ragBlock,

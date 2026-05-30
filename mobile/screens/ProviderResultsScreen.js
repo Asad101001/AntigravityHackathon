@@ -13,6 +13,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapPanel from '../components/MapPanel';
@@ -181,9 +182,16 @@ function ProviderCard({ provider, estimatedPkr, onPress }) {
 
           <View style={styles.cardRow}>
             {/* Avatar */}
-            <View style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]}>
-              <Text style={styles.avatarText}>{provider.name?.charAt(0)?.toUpperCase() || 'P'}</Text>
-            </View>
+            {provider.avatar ? (
+              <Image 
+                source={{ uri: provider.avatar }} 
+                style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]} 
+              />
+            ) : (
+              <View style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]}>
+                <Text style={styles.avatarText}>{provider.name?.charAt(0)?.toUpperCase() || 'P'}</Text>
+              </View>
+            )}
 
             <View style={{ flex: 1 }}>
               <Text style={styles.providerName} numberOfLines={1}>{provider.name}</Text>

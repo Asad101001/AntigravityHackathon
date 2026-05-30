@@ -392,7 +392,14 @@ export default function BookingConfirmScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={styles.cancelModalButton} 
-              onPress={() => setShowDuplicatePopup(false)}
+              onPress={() => {
+                setShowDuplicatePopup(false);
+                // Navigate back to IntentConfirm so user can pick a different time
+                navigation.navigate('IntentConfirm', {
+                  parsedIntent: fullResult.parsed_intent || {},
+                  fullResult,
+                });
+              }}
               activeOpacity={0.8}
             >
               <Text style={styles.cancelModalButtonText}>Choose Another Time</Text>

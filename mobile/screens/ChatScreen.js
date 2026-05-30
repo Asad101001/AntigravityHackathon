@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
@@ -534,6 +535,32 @@ export default function ChatScreen({ navigation }) {
 function ChatBubble({ message, isGeneralChat }) {
   const isUser = message.role === 'user';
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // Cleanup speech when component unmounts or message changes
+  useEffect(() => {
+    return () => {
+      if (isPlaying) {
+        Speech.stop();
+      }
+    };
+  }, [isPlaying]);
+
+  const handleTalkback = async () => {
+    if (isPlaying) {
+      await Speech.stop();
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+      Speech.speak(message.content, {
+        language: 'en',  // Default to English; expo-speech auto-handles mixed content
+        rate: 0.95,
+        pitch: 1.0,
+        onDone: () => setIsPlaying(false),
+        onError: () => setIsPlaying(false),
+        onStopped: () => setIsPlaying(false),
+      });
+    }
+  };
   
   if (isUser) {
     return (
@@ -591,12 +618,12 @@ function ChatBubble({ message, isGeneralChat }) {
           </View>
         )}
 
-        {/* Voice output control for AI assistant */}
+        {/* Voice output control for AI assistant — powered by expo-speech */}
         {isGeneralChat && !hasDiagnosticCard && !isBookingSelected && (
           <View style={styles.voiceOutputContainer}>
             <TouchableOpacity 
               style={styles.playVoiceBtn}
-              onPress={() => setIsPlaying(!isPlaying)}
+              onPress={handleTalkback}
               activeOpacity={0.7}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             >

@@ -36,5 +36,9 @@ module.exports = ({ config }) => {
         },
       },
     },
+    plugins: [
+      ...(config.plugins || []),
+      '@react-native-community/datetimepicker',
+    ],
   };
 };

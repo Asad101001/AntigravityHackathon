@@ -79,12 +79,22 @@ router.post('/speech-to-text', async (req, res) => {
         
         const headerBytes = Buffer.from(body);
         const modelPart = `\r\n--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\nwhisper-large-v3-turbo`;
+        
+        // Force Urdu transcription when language hint suggests Urdu/Hindi
+        // This prevents Whisper from outputting Devanagari (Hindi script)
+        const langHint = (language_hint || '').toLowerCase();
+        const whisperLang = ['ur', 'urdu', 'hi', 'hindi', 'roman_urdu', 'hinglish'].includes(langHint) ? 'ur' : null;
+        const languagePart = whisperLang
+          ? `\r\n--${boundary}\r\nContent-Disposition: form-data; name="language"\r\n\r\n${whisperLang}`
+          : '';
+        
         const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
         
         const fullBody = Buffer.concat([
           headerBytes,
           audioBuffer,
           Buffer.from(modelPart),
+          Buffer.from(languagePart),
           footer,
         ]);
 

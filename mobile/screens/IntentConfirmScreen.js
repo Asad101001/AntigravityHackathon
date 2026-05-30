@@ -4,14 +4,16 @@
  * Premium glassmorphic design matching the rest of Asaaniyat.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated,
+  Modal, Platform, TextInput
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const SERVICE_ICON_MAP = {
   electrician: 'flash',
@@ -55,6 +57,34 @@ export default function IntentConfirmScreen({ route, navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
 
+  // ── Editable state ────────────────────────────────────────────────────
+  const [editedService, setEditedService] = useState(parsedIntent.service_type || '');
+  const [editingService, setEditingService] = useState(false);
+
+  // Build initial Date object from time_preference
+  const buildInitialDate = () => {
+    const tp = parsedIntent.time_preference;
+    if (!tp) return new Date();
+    const timeMatch = String(tp).trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+    if (timeMatch) {
+      const hours = Number(timeMatch[1]);
+      const minutes = Number(timeMatch[2] || '0');
+      const period = (timeMatch[3] || '').toUpperCase();
+      let h = hours;
+      if (period === 'PM' && hours < 12) h += 12;
+      if (period === 'AM' && hours === 12) h = 0;
+      const d = new Date();
+      d.setHours(h, minutes, 0, 0);
+      return d;
+    }
+    return new Date();
+  };
+
+  const [selectedDate, setSelectedDate] = useState(buildInitialDate);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerMode, setDatePickerMode] = useState('date'); // 'date' or 'time'
+  const [userEditedTime, setUserEditedTime] = useState(false);
+
   const confidence = Math.round((parsedIntent.confidence || 0) * 100);
   const isLowConfidence = confidence < 70;
   const isHighConfidence = confidence >= 85;
@@ -69,29 +99,83 @@ export default function IntentConfirmScreen({ route, navigation }) {
 
   const confidenceColor = isHighConfidence ? COLORS.primary : isLowConfidence ? COLORS.danger : COLORS.warning;
 
+  // Format the edited date nicely
+  const formatEditedTime = () => {
+    if (!userEditedTime && parsedIntent.time_preference) {
+      return formatTimePreference(parsedIntent.time_preference);
+    }
+    if (!userEditedTime && !parsedIntent.time_preference) {
+      return 'Earliest available';
+    }
+    const opts = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return selectedDate.toLocaleDateString('en-PK', opts);
+  };
+
+  // Open date picker — first pick date, then time
+  const openDatePicker = () => {
+    setDatePickerMode('date');
+    setShowDatePicker(true);
+  };
+
+  const onDateTimeChange = (event, date) => {
+    if (event.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
+    if (date) {
+      setSelectedDate(date);
+      setUserEditedTime(true);
+    }
+    if (Platform.OS === 'android') {
+      if (datePickerMode === 'date') {
+        // After picking date, switch to time
+        setDatePickerMode('time');
+      } else {
+        setShowDatePicker(false);
+      }
+    }
+  };
+
+  // Build updated fullResult with edits applied
+  const getUpdatedResult = () => {
+    const updatedIntent = {
+      ...fullResult.parsed_intent,
+      service_type: editedService || parsedIntent.service_type,
+    };
+    if (userEditedTime) {
+      updatedIntent.time_preference = selectedDate.toISOString();
+    }
+    return {
+      ...fullResult,
+      parsed_intent: updatedIntent,
+    };
+  };
+
   const rows = [
     {
-      icon: getServiceIcon(parsedIntent.service_type),
+      icon: getServiceIcon(editedService || parsedIntent.service_type),
       label: 'SERVICE REQUESTED',
-      value: parsedIntent.service_type || null,
+      value: editedService || parsedIntent.service_type || null,
       missing: 'Could not detect service',
-      success: !!parsedIntent.service_type,
+      success: !!(editedService || parsedIntent.service_type),
+      editable: 'service',
     },
     {
       icon: 'location',
       label: 'LOCATION',
       value: parsedIntent.location || null,
       missing: 'Using GPS / city selection',
-      success: true, // GPS fallback is fine
-      soft: !parsedIntent.location, // soft means it's using fallback
+      success: true,
+      soft: !parsedIntent.location,
     },
     {
       icon: 'time',
       label: 'PREFERRED TIME',
-      value: parsedIntent.time_preference ? formatTimePreference(parsedIntent.time_preference) : null,
+      value: formatEditedTime(),
       missing: 'Earliest available',
       success: true,
-      soft: !parsedIntent.time_preference,
+      soft: !parsedIntent.time_preference && !userEditedTime,
+      editable: 'time',
     },
     {
       icon: 'language',
@@ -158,16 +242,58 @@ export default function IntentConfirmScreen({ route, navigation }) {
                   </View>
                   <View style={styles.rowContent}>
                     <Text style={styles.rowLabel}>{row.label}</Text>
-                    <Text style={[
-                      styles.rowValue,
-                      row.soft && styles.rowValueSoft,
-                      row.urgent && styles.rowValueUrgent,
-                      !row.success && !row.soft && styles.rowValueMissing,
-                    ]}>
-                      {row.value || row.missing}
-                    </Text>
+                    {/* Inline service editing */}
+                    {row.editable === 'service' && editingService ? (
+                      <TextInput
+                        style={styles.editInput}
+                        value={editedService}
+                        onChangeText={setEditedService}
+                        onBlur={() => setEditingService(false)}
+                        autoFocus
+                        placeholder="e.g. plumber, electrician"
+                        placeholderTextColor={COLORS.textMuted}
+                        returnKeyType="done"
+                        onSubmitEditing={() => setEditingService(false)}
+                      />
+                    ) : (
+                      <Text style={[
+                        styles.rowValue,
+                        row.soft && styles.rowValueSoft,
+                        row.urgent && styles.rowValueUrgent,
+                        !row.success && !row.soft && styles.rowValueMissing,
+                        (userEditedTime && row.editable === 'time') && styles.rowValueEdited,
+                        (editedService !== parsedIntent.service_type && row.editable === 'service') && styles.rowValueEdited,
+                      ]}>
+                        {row.value || row.missing}
+                      </Text>
+                    )}
                   </View>
-                  <View style={[styles.statusDot, { backgroundColor: row.success ? COLORS.primary : COLORS.danger }]} />
+
+                  {/* Edit buttons */}
+                  {row.editable === 'time' && (
+                    <TouchableOpacity
+                      style={styles.editIconBtn}
+                      onPress={openDatePicker}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons name="calendar-outline" size={18} color={COLORS.primary} />
+                    </TouchableOpacity>
+                  )}
+                  {row.editable === 'service' && !editingService && (
+                    <TouchableOpacity
+                      style={styles.editIconBtn}
+                      onPress={() => setEditingService(true)}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons name="pencil-outline" size={16} color={COLORS.primary} />
+                    </TouchableOpacity>
+                  )}
+
+                  {!row.editable && (
+                    <View style={[styles.statusDot, { backgroundColor: row.success ? COLORS.primary : COLORS.danger }]} />
+                  )}
                 </View>
               </View>
             ))}
@@ -201,7 +327,7 @@ export default function IntentConfirmScreen({ route, navigation }) {
       <View style={[styles.stickyActions, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity
           style={styles.confirmButton}
-          onPress={() => navigation.navigate('ProviderResults', { fullResult })}
+          onPress={() => navigation.navigate('ProviderResults', { fullResult: getUpdatedResult() })}
           activeOpacity={0.84}
         >
           <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -217,6 +343,45 @@ export default function IntentConfirmScreen({ route, navigation }) {
           <Text style={styles.editButtonText}>Edit Request</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Native DateTimePicker */}
+      {showDatePicker && (
+        Platform.OS === 'ios' ? (
+          <Modal transparent animationType="fade" visible={showDatePicker}>
+            <View style={styles.datePickerOverlay}>
+              <View style={styles.datePickerSheet}>
+                <View style={styles.datePickerHeader}>
+                  <Text style={styles.datePickerTitle}>Select Date & Time</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)} activeOpacity={0.8}>
+                    <Text style={styles.datePickerDone}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="datetime"
+                  display="spinner"
+                  minimumDate={new Date()}
+                  onChange={(e, date) => {
+                    if (date) {
+                      setSelectedDate(date);
+                      setUserEditedTime(true);
+                    }
+                  }}
+                  style={{ height: 200 }}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={selectedDate}
+            mode={datePickerMode}
+            display="default"
+            minimumDate={new Date()}
+            onChange={onDateTimeChange}
+          />
+        )
+      )}
     </View>
   );
 }
@@ -426,6 +591,66 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 14,
     fontFamily: FONTS.subheading.fontFamily,
+    color: COLORS.primary,
+  },
+
+  // Inline editing styles
+  editIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(14,143,70,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.12)',
+    flexShrink: 0,
+  },
+  editInput: {
+    fontSize: 16,
+    fontFamily: FONTS.subheading.fontFamily,
+    color: COLORS.textPrimary,
+    borderBottomWidth: 1.5,
+    borderBottomColor: COLORS.primary,
+    paddingVertical: 4,
+    marginTop: 2,
+  },
+  rowValueEdited: {
+    color: COLORS.primary,
+    fontFamily: FONTS.heading.fontFamily,
+  },
+
+  // Date picker modal (iOS)
+  datePickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(16, 37, 26, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  datePickerSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    borderWidth: 1.5,
+    borderColor: 'rgba(14,143,70,0.12)',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(14,143,70,0.06)',
+  },
+  datePickerTitle: {
+    fontSize: 17,
+    fontFamily: FONTS.heading.fontFamily,
+    color: COLORS.textPrimary,
+  },
+  datePickerDone: {
+    fontSize: 16,
+    fontFamily: FONTS.heading.fontFamily,
     color: COLORS.primary,
   },
 });
