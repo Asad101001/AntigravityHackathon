@@ -20,5 +20,8 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0"
   }
 }

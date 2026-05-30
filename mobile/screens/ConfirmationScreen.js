@@ -79,10 +79,20 @@ const SERVICE_ICONS = {
   electrician: 'flash-outline',
   ac: 'snow-outline',
   'ac repair': 'snow-outline',
+  'ac technician': 'snow-outline',
   carpenter: 'hammer-outline',
   painter: 'color-palette-outline',
-  cleaning: 'leaf-outline',
+  cleaning: 'sparkles-outline',
   handyman: 'construct-outline',
+  mechanic: 'car-outline',
+  'car mechanic': 'car-outline',
+  hairdresser: 'cut-outline',
+  'appliance repair': 'tv-outline',
+  pest: 'bug-outline',
+  'pest control': 'bug-outline',
+  salon: 'color-wand-outline',
+  sanitization: 'shield-checkmark-outline',
+  gardening: 'leaf-outline',
 };
 
 export default function ConfirmationScreen({ route, navigation }) {
