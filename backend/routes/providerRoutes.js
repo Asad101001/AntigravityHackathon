@@ -36,6 +36,89 @@ function generatePasswordFromService(service) {
   return `${noVowels}123`;
 }
 
+// POST /api/provider/seed-provider-credentials
+// Creates provider credentials in providers_users collection (no encryption, for reference only)
+// Query param: ?clearFirst=true to delete existing credentials first
+router.post('/seed-provider-credentials', async (req, res) => {
+  try {
+    const mongoDb = await db.getDb();
+    const providers = await mongoDb.collection(db.COLLECTIONS.providers).find({}).toArray();
+
+    // Clear existing if requested (check body or query param)
+    const shouldClear = req.body?.clearFirst === true || req.query?.clearFirst === 'true';
+    if (shouldClear) {
+      const result = await mongoDb.collection('providers_users').deleteMany({});
+      console.log(`[ProviderRoutes] Cleared ${result.deletedCount} old provider credentials`);
+    }
+
+    const created = [];
+    const skipped = [];
+    const usedEmails = new Set();
+
+    for (const provider of providers) {
+      const name = provider.name || provider.provider_name || provider.displayName || provider.provider || '';
+      const service = provider.service || provider.service_type || '';
+
+      if (!name || !service) {
+        skipped.push({ provider_id: provider._id || provider.id || null, reason: 'missing_name_or_service' });
+        continue;
+      }
+
+      // Generate email: name + service + @gmail.com
+      const namePart = String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const servicePart = String(service).toLowerCase().replace(/[^a-z0-9]/g, '');
+      let email = `${namePart}${servicePart}@gmail.com`;
+
+      // Handle duplicates by appending numbers
+      let counter = 1;
+      const baseEmail = email.replace('@gmail.com', '');
+      while (usedEmails.has(email)) {
+        email = `${baseEmail}${counter}@gmail.com`;
+        counter++;
+      }
+      usedEmails.add(email);
+
+      // Generate password: service + "123"
+      const password = `${servicePart}123`;
+
+      // Check if already exists in providers_users (skip if not clearing)
+      if (!shouldClear) {
+        const existing = await mongoDb.collection('providers_users').findOne({ provider_id: provider._id || provider.id });
+        if (existing) {
+          skipped.push({ provider_id: provider._id || provider.id || null, provider_name: name, service, email, reason: 'already_exists' });
+          continue;
+        }
+      }
+
+      // Create entry - NO PASSWORD ENCRYPTION
+      const entry = {
+        _id: `PROV_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        provider_id: provider._id || provider.id || null,
+        name,
+        service,
+        email,
+        password, // PLAIN TEXT - NOT ENCRYPTED
+        createdAt: new Date().toISOString(),
+      };
+
+      await mongoDb.collection('providers_users').insertOne(entry);
+      created.push({ provider_id: provider._id || provider.id || null, name, service, email, password });
+    }
+
+    return res.json({ 
+      success: true, 
+      message: `Created ${created.length} provider credentials, skipped ${skipped.length}`, 
+      created_count: created.length, 
+      skipped_count: skipped.length, 
+      created: created.slice(0, 50), // Limit response 
+      skipped: skipped.slice(0, 10)
+    });
+  } catch (error) {
+    console.error('[ProviderRoutes] Seed provider credentials failed:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // POST /api/provider/seed-providers
 // Creates user accounts from providers collection if users don't already exist.
 router.post('/seed-providers', async (req, res) => {

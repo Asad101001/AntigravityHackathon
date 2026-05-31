@@ -74,10 +74,10 @@ app.use((req, res, next) => {
 
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/provider', providerRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', speechRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/provider', providerRoutes);
 
 
 // Friendly root page/status for people opening http://localhost:3001 in a browser.
