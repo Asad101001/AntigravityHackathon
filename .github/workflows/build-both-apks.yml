@@ -1,0 +1,163 @@
+name: Build & Release Dual APKs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual run from Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-user:
+    name: Build User App APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+
+    steps:
+      - name: 🏗 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './mobile/package-lock.json'
+
+      - name: ☕ Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🏗 Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔐 Setup Firebase Credentials
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > google-services.json
+          sed -i '/google-services.json/d' .gitignore
+
+      - name: 🚀 Run Local EAS Build
+        run: eas build --platform android --profile preview --local --non-interactive --output=./app-release.apk
+
+      - name: 📤 Upload User APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-apk
+          path: ./mobile/app-release.apk
+          retention-days: 1
+
+  build-provider:
+    name: Build Provider App APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./provider-mobile
+
+    steps:
+      - name: 🏗 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './provider-mobile/package-lock.json'
+
+      - name: ☕ Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🏗 Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🚀 Run Local EAS Build
+        run: eas build --platform android --profile preview --local --non-interactive --output=./provider-release.apk
+
+      - name: 📤 Upload Provider APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-apk
+          path: ./provider-mobile/provider-release.apk
+          retention-days: 1
+
+  publish-release:
+    name: Publish Consolidated Release
+    needs: [build-user, build-provider]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 📥 Download User APK
+        uses: actions/download-artifact@v4
+        with:
+          name: user-apk
+          path: ./artifacts/user
+
+      - name: 📥 Download Provider APK
+        uses: actions/download-artifact@v4
+        with:
+          name: provider-apk
+          path: ./artifacts/provider
+
+      - name: 📂 Organize Release Assets
+        run: |
+          mkdir -p ./release-assets
+          cp ./artifacts/user/app-release.apk ./release-assets/asaaniyat-user-app.apk
+          cp ./artifacts/provider/provider-release.apk ./release-assets/asaaniyat-provider-app.apk
+          ls -lh ./release-assets
+
+      - name: 🚀 Create Consolidated GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.5.${{ github.run_number }}
+          name: Release v2.5.${{ github.run_number }}
+          body: |
+            ## Consolidated APK Suite Release 🚀
+            
+            This release contains the automated production-ready APK builds for both the **User** and **Provider** mobile applications.
+            
+            ### Package Contents:
+            1. **User Client Application** (`asaaniyat-user-app.apk`)
+               - Live map tracking, interactive customer chat, smart search, and booking workflows.
+            2. **Provider Partner Application** (`asaaniyat-provider-app.apk`)
+               - Live request modals, active jobs dashboard, real-time status transitions, and client chat.
+               
+            Download the appropriate APK below to install on your Android device.
+          files: |
+            ./release-assets/asaaniyat-user-app.apk
+            ./release-assets/asaaniyat-provider-app.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
