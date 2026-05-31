@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   // ── Input bar ──
   inputBar: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingTop: 8,
     backgroundColor: COLORS.card,
@@ -430,10 +430,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#FFFFFF',
     borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 22,
+    borderRadius: 25,
     paddingHorizontal: 16,
     paddingVertical: 10,
     ...FONTS.body2,

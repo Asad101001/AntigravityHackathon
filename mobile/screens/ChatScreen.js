@@ -539,7 +539,7 @@ export default function ChatScreen({ navigation }) {
         </ScrollView>
 
         {/* Message Composer — send button + voice mic */}
-        <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) + 85 }]}>
+        <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <View style={styles.composer}>
             <TextInput
               style={styles.composerInput}
@@ -783,20 +783,12 @@ const styles = StyleSheet.create({
   messageContent: { gap: 16, paddingTop: 12, paddingBottom: 28 },
   composerWrap: {
     paddingTop: 6,
-    paddingBottom: 8,
+    paddingBottom: 100,
   },
   composer: {
-    width: '100%',
+    position: 'relative',
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    flexWrap: 'nowrap',
-    gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.96)',
-    borderRadius: 22,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(14,143,70,0.08)',
-    ...SHADOWS.card,
+    alignItems: 'center',
   },
   attachButton: {
     padding: 8,
@@ -806,26 +798,32 @@ const styles = StyleSheet.create({
   },
   composerInput: {
     flex: 1,
-    minWidth: 0,
-    minHeight: 48,
+    minHeight: 40,
     maxHeight: 110,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(14,143,70,0.15)',
     color: COLORS.textPrimary,
-    fontSize: 16,
-    lineHeight: 23,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    textAlignVertical: 'top',
+    fontSize: 15,
+    lineHeight: 20,
+    paddingLeft: 16,
+    paddingRight: 50,
+    paddingVertical: 8,
+    textAlignVertical: 'center',
+    ...SHADOWS.card,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    marginTop: 1,
-    borderRadius: 22,
+    position: 'absolute',
+    right: 4,
+    top: '50%',
+    marginTop: -18,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
-    flexShrink: 0,
-    alignSelf: 'center',
   },
   sendButtonDisabled: {
     opacity: 0.45,
