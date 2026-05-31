@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,19 +44,25 @@ export default function ProviderProfileScreen() {
   );
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', onPress: () => {} },
-        {
-          text: 'Logout',
-          onPress: async () => {
-            await logout();
-          },
-        },
-      ]
-    );
+    const doLogout = async () => {
+      await logout();
+    };
+
+    if (Platform.OS === 'web') {
+      // Alert.alert is not supported on web — use native browser confirm
+      if (window.confirm('Are you sure you want to logout?')) {
+        doLogout();
+      }
+    } else {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Logout', style: 'destructive', onPress: doLogout },
+        ]
+      );
+    }
   };
 
   if (loading) {

@@ -26,19 +26,33 @@ export default function ProviderDashboardScreen({ navigation }) {
     completedToday: 0,
     totalEarnings: 0,
   });
+  const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
-      // For now, mock data - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setStats({
-        pendingBookings: 3,
-        activeBookings: 1,
-        completedToday: 2,
-        totalEarnings: 5400,
-      });
+      const response = await apiClient.get('/provider/bookings');
+      if (response.data.success) {
+        const bookings = response.data.bookings || [];
+        const today = new Date().toDateString();
+
+        const pending = bookings.filter(b => b.status === 'pending').length;
+        const active = bookings.filter(b => ['confirmed', 'active'].includes(b.status)).length;
+        const completedToday = bookings.filter(b => {
+          if (b.status !== 'completed') return false;
+          const d = b.booking_start_time ? new Date(b.booking_start_time).toDateString() : null;
+          return d === today;
+        }).length;
+        const earnings = bookings
+          .filter(b => b.status === 'completed')
+          .reduce((sum, b) => sum + (b.quote || 0), 0);
+
+        setStats({ pendingBookings: pending, activeBookings: active, completedToday, totalEarnings: earnings });
+
+        // Last 3 bookings for recent activity
+        setRecentBookings(bookings.slice(0, 3));
+      }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
@@ -57,6 +71,27 @@ export default function ProviderDashboardScreen({ navigation }) {
     setRefreshing(true);
     fetchStats();
   }, [fetchStats]);
+
+  const getActivityIcon = (status) => {
+    switch (status) {
+      case 'completed': return { name: 'checkmark-circle', color: COLORS.success };
+      case 'confirmed': return { name: 'calendar-check', color: COLORS.accentBlue };
+      case 'pending': return { name: 'time', color: COLORS.warning };
+      case 'canceled':
+      case 'rejected': return { name: 'close-circle', color: COLORS.error };
+      default: return { name: 'ellipse', color: COLORS.textSecondary };
+    }
+  };
+
+  const formatRelativeTime = (isoString) => {
+    if (!isoString) return '';
+    const diff = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   const StatCard = ({ icon, label, value, color, onPress }) => (
     <TouchableOpacity
@@ -80,7 +115,7 @@ export default function ProviderDashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title={`Welcome, ${user?.name?.split(' ')[0]}`}
+        title={`Welcome, ${user?.displayName?.split(' ')[0] || 'Provider'}`}
         subtitle="Provider Dashboard"
       />
 
@@ -124,7 +159,7 @@ export default function ProviderDashboardScreen({ navigation }) {
               />
               <StatCard
                 icon="cash-outline"
-                label="Today's Earnings"
+                label="Total Earnings"
                 value={`PKR ${stats.totalEarnings.toLocaleString()}`}
                 color={COLORS.accentGold}
                 onPress={() => navigation.navigate('Bookings')}
@@ -168,23 +203,29 @@ export default function ProviderDashboardScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            {/* Recent Activity */}
+            {/* Recent Activity — real data from bookings */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <View style={styles.activityItem}>
-                <View style={[styles.activityDot, { backgroundColor: COLORS.success }]} />
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityText}>Booking #12345 completed</Text>
-                  <Text style={styles.activityTime}>2 hours ago</Text>
-                </View>
-              </View>
-              <View style={styles.activityItem}>
-                <View style={[styles.activityDot, { backgroundColor: COLORS.warning }]} />
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityText}>New booking request received</Text>
-                  <Text style={styles.activityTime}>15 minutes ago</Text>
-                </View>
-              </View>
+              {recentBookings.length === 0 ? (
+                <Text style={[styles.activityTime, { marginTop: 8 }]}>No recent bookings yet.</Text>
+              ) : (
+                recentBookings.map((b) => {
+                  const { name: dotIcon, color: dotColor } = getActivityIcon(b.status);
+                  return (
+                    <View key={b._id || b.id} style={styles.activityItem}>
+                      <View style={[styles.activityDot, { backgroundColor: dotColor }]} />
+                      <View style={styles.activityContent}>
+                        <Text style={styles.activityText}>
+                          {b.client_name || 'Client'} — {b.service_type || 'Service'} ({b.status})
+                        </Text>
+                        <Text style={styles.activityTime}>
+                          {formatRelativeTime(b.booking_start_time)}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
             </View>
           </View>
         )}

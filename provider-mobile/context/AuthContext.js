@@ -23,17 +23,23 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = await SecureStore.getItemAsync('provider_token');
         if (token) {
-          // Verify token is still valid
+          // Restore auth header first so the profile request succeeds
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          // Verify token is still valid by fetching profile
           const response = await apiClient.get('/provider/profile');
           if (response.data.success) {
+            // /profile returns { success, provider: { ... } }
             setUser(response.data.provider);
           } else {
             await SecureStore.deleteItemAsync('provider_token');
+            delete apiClient.defaults.headers.common['Authorization'];
             setUser(null);
           }
         }
       } catch (err) {
         console.error('Auth check failed:', err);
+        await SecureStore.deleteItemAsync('provider_token').catch(() => {});
+        delete apiClient.defaults.headers.common['Authorization'];
         setUser(null);
       } finally {
         setLoading(false);
@@ -54,9 +60,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.data.success) {
-        const { token, provider } = response.data;
+        const { token, user } = response.data;
         await SecureStore.setItemAsync('provider_token', token);
-        setUser(provider);
+        setUser(user);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         return { success: true };
       }

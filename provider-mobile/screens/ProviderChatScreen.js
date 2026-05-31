@@ -10,44 +10,101 @@ import {
   Platform,
   ActivityIndicator,
   Keyboard,
-  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
 
+// Roles stored in DB that belong to the client/AI side
+const CLIENT_ROLES = new Set(['user', 'client', 'assistant', 'ai']);
+
+function isProviderMessage(msg) {
+  return msg.role === 'provider';
+}
+
 export default function ProviderChatScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
+  const pollTimer = useRef(null);
+
   const [activeChat, setActiveChat] = useState(null);
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState('');
+  const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatsLoading, setChatsLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  // Fetch bookings to build chats list
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  const formatRelTime = (isoString) => {
+    if (!isoString) return '';
+    const diff = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  // Transform raw DB messages → UI format
+  const transformMessages = (raw) =>
+    raw.map((msg) => ({
+      id: msg._id || msg.id,
+      role: msg.role,          // 'provider' | 'user' | 'assistant' | ...
+      text: msg.content || '',
+      timestamp: new Date(msg.created_at || msg.timestamp || Date.now()),
+    }));
+
+  // ─── Fetch chat list (bookings + last message preview) ─────────────────────
+
   const fetchChats = useCallback(async () => {
     try {
       setChatsLoading(true);
       const response = await apiClient.get('/provider/bookings');
-      if (response.data.success) {
-        // Transform bookings into chats format
-        const chatsList = (response.data.bookings || []).map(booking => ({
-          id: booking._id || booking.id,
-          clientName: booking.client_name || 'Unknown Client',
-          clientImage: '👤',
-          lastMessage: booking.description || 'No messages yet',
-          timestamp: formatTime(booking.booking_start_time),
-          unread: 0,
-          bookingId: booking._id || booking.id,
-          status: booking.status || 'pending',
-        }));
-        setChats(chatsList);
-      }
+      if (!response.data.success) return;
+
+      const bookings = response.data.bookings || [];
+
+      // Fetch last message for each booking in parallel
+      const chatsList = await Promise.all(
+        bookings.map(async (booking) => {
+          const bookingId = booking._id || booking.id;
+          let lastMessage = booking.description || 'No messages yet';
+          let lastTime = booking.booking_start_time;
+
+          try {
+            const msgRes = await apiClient.get(`/provider/messages?booking_id=${bookingId}`);
+            if (msgRes.data.success) {
+              const msgs = msgRes.data.messages || [];
+              if (msgs.length > 0) {
+                const last = msgs[msgs.length - 1];
+                lastMessage = last.content || '';
+                lastTime = last.created_at || last.timestamp;
+              }
+            }
+          } catch (_) {
+            // ignore per-booking fetch failures
+          }
+
+          return {
+            id: bookingId,
+            bookingId,
+            clientName: booking.client_name || 'Client',
+            serviceType: booking.service_type || 'Service',
+            status: booking.status || 'pending',
+            lastMessage,
+            timestamp: formatRelTime(lastTime),
+          };
+        })
+      );
+
+      setChats(chatsList);
     } catch (error) {
       console.error('Failed to fetch chats:', error);
     } finally {
@@ -55,21 +112,18 @@ export default function ProviderChatScreen() {
     }
   }, []);
 
-  // Fetch messages for a specific booking
-  const fetchMessages = useCallback(async (bookingId) => {
+  // ─── Fetch messages for active chat ─────────────────────────────────────────
+
+  const fetchMessages = useCallback(async (bookingId, silent = false) => {
     if (!bookingId) return;
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const response = await apiClient.get(`/provider/messages?booking_id=${bookingId}`);
       if (response.data.success) {
-        // Transform backend messages to UI format
-        const messagesList = (response.data.messages || []).map(msg => ({
-          id: msg._id || msg.id,
-          sender: msg.role === 'provider' ? 'provider' : 'client',
-          text: msg.content || '',
-          timestamp: new Date(msg.timestamp || Date.now()),
-        }));
-        setMessages(messagesList);
+        const transformed = transformMessages(response.data.messages || []);
+        setMessages(transformed);
+        // Auto-scroll to bottom
+        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 80);
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -78,172 +132,161 @@ export default function ProviderChatScreen() {
     }
   }, []);
 
-  // Initialize chats on component mount
-  useEffect(() => {
-    fetchChats();
-  }, [fetchChats]);
+  // ─── Polling: refresh messages every 5s when a chat is open ─────────────────
 
-  // Fetch messages when chat is selected
   useEffect(() => {
-    if (activeChat) {
-      fetchMessages(activeChat.bookingId);
+    if (!activeChat) {
+      clearInterval(pollTimer.current);
+      return;
     }
+    fetchMessages(activeChat.bookingId);
+    pollTimer.current = setInterval(() => {
+      fetchMessages(activeChat.bookingId, true); // silent = no spinner
+    }, 5000);
+    return () => clearInterval(pollTimer.current);
   }, [activeChat, fetchMessages]);
 
+  // ─── Load chat list on focus ─────────────────────────────────────────────────
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchChats();
+      return () => clearInterval(pollTimer.current);
+    }, [fetchChats])
+  );
+
+  // ─── Send message ─────────────────────────────────────────────────────────────
+
   const sendMessage = async () => {
-    if (!message.trim() || !activeChat) return;
+    if (!inputText.trim() || !activeChat || sending) return;
+    const text = inputText.trim();
+    setInputText('');
+    Keyboard.dismiss();
+
+    // Optimistic UI
+    const optimistic = {
+      id: `tmp_${Date.now()}`,
+      role: 'provider',
+      text,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
     try {
-      // Send message to backend
-      const response = await apiClient.post('/provider/messages', {
+      setSending(true);
+      await apiClient.post('/provider/messages', {
         booking_id: activeChat.bookingId,
-        text: message,
+        text,
       });
-
-      if (response.data.success) {
-        // Add message to local state
-        const newMessage = {
-          id: response.data.message._id || Date.now().toString(),
-          sender: 'provider',
-          text: message,
-          timestamp: new Date(),
-        };
-
-        setMessages([...messages, newMessage]);
-        setMessage('');
-        Keyboard.dismiss();
-
-        // Scroll to bottom
-        setTimeout(() => {
-          scrollRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      }
+      // Refresh to get server-assigned ID
+      fetchMessages(activeChat.bookingId, true);
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Remove optimistic message on failure
+      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+    } finally {
+      setSending(false);
     }
   };
 
-  // Helper to format time
-  const formatTime = (isoString) => {
-    if (!isoString) return 'unknown';
-    try {
-      const date = new Date(isoString);
-      const now = new Date();
-      const diffMinutes = Math.floor((now - date) / 60000);
+  // ─── Sub-components ──────────────────────────────────────────────────────────
 
-      if (diffMinutes < 1) return 'now';
-      if (diffMinutes < 60) return `${diffMinutes}m ago`;
-      
-      const diffHours = Math.floor(diffMinutes / 60);
-      if (diffHours < 24) return `${diffHours}h ago`;
-      
-      const diffDays = Math.floor(diffHours / 24);
-      return `${diffDays}d ago`;
-    } catch {
-      return 'unknown';
-    }
-  };
-
-  const ChatListItem = ({ chat, onPress }) => (
+  const ChatListItem = ({ chat }) => (
     <TouchableOpacity
-      style={[styles.chatItem, chat.unread > 0 && styles.unreadChat]}
-      onPress={onPress}
+      style={styles.chatItem}
+      onPress={() => setActiveChat(chat)}
       activeOpacity={0.7}
     >
       <LiquidGlass opacity={0.02} />
       <View style={styles.chatAvatar}>
-        <Text style={styles.avatarEmoji}>{chat.clientImage}</Text>
+        <Ionicons name="person" size={24} color={COLORS.primary} />
       </View>
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
           <Text style={styles.chatName}>{chat.clientName}</Text>
           <Text style={styles.chatTime}>{chat.timestamp}</Text>
         </View>
+        <Text style={styles.chatServiceType}>{chat.serviceType}</Text>
         <Text style={styles.chatPreview} numberOfLines={1}>
           {chat.lastMessage}
         </Text>
       </View>
-      {chat.unread > 0 && (
-        <View style={styles.unreadBadge}>
-          <Text style={styles.unreadText}>{chat.unread}</Text>
-        </View>
-      )}
     </TouchableOpacity>
   );
 
-  const MessageBubble = ({ msg, isProvider }) => (
-    <View
-      style={[
-        styles.messageBubbleContainer,
-        isProvider ? styles.providerBubbleContainer : styles.clientBubbleContainer,
-      ]}
-    >
-      <View
-        style={[
-          styles.messageBubble,
-          isProvider ? styles.providerBubble : styles.clientBubble,
-        ]}
-      >
-        <Text style={[styles.messageText, isProvider && styles.providerText]}>
-          {msg.text}
-        </Text>
+  // isProvider = message sent BY the provider → show on RIGHT with primary color
+  // isClient   = message from client/AI     → show on LEFT with card color
+  const MessageBubble = ({ msg }) => {
+    const isMine = isProviderMessage(msg);
+    return (
+      <View style={[styles.bubbleRow, isMine ? styles.bubbleRowRight : styles.bubbleRowLeft]}>
+        {!isMine && (
+          <View style={styles.avatarSmall}>
+            <Ionicons name="person" size={14} color={COLORS.primary} />
+          </View>
+        )}
+        <View style={styles.bubbleGroup}>
+          <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
+            <Text style={[styles.bubbleText, isMine ? styles.bubbleTextMine : styles.bubbleTextTheirs]}>
+              {msg.text}
+            </Text>
+          </View>
+          <Text style={[styles.bubbleTime, isMine ? styles.bubbleTimeMine : styles.bubbleTimeTheirs]}>
+            {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
       </View>
-      <Text
-        style={[
-          styles.messageTime,
-          isProvider ? styles.providerTime : styles.clientTime,
-        ]}
-      >
-        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </Text>
-    </View>
-  );
+    );
+  };
+
+  // ─── Render: Chat List ────────────────────────────────────────────────────────
 
   if (!activeChat) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Messages" subtitle="Connect with clients" />
-        <ScrollView style={styles.scroll} contentContainerStyle={{ flexGrow: 1 }}>
-          {chatsLoading ? (
-            <View style={styles.emptyContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-            </View>
-          ) : chats.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={48} color={COLORS.textSecondary} />
-              <Text style={styles.emptyText}>No messages yet</Text>
-            </View>
-          ) : (
-            <View style={styles.chatsList}>
-              {chats.map(chat => (
-                <ChatListItem
-                  key={chat.id}
-                  chat={chat}
-                  onPress={() => setActiveChat(chat)}
-                />
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        <ScreenHeader title="Messages" subtitle="Connect with your clients" />
+        {chatsLoading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        ) : chats.length === 0 ? (
+          <View style={styles.center}>
+            <Ionicons name="chatbubbles-outline" size={48} color={COLORS.textSecondary} />
+            <Text style={styles.emptyText}>No bookings yet</Text>
+          </View>
+        ) : (
+          <ScrollView style={styles.scroll} contentContainerStyle={{ padding: 16 }}>
+            {chats.map((chat) => (
+              <ChatListItem key={chat.id} chat={chat} />
+            ))}
+          </ScrollView>
+        )}
       </View>
     );
   }
+
+  // ─── Render: Active Chat ──────────────────────────────────────────────────────
 
   return (
     <View style={styles.container}>
       <ScreenHeader
         title={activeChat.clientName}
-        subtitle={`Booking for ${activeChat.status}`}
-        onBack={() => setActiveChat(null)}
+        subtitle={`${activeChat.serviceType} • ${activeChat.status}`}
+        onBack={() => {
+          clearInterval(pollTimer.current);
+          setActiveChat(null);
+          setMessages([]);
+        }}
       />
 
       {loading ? (
-        <View style={styles.centerContainer}>
+        <View style={styles.center}>
           <ActivityIndicator color={COLORS.primary} />
         </View>
       ) : (
         <KeyboardAvoidingView
-          style={styles.chatContainer}
+          style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={100}
         >
@@ -251,35 +294,39 @@ export default function ProviderChatScreen() {
             ref={scrollRef}
             style={styles.messagesScroll}
             contentContainerStyle={styles.messagesContent}
-            onContentSizeChange={() =>
-              scrollRef.current?.scrollToEnd({ animated: true })
-            }
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
           >
-            {messages.map(msg => (
-              <MessageBubble
-                key={msg.id}
-                msg={msg}
-                isProvider={msg.sender === 'provider'}
-              />
-            ))}
+            {messages.length === 0 ? (
+              <View style={styles.noMsgs}>
+                <Ionicons name="chatbubble-outline" size={32} color={COLORS.textSecondary} />
+                <Text style={styles.noMsgsText}>No messages yet. Start the conversation!</Text>
+              </View>
+            ) : (
+              messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
+            )}
           </ScrollView>
 
-          <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
+          <View style={[styles.inputBar, { paddingBottom: insets.bottom + 8 }]}>
             <TextInput
               style={styles.input}
               placeholder="Type a message..."
-              placeholderTextColor={COLORS.textTertiary}
-              value={message}
-              onChangeText={setMessage}
+              placeholderTextColor={COLORS.textSecondary}
+              value={inputText}
+              onChangeText={setInputText}
               multiline
-              maxHeight={100}
+              maxLength={1000}
+              onSubmitEditing={sendMessage}
             />
             <TouchableOpacity
-              style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
+              style={[styles.sendBtn, (!inputText.trim() || sending) && styles.sendBtnDisabled]}
               onPress={sendMessage}
-              disabled={!message.trim()}
+              disabled={!inputText.trim() || sending}
             >
-              <Ionicons name="send" size={20} color="white" />
+              {sending ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="send" size={18} color="white" />
+              )}
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -289,145 +336,92 @@ export default function ProviderChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    ...FONTS.body1,
-    color: COLORS.textSecondary,
-    marginTop: 12,
-  },
-  chatsList: {
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { ...FONTS.body1, color: COLORS.textSecondary, marginTop: 12 },
+
+  // ── Chat list ──
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
     overflow: 'hidden',
     ...SHADOWS.sm,
   },
-  unreadChat: {
-    backgroundColor: COLORS.cardHover,
-  },
   chatAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: COLORS.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  avatarEmoji: {
-    fontSize: 24,
-  },
-  chatInfo: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  chatName: {
-    ...FONTS.subtitle2,
-    color: COLORS.textPrimary,
-  },
-  chatTime: {
-    ...FONTS.caption,
-    color: COLORS.textSecondary,
-  },
-  chatPreview: {
-    ...FONTS.body2,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-  },
-  unreadBadge: {
-    backgroundColor: COLORS.primary,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  },
-  unreadText: {
-    ...FONTS.caption,
-    color: 'white',
-    fontWeight: '600',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  messagesScroll: {
-    flex: 1,
-  },
-  messagesContent: {
-    padding: 16,
-  },
-  messageBubbleContainer: {
-    marginVertical: 8,
+  chatInfo: { flex: 1 },
+  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  chatName: { ...FONTS.subtitle2, color: COLORS.textPrimary },
+  chatTime: { ...FONTS.caption, color: COLORS.textSecondary },
+  chatServiceType: { ...FONTS.caption, color: COLORS.primary, marginTop: 1 },
+  chatPreview: { ...FONTS.body2, color: COLORS.textSecondary, marginTop: 3 },
+
+  // ── Messages area ──
+  messagesScroll: { flex: 1 },
+  messagesContent: { padding: 16, paddingBottom: 8 },
+
+  noMsgs: { flex: 1, alignItems: 'center', marginTop: 60, gap: 10 },
+  noMsgsText: { ...FONTS.body2, color: COLORS.textSecondary, textAlign: 'center' },
+
+  // Provider bubble → RIGHT
+  bubbleRowRight: { justifyContent: 'flex-end' },
+  // Client bubble  → LEFT
+  bubbleRowLeft: { justifyContent: 'flex-start' },
+  bubbleRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
+    marginVertical: 4,
   },
-  clientBubbleContainer: {
-    justifyContent: 'flex-start',
+  avatarSmall: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+    marginBottom: 16,
   },
-  providerBubbleContainer: {
-    justifyContent: 'flex-end',
+  bubbleGroup: { maxWidth: '78%' },
+  bubble: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 18,
   },
-  messageBubble: {
-    maxWidth: '80%',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+  // MY bubble (provider) — primary color, white text, rounded right corners sharp
+  bubbleMine: {
+    backgroundColor: COLORS.primary,
+    borderBottomRightRadius: 4,
   },
-  clientBubble: {
+  // THEIR bubble (client/AI) — card color, normal text, rounded left corners sharp
+  bubbleTheirs: {
     backgroundColor: COLORS.card,
+    borderBottomLeftRadius: 4,
   },
-  providerBubble: {
-    backgroundColor: COLORS.primary,
-  },
-  messageText: {
-    ...FONTS.body2,
-    color: COLORS.textPrimary,
-  },
-  providerText: {
-    color: '#000',
-  },
-  messageTime: {
-    ...FONTS.caption,
-    marginHorizontal: 8,
-    color: COLORS.textSecondary,
-  },
-  clientTime: {
-    marginRight: 'auto',
-  },
-  providerTime: {
-    marginLeft: 'auto',
-  },
-  inputContainer: {
+  bubbleText: { ...FONTS.body2 },
+  bubbleTextMine: { color: '#FFFFFF' },
+  bubbleTextTheirs: { color: COLORS.textPrimary },
+  bubbleTime: { ...FONTS.caption, marginTop: 3, color: COLORS.textSecondary },
+  bubbleTimeMine: { textAlign: 'right' },
+  bubbleTimeTheirs: { textAlign: 'left' },
+
+  // ── Input bar ──
+  inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 8,
     backgroundColor: COLORS.card,
     borderTopColor: COLORS.border,
@@ -439,22 +433,20 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     ...FONTS.body2,
     color: COLORS.textPrimary,
-    maxHeight: 100,
+    maxHeight: 120,
   },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  sendBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sendButtonDisabled: {
-    opacity: 0.5,
-  },
+  sendBtnDisabled: { opacity: 0.4 },
 });
