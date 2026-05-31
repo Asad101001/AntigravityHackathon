@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +27,7 @@ export default function ProviderBookingsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('Pending');
+  const [actionInProgress, setActionInProgress] = useState(null); // tracks booking_id being actioned
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -34,28 +36,33 @@ export default function ProviderBookingsScreen({ navigation }) {
         // Transform backend booking data to UI format
         const transformedBookings = (response.data.bookings || []).map(booking => ({
           id: booking._id || booking.id,
-          clientName: booking.client_name || 'Unknown Client',
+          clientName: booking.client_name || 'Customer',
           serviceType: booking.service_type || 'Service',
-          location: booking.location || 'Unknown Location',
+          location: booking.location || booking.area || 'Unknown Location',
           status: mapBackendStatus(booking.status),
-          quote: booking.quote || 0,
+          rawStatus: booking.status, // keep original for transition logic
+          quote: booking.quote ?? booking.quote_pkr ?? 0,
           date: formatDate(booking.booking_start_time),
           description: booking.description || '',
           booking_id: booking._id || booking.id,
+          clientPhone: booking.client_phone || null,
           raw: booking, // Keep original for actions
         }));
         setBookings(transformedBookings);
       }
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
-      Alert.alert('Error', 'Failed to load bookings');
+      console.error('Failed to fetch bookings:', error?.message || error);
+      // Don't show alert on polling errors — only on manual refresh
+      if (refreshing) {
+        showError('Failed to load bookings');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshing]);
 
-  // Helper to map backend status to UI status
+  // Helper to map backend status to UI tab status
   const mapBackendStatus = (backendStatus) => {
     const statusMap = {
       'pending': 'pending',
@@ -70,9 +77,10 @@ export default function ProviderBookingsScreen({ navigation }) {
 
   // Helper to format booking date
   const formatDate = (isoString) => {
-    if (!isoString) return 'Unknown date';
+    if (!isoString) return 'Date pending';
     try {
       const date = new Date(isoString);
+      if (isNaN(date.getTime())) return 'Date pending';
       return date.toLocaleString('en-US', { 
         month: 'short', 
         day: 'numeric', 
@@ -81,13 +89,25 @@ export default function ProviderBookingsScreen({ navigation }) {
         minute: '2-digit'
       });
     } catch {
-      return 'Unknown date';
+      return 'Date pending';
     }
   };
 
+  const showError = (msg) => {
+    if (Platform.OS === 'web') window.alert(msg);
+    else Alert.alert('Error', msg);
+  };
+
+  const showSuccess = (msg) => {
+    if (Platform.OS !== 'web') Alert.alert('Success', msg);
+  };
+
+  // Poll every 5 seconds for live updates
   useFocusEffect(
     useCallback(() => {
       fetchBookings();
+      const intervalId = setInterval(fetchBookings, 5000);
+      return () => clearInterval(intervalId);
     }, [fetchBookings])
   );
 
@@ -96,185 +116,66 @@ export default function ProviderBookingsScreen({ navigation }) {
     fetchBookings();
   }, [fetchBookings]);
 
+  // ── Centralized action handler with guards ────────────────────────────────
+  const executeAction = async (booking, action, endpoint, successMsg) => {
+    // Prevent double-tap
+    if (actionInProgress) return;
+
+    // Web confirmation dialog
+    if (Platform.OS === 'web') {
+      const confirmMsg = {
+        accept: 'Accept this booking?',
+        reject: 'Reject this booking?',
+        complete: 'Mark this booking as completed?',
+        cancel: 'Cancel this booking?',
+      };
+      if (!window.confirm(confirmMsg[action] || 'Are you sure?')) return;
+    }
+
+    setActionInProgress(booking.booking_id);
+    try {
+      const response = await apiClient[endpoint.method](endpoint.url);
+      if (response.data.success) {
+        showSuccess(successMsg);
+        fetchBookings();
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.error || `Failed to ${action} booking`;
+      showError(errMsg);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
   const handleAccept = (booking) => {
-    Alert.alert(
-      'Accept Booking',
-      'Are you sure you want to accept this booking?',
-      [
-        { text: 'Cancel', onPress: () => {} },
-        {
-          text: 'Accept',
-          onPress: async () => {
-            try {
-              const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/accept`);
-              if (response.data.success) {
-                Alert.alert('Success', 'Booking accepted!');
-                fetchBookings();
-              }
-            } catch (error) {
-              Alert.alert('Error', error.response?.data?.error || 'Failed to accept booking');
-            }
-          },
-        },
-      ]
+    executeAction(booking, 'accept',
+      { method: 'post', url: `/provider/bookings/${booking.booking_id}/accept` },
+      'Booking accepted!'
     );
   };
 
   const handleReject = (booking) => {
-    Alert.alert(
-      'Reject Booking',
-      'Are you sure you want to reject this booking?',
-      [
-        { text: 'Cancel', onPress: () => {} },
-        {
-          text: 'Reject',
-          onPress: async () => {
-            try {
-              const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/reject`);
-              if (response.data.success) {
-                Alert.alert('Success', 'Booking rejected');
-                fetchBookings();
-              }
-            } catch (error) {
-              Alert.alert('Error', error.response?.data?.error || 'Failed to reject booking');
-            }
-          },
-        },
-      ]
+    executeAction(booking, 'reject',
+      { method: 'post', url: `/provider/bookings/${booking.booking_id}/reject` },
+      'Booking rejected'
+    );
+  };
+
+  const handleComplete = (booking) => {
+    executeAction(booking, 'complete',
+      { method: 'post', url: `/provider/bookings/${booking.booking_id}/complete` },
+      'Booking completed!'
     );
   };
 
   const handleCancel = (booking) => {
-    Alert.alert(
-      'Cancel Booking',
-      'Are you sure you want to cancel this booking?',
-      [
-        { text: 'No', onPress: () => {} },
-        {
-          text: 'Yes',
-          onPress: async () => {
-            try {
-              const response = await apiClient.delete(`/provider/bookings/${booking.booking_id}`);
-              if (response.data.success) {
-                Alert.alert('Success', 'Booking canceled');
-                fetchBookings();
-              }
-            } catch (error) {
-              Alert.alert('Error', error.response?.data?.error || 'Failed to cancel booking');
-            }
-          },
-        },
-      ]
+    executeAction(booking, 'cancel',
+      { method: 'delete', url: `/provider/bookings/${booking.booking_id}` },
+      'Booking canceled'
     );
   };
 
   const filteredBookings = bookings.filter(b => b.status === activeTab.toLowerCase());
-
-  const BookingCard = ({ booking, onPress }) => (
-    <TouchableOpacity
-      style={styles.bookingCard}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <LiquidGlass opacity={0.02} />
-      <View style={styles.cardHeader}>
-        <View>
-          <Text style={styles.clientName}>{booking.clientName}</Text>
-          <Text style={styles.serviceType}>{booking.serviceType}</Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
-          <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-            {booking.status.toUpperCase()}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.cardDetails}>
-        <View style={styles.detailRow}>
-          <Ionicons name="location" size={16} color={COLORS.textSecondary} />
-          <Text style={styles.detailText}>{booking.location}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Ionicons name="time" size={16} color={COLORS.textSecondary} />
-          <Text style={styles.detailText}>{booking.date}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Ionicons name="cash" size={16} color={COLORS.textSecondary} />
-          <Text style={styles.detailText}>PKR {booking.quote.toLocaleString()}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardActions}>
-        {booking.status === 'pending' && (
-          <>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.acceptBtn]}
-              onPress={() => handleAccept(booking)}
-            >
-              <Ionicons name="checkmark" size={16} color="white" />
-              <Text style={styles.actionBtnText}>Accept</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.rejectBtn]}
-              onPress={() => handleReject(booking)}
-            >
-              <Ionicons name="close" size={16} color="white" />
-              <Text style={styles.actionBtnText}>Reject</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        {booking.status === 'active' && (
-          <>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.completeBtn]}
-              onPress={() => {
-                Alert.alert(
-                  'Complete Booking',
-                  'Mark this booking as completed?',
-                  [
-                    { text: 'Cancel', onPress: () => {} },
-                    {
-                      text: 'Complete',
-                      onPress: async () => {
-                        try {
-                          const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/complete`);
-                          if (response.data.success) {
-                            Alert.alert('Success', 'Booking completed!');
-                            fetchBookings();
-                          }
-                        } catch (error) {
-                          Alert.alert('Error', error.response?.data?.error || 'Failed to complete booking');
-                        }
-                      },
-                    },
-                  ]
-                );
-              }}
-            >
-              <Ionicons name="checkmark-done" size={16} color="white" />
-              <Text style={styles.actionBtnText}>Complete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.cancelBtn]}
-              onPress={() => handleCancel(booking)}
-            >
-              <Ionicons name="close" size={16} color="white" />
-              <Text style={styles.actionBtnText}>Cancel</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.chatBtn]}
-          onPress={() => navigation.navigate('Messages')}
-        >
-          <Ionicons name="chatbubble" size={16} color="white" />
-          <Text style={styles.actionBtnText}>Chat</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -284,6 +185,106 @@ export default function ProviderBookingsScreen({ navigation }) {
       case 'canceled': return COLORS.error;
       default: return COLORS.textSecondary;
     }
+  };
+
+  const BookingCard = ({ booking, onPress }) => {
+    const isActioning = actionInProgress === booking.booking_id;
+
+    return (
+      <TouchableOpacity
+        style={styles.bookingCard}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <LiquidGlass opacity={0.02} />
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.clientName}>{booking.clientName}</Text>
+            <Text style={styles.serviceType}>{booking.serviceType}</Text>
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
+            <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
+              {booking.rawStatus?.toUpperCase() || booking.status.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.cardDetails}>
+          <View style={styles.detailRow}>
+            <Ionicons name="location" size={16} color={COLORS.textSecondary} />
+            <Text style={styles.detailText}>{booking.location}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="time" size={16} color={COLORS.textSecondary} />
+            <Text style={styles.detailText}>{booking.date}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="cash" size={16} color={COLORS.textSecondary} />
+            <Text style={styles.detailText}>
+              {typeof booking.quote === 'number' && booking.quote > 0
+                ? `PKR ${Math.round(booking.quote).toLocaleString()}`
+                : 'Quote pending'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.cardActions}>
+          {isActioning ? (
+            <View style={[styles.actionBtn, { backgroundColor: COLORS.border }]}>
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            </View>
+          ) : (
+            <>
+              {booking.status === 'pending' && (
+                <>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.acceptBtn]}
+                    onPress={() => handleAccept(booking)}
+                  >
+                    <Ionicons name="checkmark" size={16} color="white" />
+                    <Text style={styles.actionBtnText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.rejectBtn]}
+                    onPress={() => handleReject(booking)}
+                  >
+                    <Ionicons name="close" size={16} color="white" />
+                    <Text style={styles.actionBtnText}>Reject</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {booking.status === 'active' && (
+                <>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.completeBtn]}
+                    onPress={() => handleComplete(booking)}
+                  >
+                    <Ionicons name="checkmark-done" size={16} color="white" />
+                    <Text style={styles.actionBtnText}>Complete</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.cancelBtn]}
+                    onPress={() => handleCancel(booking)}
+                  >
+                    <Ionicons name="close" size={16} color="white" />
+                    <Text style={styles.actionBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.chatBtn]}
+                onPress={() => navigation.navigate('Messages')}
+              >
+                <Ionicons name="chatbubble" size={16} color="white" />
+                <Text style={styles.actionBtnText}>Chat</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -297,17 +298,20 @@ export default function ProviderBookingsScreen({ navigation }) {
         style={styles.tabScroll}
         contentContainerStyle={styles.tabContent}
       >
-        {TABS.map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {TABS.map((tab) => {
+          const count = bookings.filter(b => b.status === tab.toLowerCase()).length;
+          return (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tab, activeTab === tab && styles.activeTab]}
+              onPress={() => setActiveTab(tab)}
+            >
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                {tab} {count > 0 ? `(${count})` : ''}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {loading ? (

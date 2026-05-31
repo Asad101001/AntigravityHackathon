@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T17-01-55",
+  "timestamp": "2026-05-31T17:03:11.375Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "location": "Gulzar-e-Hijri Karachi",
+    "city": "Karachi"
+  },
+  "output": {
+    "lat": 24.9506,
+    "lng": 67.1331,
+    "area_name": "Gulzar-e-Hijri Karachi",
+    "city": "Karachi",
+    "source": "local_fuzzy_catalog"
+  },
+  "durationMs": 26
+}

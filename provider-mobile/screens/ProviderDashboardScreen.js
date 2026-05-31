@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Modal,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +32,8 @@ export default function ProviderDashboardScreen({ navigation }) {
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -37,33 +42,43 @@ export default function ProviderDashboardScreen({ navigation }) {
         const bookings = response.data.bookings || [];
         const today = new Date().toDateString();
 
-        const pending = bookings.filter(b => b.status === 'pending').length;
+        const pending = bookings.filter(b => b.status === 'pending');
         const active = bookings.filter(b => ['confirmed', 'active'].includes(b.status)).length;
         const completedToday = bookings.filter(b => {
           if (b.status !== 'completed') return false;
           const d = b.booking_start_time ? new Date(b.booking_start_time).toDateString() : null;
           return d === today;
         }).length;
+        // Safely sum earnings — backend sends both quote and quote_pkr
         const earnings = bookings
           .filter(b => b.status === 'completed')
-          .reduce((sum, b) => sum + (b.quote || 0), 0);
+          .reduce((sum, b) => sum + (b.quote ?? b.quote_pkr ?? 0), 0);
 
-        setStats({ pendingBookings: pending, activeBookings: active, completedToday, totalEarnings: earnings });
+        setStats({ pendingBookings: pending.length, activeBookings: active, completedToday, totalEarnings: earnings });
+
+        // Show modal for the first pending booking that hasn't been dismissed
+        if (pending.length > 0 && !pendingBooking) {
+          setPendingBooking(pending[0]);
+        } else if (pending.length === 0) {
+          setPendingBooking(null);
+        }
 
         // Last 3 bookings for recent activity
         setRecentBookings(bookings.slice(0, 3));
       }
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      console.error('Failed to fetch stats:', error?.message || error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [pendingBooking]);
 
   useFocusEffect(
     useCallback(() => {
       fetchStats();
+      const intervalId = setInterval(fetchStats, 5000);
+      return () => clearInterval(intervalId);
     }, [fetchStats])
   );
 
@@ -72,10 +87,54 @@ export default function ProviderDashboardScreen({ navigation }) {
     fetchStats();
   }, [fetchStats]);
 
+  const showError = (msg) => {
+    if (Platform.OS === 'web') window.alert(msg);
+    else Alert.alert('Error', msg);
+  };
+
+  const handleAccept = async () => {
+    if (!pendingBooking || actionLoading) return;
+    setActionLoading(true);
+    try {
+      // Use _id which is the actual MongoDB document ID
+      const bookingId = pendingBooking._id || pendingBooking.id;
+      const response = await apiClient.post(`/provider/bookings/${bookingId}/accept`);
+      if (response.data.success) {
+        if (Platform.OS !== 'web') Alert.alert('Success', 'Booking accepted!');
+        setPendingBooking(null);
+        fetchStats();
+        navigation.navigate('Bookings');
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.error || 'Failed to accept booking';
+      showError(errMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!pendingBooking || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const bookingId = pendingBooking._id || pendingBooking.id;
+      const response = await apiClient.post(`/provider/bookings/${bookingId}/reject`);
+      if (response.data.success) {
+        setPendingBooking(null);
+        fetchStats();
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.error || 'Failed to reject booking';
+      showError(errMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getActivityIcon = (status) => {
     switch (status) {
       case 'completed': return { name: 'checkmark-circle', color: COLORS.success };
-      case 'confirmed': return { name: 'calendar-check', color: COLORS.accentBlue };
+      case 'confirmed': return { name: 'calendar', color: COLORS.accentBlue };
       case 'pending': return { name: 'time', color: COLORS.warning };
       case 'canceled':
       case 'rejected': return { name: 'close-circle', color: COLORS.error };
@@ -85,12 +144,24 @@ export default function ProviderDashboardScreen({ navigation }) {
 
   const formatRelativeTime = (isoString) => {
     if (!isoString) return '';
-    const diff = Date.now() - new Date(isoString).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    try {
+      const diff = Date.now() - new Date(isoString).getTime();
+      if (diff < 0) return 'upcoming';
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      return `${Math.floor(hrs / 24)}d ago`;
+    } catch {
+      return '';
+    }
+  };
+
+  const formatQuote = (booking) => {
+    const q = booking?.quote ?? booking?.quote_pkr;
+    if (typeof q === 'number' && q > 0) return `PKR ${Math.round(q).toLocaleString()}`;
+    return 'Quote pending';
   };
 
   const StatCard = ({ icon, label, value, color, onPress }) => (
@@ -216,10 +287,10 @@ export default function ProviderDashboardScreen({ navigation }) {
                       <View style={[styles.activityDot, { backgroundColor: dotColor }]} />
                       <View style={styles.activityContent}>
                         <Text style={styles.activityText}>
-                          {b.client_name || 'Client'} — {b.service_type || 'Service'} ({b.status})
+                          {b.client_name || 'Customer'} — {b.service_type || 'Service'} ({b.status})
                         </Text>
                         <Text style={styles.activityTime}>
-                          {formatRelativeTime(b.booking_start_time)}
+                          {formatRelativeTime(b.created_at || b.booking_start_time)}
                         </Text>
                       </View>
                     </View>
@@ -230,6 +301,86 @@ export default function ProviderDashboardScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
+
+      {/* Full-Screen Incoming Booking Popup */}
+      <Modal
+        visible={!!pendingBooking}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeaderGlow}>
+              <Ionicons name="notifications-circle" size={80} color={COLORS.primary} />
+            </View>
+            <Text style={styles.modalTitle}>New Booking Request!</Text>
+            <Text style={styles.modalSub}>
+              {pendingBooking?.client_name || 'A customer'} needs{' '}
+              {pendingBooking?.service_type || 'a service'}
+            </Text>
+            <View style={styles.modalDetailsBox}>
+              <View style={styles.modalDetailRow}>
+                <Ionicons name="person" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.modalDetailText}>
+                  {pendingBooking?.client_name || 'Customer'}
+                </Text>
+              </View>
+              <View style={styles.modalDetailRow}>
+                <Ionicons name="construct" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.modalDetailText}>
+                  {pendingBooking?.service_type || 'Service'}
+                </Text>
+              </View>
+              <View style={styles.modalDetailRow}>
+                <Ionicons name="location" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.modalDetailText}>
+                  {pendingBooking?.location || pendingBooking?.area || 'Location pending'}
+                </Text>
+              </View>
+              <View style={styles.modalDetailRow}>
+                <Ionicons name="cash" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.modalDetailText}>
+                  {formatQuote(pendingBooking)}
+                </Text>
+              </View>
+              {pendingBooking?.booking_start_time && (
+                <View style={[styles.modalDetailRow, { marginBottom: 0 }]}>
+                  <Ionicons name="time" size={20} color={COLORS.textSecondary} />
+                  <Text style={styles.modalDetailText}>
+                    {new Date(pendingBooking.booking_start_time).toLocaleString('en-PK')}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalRejectBtn}
+                onPress={handleReject}
+                activeOpacity={0.8}
+                disabled={actionLoading}
+              >
+                <Text style={styles.modalRejectBtnText}>Decline</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalAcceptBtn, actionLoading && { opacity: 0.6 }]}
+                onPress={handleAccept}
+                activeOpacity={0.8}
+                disabled={actionLoading}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-done" size={20} color="#FFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.modalAcceptBtnText}>Accept Job</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -330,5 +481,91 @@ const styles = StyleSheet.create({
     ...FONTS.caption,
     color: COLORS.textSecondary,
     marginTop: 2,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 30,
+    alignItems: 'center',
+    ...SHADOWS.lg,
+  },
+  modalHeaderGlow: {
+    marginBottom: 16,
+    borderRadius: 50,
+    backgroundColor: 'rgba(14, 143, 70, 0.1)',
+    padding: 10,
+  },
+  modalTitle: {
+    fontSize: 26,
+    fontFamily: FONTS.h1.fontFamily,
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+  },
+  modalSub: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontFamily: FONTS.body1.fontFamily,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  modalDetailsBox: {
+    width: '100%',
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 32,
+    ...SHADOWS.sm,
+  },
+  modalDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalDetailText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    fontFamily: FONTS.body1.fontFamily,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 16,
+  },
+  modalRejectBtn: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalRejectBtnText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    fontFamily: FONTS.button.fontFamily,
+  },
+  modalAcceptBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.md,
+  },
+  modalAcceptBtnText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: FONTS.button.fontFamily,
   },
 });

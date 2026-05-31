@@ -23,7 +23,7 @@ import apiClient from '../lib/apiClient';
 const CLIENT_ROLES = new Set(['user', 'client', 'assistant', 'ai']);
 
 function isProviderMessage(msg) {
-  return msg.role === 'provider';
+  return msg.role === 'provider' || msg.role === 'assistant';
 }
 
 export default function ProviderChatScreen() {

@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T17-01-55",
+  "timestamp": "2026-05-31T17:03:11.333Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Plumber needed gulzar e hijri urgently",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Gulzar-e-Hijri Karachi",
+    "time_preference": null,
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "roman_urdu",
+    "reasoning": "Identified 'Plumber' as service type, 'Gulzar e Hijri' as location, and 'urgently' as urgency level indicator. Pre-validated \"Gulzar e Hijri\" → \"Gulzar-e-Hijri Karachi\" via local catalog."
+  },
+  "durationMs": 686
+}

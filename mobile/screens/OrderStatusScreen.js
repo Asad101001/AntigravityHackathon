@@ -6,12 +6,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenHeader from '../components/ScreenHeader';
+import apiClient from '../lib/apiClient';
 
 let MapView = () => null;
 let Marker = () => null;
@@ -30,10 +30,10 @@ if (Platform.OS !== 'web') {
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, SHADOWS, FONTS } from '../theme';
 import { sendLocalNotification } from '../notifications';
-import { updateSessionBookingStatus } from '../sessionBookings';
 
 const STAGES = [
-  { key: 'confirmed', label: 'Confirmed',  icon: 'checkmark-circle-outline' },
+  { key: 'pending',    label: 'Assigning',  icon: 'hourglass-outline' },
+  { key: 'confirmed',  label: 'Confirmed',  icon: 'checkmark-circle-outline' },
   { key: 'dispatched', label: 'Dispatched', icon: 'navigate-outline' },
   { key: 'arriving',   label: 'Arriving',   icon: 'car-outline' },
   { key: 'working',    label: 'In Progress', icon: 'construct-outline' },
@@ -41,7 +41,7 @@ const STAGES = [
 ];
 
 function getInitialStageIndex(status) {
-  const map = { confirmed: 0, dispatched: 1, arriving: 2, en_route: 2, working: 3, in_progress: 3, completed: 4, done: 4 };
+  const map = { pending: 0, confirmed: 1, dispatched: 2, arriving: 3, en_route: 3, working: 4, in_progress: 4, completed: 5, done: 5 };
   return map[status?.toLowerCase()] ?? 0;
 }
 
@@ -117,6 +117,43 @@ export default function OrderStatusScreen({ route, navigation }) {
     return () => pathProgressAnim.removeListener(id);
   }, [pathProgressAnim, routePath]);
 
+  // ── Live Polling for Backend Status ───────────────────────────────────────
+  useEffect(() => {
+    // Use _id (MongoDB doc ID) which is the canonical booking identifier
+    const bookingId = booking?._id || booking?.id;
+    if (!bookingId) return;
+
+    const pollStatus = async () => {
+      try {
+        const res = await apiClient.get(`/bookings/${bookingId}`);
+        if (res.data?.success && res.data.booking) {
+          const serverStatus = res.data.booking.status;
+          const serverStage = getInitialStageIndex(serverStatus);
+          
+          if (serverStage !== currentStage) {
+            setCurrentStage(serverStage);
+            // Notify user of meaningful status changes
+            if (serverStatus === 'confirmed') {
+              sendLocalNotification('Provider Accepted!', 'Your provider has confirmed the booking.');
+            } else if (serverStatus === 'completed') {
+              sendLocalNotification('Service Completed', 'Your provider marked the job as done.');
+            } else if (serverStatus === 'rejected' || serverStatus === 'canceled') {
+              sendLocalNotification('Booking Update', 'Your booking status has changed. Please check the app.');
+            }
+          }
+        }
+      } catch (err) {
+        // Ignore silent network errors on polling — don't disrupt the UI
+        console.debug('[OrderStatus] Poll error (silent):', err?.message);
+      }
+    };
+
+    // Initial poll immediately, then every 5s
+    pollStatus();
+    const intervalId = setInterval(pollStatus, 5000);
+    return () => clearInterval(intervalId);
+  }, [booking?._id, booking?.id, currentStage]);
+
   useEffect(() => {
     // UI Progress Bar goes 0 -> 1 based on 5 stages (0/4, 1/4, 2/4, 3/4, 4/4)
     Animated.timing(progressAnim, {
@@ -126,10 +163,10 @@ export default function OrderStatusScreen({ route, navigation }) {
       useNativeDriver: false,
     }).start();
 
-    // Map Movement Logic: Only moves between Stage 1 (Dispatched) and Stage 2 (Arriving). Locked at destination if >= 2.
+    // Map Movement Logic: Moves between Stage 2 (Dispatched) and Stage 3 (Arriving). Locked at destination if >= 3.
     let targetMapProgress = 0;
-    if (currentStage === 1) targetMapProgress = 0.5;
-    if (currentStage >= 2) targetMapProgress = 1;
+    if (currentStage === 2) targetMapProgress = 0.5;
+    if (currentStage >= 3) targetMapProgress = 1;
 
     Animated.timing(pathProgressAnim, {
       toValue: targetMapProgress,
@@ -156,11 +193,17 @@ export default function OrderStatusScreen({ route, navigation }) {
     }
   }, [currentStage, userLoc, providerStartLoc, stageAnims, progressAnim, pathProgressAnim, routePath]);
 
+  const formatQuote = (b) => {
+    const q = b?.quote_pkr ?? b?.quote;
+    if (typeof q === 'number' && q > 0) return `PKR ${Math.round(q).toLocaleString('en-PK')}`;
+    return 'Quote pending';
+  };
+
   const info = useMemo(() => [
-    { label: 'SERVICE', value: booking?.service || 'Home Service', icon: 'briefcase-outline' },
-    { label: 'PROVIDER', value: booking?.provider || 'Asaaniyat Pro', icon: 'person-outline' },
-    { label: 'BOOKING ID', value: booking?.id?.slice(0, 12) || 'ASN-001', icon: 'document-text-outline' },
-    { label: 'CREATED', value: booking?.created_at ? new Date(booking.created_at).toLocaleString('en-PK') : 'Recently', icon: 'time-outline' },
+    { label: 'SERVICE', value: booking?.service_type || booking?.service || 'Home Service', icon: 'briefcase-outline' },
+    { label: 'PROVIDER', value: booking?.provider_name || booking?.provider || 'Asaaniyat Pro', icon: 'person-outline' },
+    { label: 'QUOTE', value: formatQuote(booking), icon: 'cash-outline' },
+    { label: 'BOOKING ID', value: (booking?._id || booking?.id || 'N/A').slice(0, 16), icon: 'document-text-outline' },
   ], [booking]);
 
   const progressWidth = progressAnim.interpolate({
@@ -168,20 +211,9 @@ export default function OrderStatusScreen({ route, navigation }) {
     outputRange: ['0%', '100%'],
   });
 
-  const handleUpdateStatus = async () => {
-    if (currentStage < STAGES.length - 1) {
-      const nextStage = currentStage + 1;
-      setCurrentStage(nextStage);
-      if (booking?.id) {
-        updateSessionBookingStatus(booking.id, STAGES[nextStage].key, nextStage);
-      }
-      await sendLocalNotification('Booking Update', `Your service is now: ${STAGES[nextStage].label}`);
-    }
-  };
-
-  const getButtonLabel = () => {
+  const getStatusLabel = () => {
     if (currentStage >= STAGES.length - 1) return 'Service Complete ✓';
-    return `Advance to ${STAGES[currentStage + 1].label}`;
+    return `Status: ${STAGES[currentStage].label}`;
   };
 
   return (
@@ -294,16 +326,18 @@ export default function OrderStatusScreen({ route, navigation }) {
             ))}
           </LiquidGlass>
 
-          {/* ── Update Status Button ───────────────────────── */}
-          <TouchableOpacity
-            style={[styles.updateBtn, currentStage >= STAGES.length - 1 && styles.updateBtnDisabled]}
-            activeOpacity={0.84}
-            onPress={handleUpdateStatus}
-            disabled={currentStage >= STAGES.length - 1}
+          {/* ── Status Indicator ───────────────────────── */}
+          <View
+            style={[styles.updateBtn, currentStage >= STAGES.length - 1 ? styles.updateBtnComplete : styles.updateBtnLive]}
           >
-            <Ionicons name="refresh-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.updateBtnText}>{getButtonLabel()}</Text>
-          </TouchableOpacity>
+            <Ionicons
+              name={currentStage >= STAGES.length - 1 ? 'checkmark-circle' : 'pulse'}
+              size={18}
+              color="#FFFFFF"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.updateBtnText}>{getStatusLabel()}</Text>
+          </View>
 
         </ScrollView>
       </View>
@@ -459,6 +493,12 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   updateBtnDisabled: {
+    backgroundColor: COLORS.textMuted,
+  },
+  updateBtnLive: {
+    backgroundColor: COLORS.primary,
+  },
+  updateBtnComplete: {
     backgroundColor: COLORS.textMuted,
   },
   updateBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: FONTS.heading.fontFamily },

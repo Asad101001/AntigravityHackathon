@@ -6,9 +6,7 @@
 
 const BaseAgent = require('./BaseAgent');
 const { parseDateTime, parseTimePreference } = require('../utils/dateTimeParser');
-
-// In-memory booking store (demo mode — replaces Firestore)
-const bookingStore = new Map();
+const db = require('../db');
 
 /**
  * Parse explicit appointment from user text with improved date/time parsing
@@ -228,36 +226,50 @@ class BookingExecutorAgent extends BaseAgent {
       location: context.resolved_area || context.location,
       scheduled_time: scheduledDate.toISOString(),
       time_slot: selectedSlot,
-      status: 'confirmed',
+      status: 'pending',
       created_at: now.toISOString(),
       reasoning: context.decision_reasoning || '',
       agent_trace: null, // Will be filled by orchestrator
       booking_date_confidence: dateConfidence // Track confidence in date parsing
     };
 
-    // ── Simulated Firestore Write (with retry) ──
+    // ── Real MongoDB Write ──
     let writeSuccess = false;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        bookingStore.set(bookingId, booking);
-        writeSuccess = true;
-        break;
-      } catch (err) {
-        console.warn(`[BookingExecutor] Write attempt ${attempt} failed:`, err.message);
-        await new Promise(r => setTimeout(r, 100 * attempt)); // Backoff
+    let savedBooking = null;
+    try {
+      savedBooking = await db.createBooking({
+        user_id: userId,
+        provider_id: provider.id,
+        provider_name: provider.name,
+        service_type: context.service_type,
+        location: context.resolved_area || context.location,
+        city: context.city || '',
+        area: context.resolved_area || context.location,
+        booking_start_time: scheduledDate.toISOString(),
+        quote_pkr: context.quote_pkr || 0,
+        status: 'pending',
+        raw_data: booking
+      });
+      writeSuccess = true;
+      // Overwrite bookingId with real mongo ID for consistency
+      if (savedBooking && savedBooking._id) {
+        bookingId = savedBooking._id;
+        booking.booking_id = bookingId;
       }
+    } catch (err) {
+      console.error(`[BookingExecutor] Write failed:`, err.message);
     }
 
     if (!writeSuccess) {
       return {
         input: { provider: provider.name },
-        output: { booking_id: null, error: 'Firestore write failed after 3 retries' },
-        reasoning: 'Booking write failed after 3 retry attempts. Data saved to local storage for sync.',
+        output: { booking_id: null, error: 'MongoDB write failed' },
+        reasoning: 'Booking write failed. Could not save to database.',
         contextUpdates: { booking_id: null, booking_status: 'write_failed' }
       };
     }
 
-    const confirmationMsg = `Booking confirmed! ${provider.name} arrives ${scheduledDate.toLocaleDateString('en-PK')} at ${selectedSlot}. ` +
+    const confirmationMsg = `Job request sent! Waiting for ${provider.name} to accept. They are scheduled to arrive ${scheduledDate.toLocaleDateString('en-PK')} at ${selectedSlot}. ` +
       `Contact: ${provider.phone}. Booking ID: ${bookingId}`;
 
     return {
@@ -268,33 +280,14 @@ class BookingExecutorAgent extends BaseAgent {
         scheduled_time: scheduledDate.toISOString(),
         time_slot: selectedSlot
       },
-      reasoning: `Booking created successfully. Slot "${selectedSlot}" selected (${timePref || 'first available'}). Written to Firestore as ${bookingId}. Confirmation sent.`,
+      reasoning: `Booking created successfully. Slot "${selectedSlot}" selected (${timePref || 'first available'}). Written to MongoDB as ${bookingId}. Confirmation sent.`,
       contextUpdates: {
         booking_id: bookingId,
         booking: booking,
         confirmation_message: confirmationMsg,
-        booking_status: 'confirmed'
+        booking_status: 'pending'
       }
     };
-  }
-
-  // Static method to retrieve bookings (for GET endpoint)
-  static getBooking(bookingId) {
-    return bookingStore.get(bookingId) || null;
-  }
-
-  static getAllBookings() {
-    return Array.from(bookingStore.values());
-  }
-
-  static updateBooking(bookingId, updates) {
-    const booking = bookingStore.get(bookingId);
-    if (booking) {
-      Object.assign(booking, updates);
-      bookingStore.set(bookingId, booking);
-      return booking;
-    }
-    return null;
   }
 }
 

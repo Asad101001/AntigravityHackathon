@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-31T17-01-55",
+  "timestamp": "2026-05-31T17:03:13.668Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL013",
+    "ranked_ids": [
+      "PL013",
+      "PL200",
+      "PL255",
+      "PL145",
+      "PL222"
+    ],
+    "reasoning_log": "Given the user's high urgency and neutral price sensitivity, the overall best provider is Fahad (PL013) due to his excellent on-time score and strong local reputation. However, Hassan (PL200) is a close second, offering a good balance of distance, rating, and availability. Imran (PL145) and Farhan (PL255) are also viable options, but their lower ratings and higher base rates make them less desirable. Bushra (PL222) is the least preferred due to her low rating and high cancellation risk.",
+    "multi_factor": {
+      "overall_best_id": "PL013",
+      "most_affordable_id": "PL145",
+      "closest_fastest_id": "PL200",
+      "analysis": {
+        "overall_best_id": "Fahad (PL013) stands out with an excellent on-time score and strong local reputation, making him the best choice for this high-urgency booking.",
+        "most_affordable_id": "Imran (PL145) offers the lowest base rate, making him the most affordable option despite his lower rating and limited availability.",
+        "closest_fastest_id": "Hassan (PL200) is the closest and fastest provider, with a short distance and multiple available slots, making him a strong contender for this booking."
+      }
+    }
+  },
+  "durationMs": 690
+}
