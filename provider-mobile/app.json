@@ -36,6 +36,11 @@
           "modes": ["foreground"]
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1c828945-8f6b-4835-a1c2-3e2b9c7b5a1f"
+      }
+    }
   }
 }
