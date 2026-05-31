@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -78,31 +78,39 @@ export default function BookingsScreen({ navigation }) {
 
   const handleCancelBooking = (bookingId, bookingStatus) => {
     if (bookingStatus?.toLowerCase() === 'canceled') {
-      Alert.alert('Info', 'This booking is already cancelled');
+      if (Platform.OS === 'web') window.alert('This booking is already cancelled');
+      else Alert.alert('Info', 'This booking is already cancelled');
       return;
     }
 
-    Alert.alert(
-      'Cancel Booking',
-      'Are you sure you want to cancel this booking?',
-      [
-        { text: 'No', onPress: () => {} },
-        {
-          text: 'Yes',
-          onPress: async () => {
-            try {
-              const response = await apiClient.delete(`/bookings/${bookingId}`);
-              if (response.data.success) {
-                Alert.alert('Success', 'Booking cancelled');
-                fetchBookings();
-              }
-            } catch (error) {
-              Alert.alert('Error', error.response?.data?.error || 'Failed to cancel booking');
-            }
-          },
-        },
-      ]
-    );
+    const performCancel = async () => {
+      try {
+        const response = await apiClient.delete(`/bookings/${bookingId}`);
+        if (response.data.success) {
+          if (Platform.OS === 'web') window.alert('Booking cancelled');
+          else Alert.alert('Success', 'Booking cancelled');
+          fetchBookings();
+        }
+      } catch (error) {
+        const msg = error.response?.data?.error || 'Failed to cancel booking';
+        if (Platform.OS === 'web') window.alert(msg);
+        else Alert.alert('Error', msg);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to cancel this booking?');
+      if (confirmed) performCancel();
+    } else {
+      Alert.alert(
+        'Cancel Booking',
+        'Are you sure you want to cancel this booking?',
+        [
+          { text: 'No', onPress: () => {} },
+          { text: 'Yes', onPress: performCancel },
+        ]
+      );
+    }
   };
 
   return (

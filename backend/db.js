@@ -381,8 +381,14 @@ async function saveChatMessage({ booking_id, user_id = null, role, content, toke
 
 async function getChatMessages(booking_id, limit = 40, user_id = null) {
   const db = await setupDatabase();
-  const query = { booking_id: booking_id || 'general' };
-  if (user_id) query.user_id = String(user_id);
+  const resolvedBookingId = booking_id || 'general';
+  const query = { booking_id: resolvedBookingId };
+  
+  // Only filter by user_id for general chats. For specific bookings, we want the whole thread.
+  if (user_id && (resolvedBookingId === 'general' || resolvedBookingId === 'general_assistant')) {
+    query.user_id = String(user_id);
+  }
+  
   return db.collection(COLLECTIONS.chatMessages)
     .find(query)
     .sort({ created_at: 1 })

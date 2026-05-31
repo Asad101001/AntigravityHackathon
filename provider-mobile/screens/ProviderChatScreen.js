@@ -306,7 +306,7 @@ export default function ProviderChatScreen() {
             )}
           </ScrollView>
 
-          <View style={[styles.inputBar, { paddingBottom: insets.bottom + 8 }]}>
+          <View style={[styles.inputBar, { paddingBottom: insets.bottom + 90 }]}>
             <TextInput
               style={styles.input}
               placeholder="Type a message..."
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     ...FONTS.body2,
     color: COLORS.textPrimary,
-    maxHeight: 120,
+    maxHeight: 80,
   },
   sendBtn: {
     width: 42,

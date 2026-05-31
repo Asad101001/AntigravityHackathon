@@ -145,6 +145,7 @@ export default function ChatScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
+    let pollTimer;
     const loadMessages = async () => {
       try {
         const response = await apiClient.get(`/chat/${activeBooking.id || 'general'}`);
@@ -174,7 +175,7 @@ export default function ChatScreen({ navigation }) {
         }
       } catch (error) {
         console.error('Failed to load chat messages:', error);
-        if ((activeBooking.id || 'general') === 'general') {
+        if ((activeBooking.id || 'general') === 'general' && messages.length === 0) {
           setMessages([
             {
               id: generateMessageId(),
@@ -188,6 +189,11 @@ export default function ChatScreen({ navigation }) {
     };
 
     loadMessages();
+    pollTimer = setInterval(loadMessages, 3000);
+
+    return () => {
+      if (pollTimer) clearInterval(pollTimer);
+    };
   }, [activeBooking.id]);
 
   useEffect(() => subscribeSessionBookings(list => {
@@ -632,9 +638,9 @@ function ChatBubble({ message, isGeneralChat }) {
 
   return (
     <View style={[styles.bubbleContainer, styles.assistantBubbleContainer]}>
-      {/* Bot Avatar Icon next to message, matching mockup */}
+      {/* Bot/Provider Avatar Icon next to message */}
       <View style={styles.avatarContainer}>
-        <Ionicons name="logo-android" size={18} color="#FFFFFF" />
+        <Ionicons name={message.role === 'provider' ? 'person' : 'logo-android'} size={18} color="#FFFFFF" />
       </View>
 
       <View style={[styles.bubble, styles.assistantBubble]}>

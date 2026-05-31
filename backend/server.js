@@ -43,10 +43,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting: 100 requests per 15 minutes per IP (global)
+// Rate limiting: 5000 requests per 15 minutes per IP (global, high for dev polling)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 5000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please try again later.' }
@@ -56,7 +56,7 @@ app.use('/api/', limiter);
 // Stricter rate limit for auth routes (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 15, // 15 attempts per 15 min per IP
+  max: 100, // Increased for dev
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Only count failed attempts
