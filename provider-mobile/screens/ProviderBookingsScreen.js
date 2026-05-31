@@ -29,40 +29,23 @@ export default function ProviderBookingsScreen({ navigation }) {
 
   const fetchBookings = useCallback(async () => {
     try {
-      // Mock data - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setBookings([
-        {
-          id: '1',
-          clientName: 'Ahmed Hassan',
-          serviceType: 'AC Repair',
-          location: 'Defence, Lahore',
-          status: 'pending',
-          quote: 3500,
-          date: 'Today, 2:00 PM',
-          description: 'AC not cooling properly',
-        },
-        {
-          id: '2',
-          clientName: 'Fatima Khan',
-          serviceType: 'Plumbing',
-          location: 'DHA Phase 5, Lahore',
-          status: 'active',
-          quote: 2500,
-          date: 'Today, 3:30 PM',
-          description: 'Leaking tap in kitchen',
-        },
-        {
-          id: '3',
-          clientName: 'Ali Raza',
-          serviceType: 'Electrical',
-          location: 'Gulberg, Lahore',
-          status: 'completed',
-          quote: 1800,
-          date: 'Yesterday, 5:00 PM',
-          description: 'Installed new light fixture',
-        },
-      ]);
+      const response = await apiClient.get('/provider/bookings');
+      if (response.data.success) {
+        // Transform backend booking data to UI format
+        const transformedBookings = (response.data.bookings || []).map(booking => ({
+          id: booking._id || booking.id,
+          clientName: booking.client_name || 'Unknown Client',
+          serviceType: booking.service_type || 'Service',
+          location: booking.location || 'Unknown Location',
+          status: mapBackendStatus(booking.status),
+          quote: booking.quote || 0,
+          date: formatDate(booking.booking_start_time),
+          description: booking.description || '',
+          booking_id: booking._id || booking.id,
+          raw: booking, // Keep original for actions
+        }));
+        setBookings(transformedBookings);
+      }
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
       Alert.alert('Error', 'Failed to load bookings');
@@ -71,6 +54,36 @@ export default function ProviderBookingsScreen({ navigation }) {
       setRefreshing(false);
     }
   }, []);
+
+  // Helper to map backend status to UI status
+  const mapBackendStatus = (backendStatus) => {
+    const statusMap = {
+      'pending': 'pending',
+      'confirmed': 'active',
+      'active': 'active',
+      'completed': 'completed',
+      'canceled': 'canceled',
+      'rejected': 'canceled',
+    };
+    return statusMap[backendStatus?.toLowerCase()] || 'pending';
+  };
+
+  // Helper to format booking date
+  const formatDate = (isoString) => {
+    if (!isoString) return 'Unknown date';
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Unknown date';
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -83,7 +96,7 @@ export default function ProviderBookingsScreen({ navigation }) {
     fetchBookings();
   }, [fetchBookings]);
 
-  const handleAccept = (bookingId) => {
+  const handleAccept = (booking) => {
     Alert.alert(
       'Accept Booking',
       'Are you sure you want to accept this booking?',
@@ -93,11 +106,13 @@ export default function ProviderBookingsScreen({ navigation }) {
           text: 'Accept',
           onPress: async () => {
             try {
-              // API call would go here
-              Alert.alert('Success', 'Booking accepted!');
-              fetchBookings();
+              const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/accept`);
+              if (response.data.success) {
+                Alert.alert('Success', 'Booking accepted!');
+                fetchBookings();
+              }
             } catch (error) {
-              Alert.alert('Error', 'Failed to accept booking');
+              Alert.alert('Error', error.response?.data?.error || 'Failed to accept booking');
             }
           },
         },
@@ -105,7 +120,7 @@ export default function ProviderBookingsScreen({ navigation }) {
     );
   };
 
-  const handleReject = (bookingId) => {
+  const handleReject = (booking) => {
     Alert.alert(
       'Reject Booking',
       'Are you sure you want to reject this booking?',
@@ -115,11 +130,13 @@ export default function ProviderBookingsScreen({ navigation }) {
           text: 'Reject',
           onPress: async () => {
             try {
-              // API call would go here
-              Alert.alert('Success', 'Booking rejected');
-              fetchBookings();
+              const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/reject`);
+              if (response.data.success) {
+                Alert.alert('Success', 'Booking rejected');
+                fetchBookings();
+              }
             } catch (error) {
-              Alert.alert('Error', 'Failed to reject booking');
+              Alert.alert('Error', error.response?.data?.error || 'Failed to reject booking');
             }
           },
         },
@@ -127,7 +144,7 @@ export default function ProviderBookingsScreen({ navigation }) {
     );
   };
 
-  const handleCancel = (bookingId) => {
+  const handleCancel = (booking) => {
     Alert.alert(
       'Cancel Booking',
       'Are you sure you want to cancel this booking?',
@@ -137,11 +154,13 @@ export default function ProviderBookingsScreen({ navigation }) {
           text: 'Yes',
           onPress: async () => {
             try {
-              // API call would go here
-              Alert.alert('Success', 'Booking canceled');
-              fetchBookings();
+              const response = await apiClient.delete(`/provider/bookings/${booking.booking_id}`);
+              if (response.data.success) {
+                Alert.alert('Success', 'Booking canceled');
+                fetchBookings();
+              }
             } catch (error) {
-              Alert.alert('Error', 'Failed to cancel booking');
+              Alert.alert('Error', error.response?.data?.error || 'Failed to cancel booking');
             }
           },
         },
@@ -190,14 +209,14 @@ export default function ProviderBookingsScreen({ navigation }) {
           <>
             <TouchableOpacity
               style={[styles.actionBtn, styles.acceptBtn]}
-              onPress={() => handleAccept(booking.id)}
+              onPress={() => handleAccept(booking)}
             >
               <Ionicons name="checkmark" size={16} color="white" />
               <Text style={styles.actionBtnText}>Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionBtn, styles.rejectBtn]}
-              onPress={() => handleReject(booking.id)}
+              onPress={() => handleReject(booking)}
             >
               <Ionicons name="close" size={16} color="white" />
               <Text style={styles.actionBtnText}>Reject</Text>
@@ -209,14 +228,36 @@ export default function ProviderBookingsScreen({ navigation }) {
           <>
             <TouchableOpacity
               style={[styles.actionBtn, styles.completeBtn]}
-              onPress={() => handleCancel(booking.id)}
+              onPress={() => {
+                Alert.alert(
+                  'Complete Booking',
+                  'Mark this booking as completed?',
+                  [
+                    { text: 'Cancel', onPress: () => {} },
+                    {
+                      text: 'Complete',
+                      onPress: async () => {
+                        try {
+                          const response = await apiClient.post(`/provider/bookings/${booking.booking_id}/complete`);
+                          if (response.data.success) {
+                            Alert.alert('Success', 'Booking completed!');
+                            fetchBookings();
+                          }
+                        } catch (error) {
+                          Alert.alert('Error', error.response?.data?.error || 'Failed to complete booking');
+                        }
+                      },
+                    },
+                  ]
+                );
+              }}
             >
               <Ionicons name="checkmark-done" size={16} color="white" />
               <Text style={styles.actionBtnText}>Complete</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionBtn, styles.cancelBtn]}
-              onPress={() => handleCancel(booking.id)}
+              onPress={() => handleCancel(booking)}
             >
               <Ionicons name="close" size={16} color="white" />
               <Text style={styles.actionBtnText}>Cancel</Text>

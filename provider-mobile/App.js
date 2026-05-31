@@ -15,7 +15,6 @@ import AuthScreen from './screens/AuthScreen';
 import ProviderDashboardScreen from './screens/ProviderDashboardScreen';
 import ProviderBookingsScreen from './screens/ProviderBookingsScreen';
 import ProviderChatScreen from './screens/ProviderChatScreen';
-import BookingDetailScreen from './screens/BookingDetailScreen';
 import ProviderProfileScreen from './screens/ProviderProfileScreen';
 
 // Context & Theme
@@ -26,6 +25,7 @@ import { COLORS, SHADOWS } from './theme';
 import { ToastProvider } from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import LiquidGlass from './components/LiquidGlass';
+import { fontConfig } from './config/fonts';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -89,10 +89,7 @@ function ProviderTabNavigator() {
 }
 
 function AuthNavigator() {
-  const [fontsLoaded] = useFonts({
-    'Inter-Regular': require('./assets/fonts/Inter_400Regular.ttf'),
-    'Poppins-Bold': require('./assets/fonts/Poppins_700Bold.ttf'),
-  });
+  const [fontsLoaded] = useFonts(fontConfig);
 
   if (!fontsLoaded) {
     return <ActivityIndicator style={{ flex: 1 }} />;
@@ -112,10 +109,7 @@ function AuthNavigator() {
 }
 
 function ProviderNavigator() {
-  const [fontsLoaded] = useFonts({
-    'Inter-Regular': require('./assets/fonts/Inter_400Regular.ttf'),
-    'Poppins-Bold': require('./assets/fonts/Poppins_700Bold.ttf'),
-  });
+  const [fontsLoaded] = useFonts(fontConfig);
 
   if (!fontsLoaded) {
     return <ActivityIndicator style={{ flex: 1 }} />;
@@ -129,11 +123,6 @@ function ProviderNavigator() {
       }}
     >
       <Stack.Screen name="ProviderTabs" component={ProviderTabNavigator} />
-      <Stack.Screen
-        name="BookingDetail"
-        component={BookingDetailScreen}
-        options={{ animationEnabled: true }}
-      />
     </Stack.Navigator>
   );
 }

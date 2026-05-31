@@ -23,70 +23,54 @@ export default function ProviderChatScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
   const [activeChat, setActiveChat] = useState(null);
-  const [chats, setChats] = useState([
-    {
-      id: '1',
-      clientName: 'Ahmed Hassan',
-      clientImage: '👨‍💼',
-      lastMessage: 'When can you arrive?',
-      timestamp: '2 min ago',
-      unread: 2,
-      bookingId: '1',
-      status: 'pending',
-    },
-    {
-      id: '2',
-      clientName: 'Fatima Khan',
-      clientImage: '👩‍💼',
-      lastMessage: 'Thank you for the service',
-      timestamp: '1 hour ago',
-      unread: 0,
-      bookingId: '2',
-      status: 'completed',
-    },
-  ]);
+  const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [chatsLoading, setChatsLoading] = useState(true);
 
-  const fetchMessages = useCallback(async (chatId) => {
-    if (!chatId) return;
+  // Fetch bookings to build chats list
+  const fetchChats = useCallback(async () => {
+    try {
+      setChatsLoading(true);
+      const response = await apiClient.get('/provider/bookings');
+      if (response.data.success) {
+        // Transform bookings into chats format
+        const chatsList = (response.data.bookings || []).map(booking => ({
+          id: booking._id || booking.id,
+          clientName: booking.client_name || 'Unknown Client',
+          clientImage: '👤',
+          lastMessage: booking.description || 'No messages yet',
+          timestamp: formatTime(booking.booking_start_time),
+          unread: 0,
+          bookingId: booking._id || booking.id,
+          status: booking.status || 'pending',
+        }));
+        setChats(chatsList);
+      }
+    } catch (error) {
+      console.error('Failed to fetch chats:', error);
+    } finally {
+      setChatsLoading(false);
+    }
+  }, []);
+
+  // Fetch messages for a specific booking
+  const fetchMessages = useCallback(async (bookingId) => {
+    if (!bookingId) return;
     try {
       setLoading(true);
-      // Mock messages
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setMessages([
-        {
-          id: '1',
-          sender: 'client',
-          text: 'Hi, I have an AC problem',
-          timestamp: new Date(Date.now() - 3600000),
-        },
-        {
-          id: '2',
-          sender: 'provider',
-          text: 'Hello! I can help with that. Can you describe the issue?',
-          timestamp: new Date(Date.now() - 3500000),
-        },
-        {
-          id: '3',
-          sender: 'client',
-          text: 'The AC is not cooling properly',
-          timestamp: new Date(Date.now() - 3400000),
-        },
-        {
-          id: '4',
-          sender: 'provider',
-          text: 'I can come today at 2 PM. Does that work for you?',
-          timestamp: new Date(Date.now() - 3300000),
-        },
-        {
-          id: '5',
-          sender: 'client',
-          text: 'Yes, perfect! See you then',
-          timestamp: new Date(Date.now() - 3200000),
-        },
-      ]);
+      const response = await apiClient.get(`/provider/messages?booking_id=${bookingId}`);
+      if (response.data.success) {
+        // Transform backend messages to UI format
+        const messagesList = (response.data.messages || []).map(msg => ({
+          id: msg._id || msg.id,
+          sender: msg.role === 'provider' ? 'provider' : 'client',
+          text: msg.content || '',
+          timestamp: new Date(msg.timestamp || Date.now()),
+        }));
+        setMessages(messagesList);
+      }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
@@ -94,30 +78,70 @@ export default function ProviderChatScreen() {
     }
   }, []);
 
+  // Initialize chats on component mount
+  useEffect(() => {
+    fetchChats();
+  }, [fetchChats]);
+
+  // Fetch messages when chat is selected
   useEffect(() => {
     if (activeChat) {
-      fetchMessages(activeChat.id);
+      fetchMessages(activeChat.bookingId);
     }
   }, [activeChat, fetchMessages]);
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !activeChat) return;
 
-    const newMessage = {
-      id: Date.now().toString(),
-      sender: 'provider',
-      text: message,
-      timestamp: new Date(),
-    };
+    try {
+      // Send message to backend
+      const response = await apiClient.post('/provider/messages', {
+        booking_id: activeChat.bookingId,
+        text: message,
+      });
 
-    setMessages([...messages, newMessage]);
-    setMessage('');
-    Keyboard.dismiss();
+      if (response.data.success) {
+        // Add message to local state
+        const newMessage = {
+          id: response.data.message._id || Date.now().toString(),
+          sender: 'provider',
+          text: message,
+          timestamp: new Date(),
+        };
 
-    // Scroll to bottom
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+        setMessages([...messages, newMessage]);
+        setMessage('');
+        Keyboard.dismiss();
+
+        // Scroll to bottom
+        setTimeout(() => {
+          scrollRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
+  };
+
+  // Helper to format time
+  const formatTime = (isoString) => {
+    if (!isoString) return 'unknown';
+    try {
+      const date = new Date(isoString);
+      const now = new Date();
+      const diffMinutes = Math.floor((now - date) / 60000);
+
+      if (diffMinutes < 1) return 'now';
+      if (diffMinutes < 60) return `${diffMinutes}m ago`;
+      
+      const diffHours = Math.floor(diffMinutes / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    } catch {
+      return 'unknown';
+    }
   };
 
   const ChatListItem = ({ chat, onPress }) => (
@@ -180,7 +204,11 @@ export default function ProviderChatScreen() {
       <View style={styles.container}>
         <ScreenHeader title="Messages" subtitle="Connect with clients" />
         <ScrollView style={styles.scroll} contentContainerStyle={{ flexGrow: 1 }}>
-          {chats.length === 0 ? (
+          {chatsLoading ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          ) : chats.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Ionicons name="chatbubbles-outline" size={48} color={COLORS.textSecondary} />
               <Text style={styles.emptyText}>No messages yet</Text>
