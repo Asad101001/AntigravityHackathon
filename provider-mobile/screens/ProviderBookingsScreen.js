@@ -19,14 +19,14 @@ import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
 
-const TABS = ['Pending', 'Active', 'Completed', 'Canceled'];
+const TABS = ['Active', 'Completed', 'Canceled'];
 
 export default function ProviderBookingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('Pending');
+  const [activeTab, setActiveTab] = useState('Active');
   const [actionInProgress, setActionInProgress] = useState(null); // tracks booking_id being actioned
 
   const fetchBookings = useCallback(async () => {
@@ -292,12 +292,7 @@ export default function ProviderBookingsScreen({ navigation }) {
       <ScreenHeader title="Bookings" subtitle="Manage your service requests" />
 
       {/* Tab Navigation */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabScroll}
-        contentContainerStyle={styles.tabContent}
-      >
+      <View style={[styles.tabScroll, styles.tabContent, { flexDirection: 'row' }]}>
         {TABS.map((tab) => {
           const count = bookings.filter(b => b.status === tab.toLowerCase()).length;
           return (
@@ -312,7 +307,7 @@ export default function ProviderBookingsScreen({ navigation }) {
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
 
       {loading ? (
         <View style={styles.centerContainer}>

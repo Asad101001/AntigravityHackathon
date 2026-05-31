@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T21-11-23",
+  "timestamp": "2026-05-31T21:15:53.318Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "mujhe plumber chahiye Tariq Road, Defence Karachi ke liye kal subah 9 baje",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Defence Karachi",
+    "time_preference": "tomorrow_0900",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User requested a plumber for tomorrow morning at 9am in Tariq Road, Defence Karachi. Pre-validated \"Tariq Road, Defence Karachi\" → \"Defence Karachi\" via local catalog."
+  },
+  "durationMs": 1427
+}

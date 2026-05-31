@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-31T21-11-23",
+  "timestamp": "2026-05-31T21:15:56.920Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Maryam",
+    "time_slot": "9:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780262156536",
+    "confirmation_message": "Job request sent! Waiting for Maryam to accept. They are scheduled to arrive 02/06/2026 at 9:00 AM. Contact: 0346-3185644. Booking ID: BK_1780262156536",
+    "scheduled_time": "2026-06-02T04:00:00.000Z",
+    "time_slot": "9:00 AM"
+  },
+  "durationMs": 398
+}

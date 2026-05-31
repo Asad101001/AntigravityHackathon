@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-31T21-11-23",
+  "timestamp": "2026-05-31T21:15:56.347Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL277",
+    "ranked_ids": [
+      "PL277",
+      "PL068",
+      "PL178",
+      "PL013",
+      "PL222"
+    ],
+    "reasoning_log": "After analyzing the candidate plumbers in Defence Karachi, we selected Maryam (PL277) as the overall best option due to her excellent rating, strong local reputation, and balanced pricing. She is also highly available and has a low cancellation risk. While Rauf (PL068) and Tariq (PL178) are also strong options, they are slightly more expensive and have slightly lower ratings. Fahad (PL013) is the highest rated but is the farthest away and has limited availability. Bushra (PL222) has the lowest rating and highest cancellation risk, making her the least desirable option.",
+    "multi_factor": {
+      "overall_best_id": "PL277",
+      "most_affordable_id": "PL068",
+      "closest_fastest_id": "PL277",
+      "analysis": {
+        "overall_best_id": "Maryam (PL277) is the overall best option due to her excellent rating, strong local reputation, and balanced pricing.",
+        "most_affordable_id": "Rauf (PL068) is the most affordable option with a base rate of 1586 PKR.",
+        "closest_fastest_id": "Maryam (PL277) is the closest and fastest option with a distance of 0.77 km and a response time of 2 minutes."
+      }
+    }
+  },
+  "durationMs": 730
+}

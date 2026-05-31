@@ -43,7 +43,7 @@ function formatDate(dateString) {
 
 function formatBookingInfo(booking) {
   if (!booking) return '';
-  
+
   const lines = [
     `📦 Order: ${booking._id}`,
     `👨‍🔧 Provider: ${booking.provider_name}`,
@@ -53,7 +53,7 @@ function formatBookingInfo(booking) {
     `💰 Quote: ${booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}`,
     `📊 Status: ${booking.status?.toUpperCase() || 'UNKNOWN'}`,
   ];
-  
+
   return lines.join('\n');
 }
 
@@ -67,9 +67,9 @@ function getQuickReplies(activeBooking) {
       { text: 'What services do you offer?', urdu: 'آپ کون سی خدمات پیش کرتے ہیں؟', icon: 'construct-outline', custom: false },
     ];
   }
-  
+
   const status = String(activeBooking.status || '').toLowerCase();
-  
+
   if (status === 'completed') {
     return [
       { text: 'Leave a review for this service', urdu: 'اس سروس کے لیے اپنی رائے دیں', icon: 'star-outline', custom: true },
@@ -77,14 +77,14 @@ function getQuickReplies(activeBooking) {
       { text: 'Book this provider again', urdu: 'اس فراہم کنندہ کو دوبارہ بک کریں', icon: 'refresh-outline', custom: false },
     ];
   }
-  
+
   if (status === 'canceled') {
     return [
       { text: 'Why was this order canceled?', urdu: 'یہ آرڈر کیوں منسوخ کیا گیا؟', icon: 'help-circle-outline', custom: false },
       { text: 'Book a different provider', urdu: 'کسی دوسرے فراہم کنندہ کو بک کریں', icon: 'search-outline', custom: true },
     ];
   }
-  
+
   // Default for active/confirmed/pending
   return [
     { text: 'How quickly can you arrive?', urdu: 'آپ کتنی جلدی پہنچ سکتے ہیں؟', icon: 'time-outline', custom: false },
@@ -124,7 +124,7 @@ export default function ChatScreen({ navigation }) {
       handleSend(spokenText, true); // Auto-send
     },
   });
-  
+
   const [chatThreads, setChatThreads] = useState([]);
   const [isThreadsLoading, setIsThreadsLoading] = useState(true);
 
@@ -263,7 +263,7 @@ export default function ChatScreen({ navigation }) {
     // Call backend API  
     // Send booking_id='general' for general chat, otherwise send the actual booking_id
     const booking_id_to_send = activeBooking.id === 'general' ? 'general' : activeBooking.id;
-    
+
     try {
       const response = await apiClient.post('/chat/message', {
         booking_id: booking_id_to_send,
@@ -283,7 +283,7 @@ export default function ChatScreen({ navigation }) {
               isVoiceReply: isVoice,
             },
           ]);
-          
+
           // Store the user's original message so we can send it again after selection
           global.pendingOrderMessage = content;
         } else {
@@ -340,9 +340,9 @@ export default function ChatScreen({ navigation }) {
       quote_pkr: booking.quote_pkr,
       status: booking.status,
     };
-    
+
     setActiveBooking(bookingData);
-    
+
     setMessages(prev => [
       ...prev,
       {
@@ -352,12 +352,12 @@ export default function ChatScreen({ navigation }) {
         time: stamp(),
       },
     ]);
-    
+
     // If there was a pending order-related message, send it now to this booking
     if (global.pendingOrderMessage) {
       const pendingMsg = global.pendingOrderMessage;
       global.pendingOrderMessage = null;
-      
+
       setTimeout(() => {
         handleSend(pendingMsg);
       }, 500);
@@ -375,8 +375,8 @@ export default function ChatScreen({ navigation }) {
           voiceStatus === 'recording'
             ? stopVoiceInput
             : voiceStatus === 'error'
-            ? startVoiceInput
-            : cancelVoiceInput
+              ? startVoiceInput
+              : cancelVoiceInput
         }
       />
 
@@ -392,190 +392,199 @@ export default function ChatScreen({ navigation }) {
         <View style={[styles.inner, { paddingTop: insets.top, paddingBottom: 12 }]}>
 
           {/* Minimal back-button nav bar */}
-        <View style={styles.minimalNav}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation?.canGoBack() ? navigation.goBack() : navigation?.navigate('Home')}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
-          </TouchableOpacity>
-          <View style={styles.navTitleBlock}>
-            <Text style={styles.navTitle} numberOfLines={1}>
-              {activeBooking.provider || activeBooking.title || 'Chat'}
-            </Text>
-            <Text style={styles.navSub} numberOfLines={1}>
-              {activeBooking.area || activeBooking.subtitle || 'Assistant'}
-            </Text>
-          </View>
-        </View>
-
-        {/* ── Thread Selector Strip ─────────────────────────────── */}
-        <View style={styles.threadStripWrap}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.threadStrip}
-          >
-            {/* Always pinned General AI chat */}
+          <View style={styles.minimalNav}>
             <TouchableOpacity
-              style={[
-                styles.threadChip,
-                styles.pinnedThread,
-                activeBooking.id === 'general' && styles.threadChipActive
-              ]}
-              onPress={() => setActiveBooking({ id: 'general', service: 'Asaaniyat AI', provider: 'Asaaniyat AI', area: 'Pinned assistant chat', status: 'active', kind: 'assistant' })}
-              activeOpacity={0.8}
+              style={styles.backBtn}
+              onPress={() => navigation?.canGoBack() ? navigation.goBack() : navigation?.navigate('Home')}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="sparkles" size={12} color={activeBooking.id === 'general' ? '#FFFFFF' : '#D97706'} />
-              <Text style={[styles.threadChipText, activeBooking.id === 'general' && styles.threadChipTextActive]} numberOfLines={1}>
-                Asaaniyat AI
-              </Text>
+              <Ionicons name="chevron-back" size={22} color={COLORS.primary} />
             </TouchableOpacity>
+            <View style={styles.navTitleBlock}>
+              <Text style={styles.navTitle} numberOfLines={1}>
+                {activeBooking.provider || activeBooking.title || 'Chat'}
+              </Text>
+              <Text style={styles.navSub} numberOfLines={1}>
+                {activeBooking.area || activeBooking.subtitle || 'Assistant'}
+              </Text>
+            </View>
+          </View>
 
-            {/* Skeletons while loading */}
-            {isThreadsLoading && (
-              <>
-                <View style={[styles.threadChip, { width: 120, opacity: 0.5 }]} />
-                <View style={[styles.threadChip, { width: 100, opacity: 0.3 }]} />
-              </>
-            )}
+          {/* ── Thread Selector Strip ─────────────────────────────── */}
+          <View style={styles.threadStripWrap}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.threadStrip}
+            >
+              {/* Always pinned General AI chat */}
+              <TouchableOpacity
+                style={[
+                  styles.threadChip,
+                  styles.pinnedThread,
+                  activeBooking.id === 'general' && styles.threadChipActive
+                ]}
+                onPress={() => setActiveBooking({ id: 'general', service: 'Asaaniyat AI', provider: 'Asaaniyat AI', area: 'Pinned assistant chat', status: 'active', kind: 'assistant' })}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="sparkles" size={12} color={activeBooking.id === 'general' ? '#FFFFFF' : '#D97706'} />
+                <Text style={[styles.threadChipText, activeBooking.id === 'general' && styles.threadChipTextActive]} numberOfLines={1}>
+                  Asaaniyat AI
+                </Text>
+              </TouchableOpacity>
 
-            {/* Loaded threads */}
-            {!isThreadsLoading && chatThreads.filter(t => t.id !== 'general').map(thread => {
-              const isActive = activeBooking.id === thread.id;
-              return (
-                <TouchableOpacity
-                  key={thread.id}
-                  style={[styles.threadChip, isActive && styles.threadChipActive]}
-                  onPress={() => {
-                    setActiveBooking({
-                      id: thread.id,
-                      kind: thread.kind,
-                      service: thread.subtitle,
-                      provider: thread.title,
-                      area: thread.subtitle,
-                      slot: thread.booking?.booking_start_time || null,
-                      quote_pkr: thread.booking?.quote_pkr || null,
-                      status: thread.booking?.status || 'active',
-                    });
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons
-                    name={thread.kind === 'assistant' ? 'logo-android' : 'person-outline'}
-                    size={14}
-                    color={isActive ? '#FFFFFF' : COLORS.primary}
-                  />
-                  <Text
-                    style={[styles.threadChipText, isActive && styles.threadChipTextActive]}
-                    numberOfLines={1}
-                  >
-                    {thread.title}
-                  </Text>
-                  {thread.is_pinned && (
-                    <Text style={{ fontSize: 10 }}>📌</Text>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
+              {/* Skeletons while loading */}
+              {isThreadsLoading && (
+                <>
+                  <View style={[styles.threadChip, { width: 120, opacity: 0.5 }]} />
+                  <View style={[styles.threadChip, { width: 100, opacity: 0.3 }]} />
+                </>
+              )}
 
-        {/* Message Scroll View */}
-        <ScrollView
-          ref={scrollRef}
-          style={styles.messageList}
-          contentContainerStyle={styles.messageContent}
-          onScroll={registerScroll}
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {messages.map((message) => (
-            <ChatBubble 
-              key={message.id} 
-              message={message} 
-              isGeneralChat={activeBooking?.id === 'general'} 
-            />
-          ))}
-          
-          {/* Select Inquiry drawer inside scroll view at the bottom of standard messages */}
-          {activeBooking && (
-            <View style={styles.quickReplySection}>
-              <Text style={styles.quickReplyHeader}>SELECT INQUIRY</Text>
-              <View style={styles.quickReplyContainer}>
-                {getQuickReplies(activeBooking).map((reply, idx) => (
+              {/* Loaded threads */}
+              {!isThreadsLoading && chatThreads.filter(t => t.id !== 'general').map(thread => {
+                const isActive = activeBooking.id === thread.id;
+                return (
                   <TouchableOpacity
-                    key={idx}
-                    style={[
-                      styles.quickReplyButton,
-                      reply.custom && styles.quickReplyConfirmButton
-                    ]}
-                    onPress={() => triggerQuickReply(reply.text)}
+                    key={thread.id}
+                    style={[styles.threadChip, isActive && styles.threadChipActive]}
+                    onPress={() => {
+                      setActiveBooking({
+                        id: thread.id,
+                        kind: thread.kind,
+                        service: thread.subtitle,
+                        provider: thread.title,
+                        area: thread.subtitle,
+                        slot: thread.booking?.booking_start_time || null,
+                        quote_pkr: thread.booking?.quote_pkr || null,
+                        status: thread.booking?.status || 'active',
+                      });
+                    }}
                     activeOpacity={0.8}
                   >
                     <Ionicons
-                      name={reply.icon}
-                      size={18}
-                      color={reply.custom ? COLORS.primary : COLORS.primary}
-                      style={styles.quickReplyIcon}
+                      name={thread.kind === 'assistant' ? 'logo-android' : 'person-outline'}
+                      size={14}
+                      color={isActive ? '#FFFFFF' : COLORS.primary}
                     />
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[
-                          styles.quickReplyText,
-                          reply.custom && styles.quickReplyConfirmText
-                        ]}
-                      >
-                        {reply.text}
-                      </Text>
-                      {reply.urdu && (
-                        <Text style={[styles.quickReplyText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 10, color: COLORS.textMuted, marginTop: 2, textAlign: 'left' }]}>
-                          {reply.urdu}
-                        </Text>
-                      )}
-                    </View>
+                    <Text
+                      style={[styles.threadChipText, isActive && styles.threadChipTextActive]}
+                      numberOfLines={1}
+                    >
+                      {thread.title}
+                    </Text>
+                    {thread.is_pinned && (
+                      <Text style={{ fontSize: 10 }}>📌</Text>
+                    )}
                   </TouchableOpacity>
-                ))}
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Message Scroll View */}
+          <ScrollView
+            ref={scrollRef}
+            style={styles.messageList}
+            contentContainerStyle={styles.messageContent}
+            onScroll={registerScroll}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {messages.map((message) => (
+              <ChatBubble
+                key={message.id}
+                message={message}
+                isGeneralChat={activeBooking?.id === 'general'}
+              />
+            ))}
+
+            {/* Select Inquiry drawer inside scroll view at the bottom of standard messages */}
+            {activeBooking && (
+              <View style={styles.quickReplySection}>
+                <Text style={styles.quickReplyHeader}>SELECT INQUIRY</Text>
+                <View style={styles.quickReplyContainer}>
+                  {getQuickReplies(activeBooking).map((reply, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={[
+                        styles.quickReplyButton,
+                        reply.custom && styles.quickReplyConfirmButton
+                      ]}
+                      onPress={() => triggerQuickReply(reply.text)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name={reply.icon}
+                        size={18}
+                        color={reply.custom ? COLORS.primary : COLORS.primary}
+                        style={styles.quickReplyIcon}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.quickReplyText,
+                            reply.custom && styles.quickReplyConfirmText
+                          ]}
+                        >
+                          {reply.text}
+                        </Text>
+                        {reply.urdu && (
+                          <Text style={[styles.quickReplyText, { fontFamily: FONTS.urduCaption.fontFamily, fontSize: 10, color: COLORS.textMuted, marginTop: 2, textAlign: 'left' }]}>
+                            {reply.urdu}
+                          </Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Message Composer — send button + voice mic */}
+          {['canceled', 'completed', 'rejected'].includes(activeBooking?.status?.toLowerCase()) ? (
+            <View style={[styles.lockedBar, { paddingBottom: Math.max(insets.bottom, 16), paddingTop: 16 }]}>
+              <Ionicons name="lock-closed" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.lockedText}>
+                This chat is locked because the booking is {activeBooking?.status?.toLowerCase()}.
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+              <View style={styles.composer}>
+                <TextInput
+                  style={styles.composerInput}
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder={activeBooking?.kind === 'assistant' || activeBooking?.id === 'general' ? 'Message Asaaniyat Assistant...' : 'Message your provider...'}
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  returnKeyType="send"
+                  onSubmitEditing={send}
+                />
+                {input.trim() ? (
+                  <TouchableOpacity
+                    style={styles.sendButton}
+                    onPress={send}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="send" size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                ) : activeBooking?.id === 'general' ? (
+                  <TouchableOpacity
+                    style={[styles.sendButton, styles.micButtonChat]}
+                    onPress={startVoiceInput}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="mic" size={18} color={COLORS.primary} />
+                  </TouchableOpacity>
+                ) : null}
               </View>
             </View>
           )}
-        </ScrollView>
-
-        {/* Message Composer — send button + voice mic */}
-        <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-          <View style={styles.composer}>
-            <TextInput
-              style={styles.composerInput}
-              value={input}
-              onChangeText={setInput}
-              placeholder={activeBooking?.kind === 'assistant' || activeBooking?.id === 'general' ? 'Message Asaaniyat Assistant...' : 'Message your provider...'}
-              placeholderTextColor={COLORS.textMuted}
-              multiline
-              returnKeyType="send"
-              onSubmitEditing={send}
-            />
-            {input.trim() ? (
-              <TouchableOpacity
-                style={styles.sendButton}
-                onPress={send}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="send" size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            ) : activeBooking?.id === 'general' ? (
-              <TouchableOpacity
-                style={[styles.sendButton, styles.micButtonChat]}
-                onPress={startVoiceInput}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="mic" size={18} color={COLORS.primary} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </View>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -620,7 +629,7 @@ function ChatBubble({ message, isGeneralChat }) {
       handleTalkback();
     }
   }, [message.id]);
-  
+
   if (isUser) {
     return (
       <View style={[styles.bubbleContainer, styles.userBubbleContainer]}>
@@ -680,11 +689,11 @@ function ChatBubble({ message, isGeneralChat }) {
         {/* Voice output control for AI assistant — powered by expo-speech */}
         {isGeneralChat && !hasDiagnosticCard && !isBookingSelected && (
           <View style={styles.voiceOutputContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.playVoiceBtn}
               onPress={handleTalkback}
               activeOpacity={0.7}
-              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name={isPlaying ? "stop" : "volume-medium"} size={16} color={isPlaying ? COLORS.primary : COLORS.textSecondary} />
             </TouchableOpacity>
@@ -843,7 +852,7 @@ const styles = StyleSheet.create({
   micRecordingBtn: {
     backgroundColor: '#DC2626',
   },
-  
+
   // Message bubbles containers
   bubbleContainer: {
     flexDirection: 'row',
@@ -1191,5 +1200,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(250, 204, 21, 0.06)',
     borderColor: 'rgba(250, 204, 21, 0.2)',
     borderWidth: 1.5,
+  },
+  lockedBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopColor: 'rgba(14,143,70,0.1)',
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  lockedText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    fontFamily: FONTS.bold.fontFamily,
   },
 });

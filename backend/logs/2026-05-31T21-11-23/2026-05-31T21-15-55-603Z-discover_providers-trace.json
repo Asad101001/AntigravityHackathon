@@ -1,0 +1,203 @@
+{
+  "run_id": "2026-05-31T21-11-23",
+  "timestamp": "2026-05-31T21:15:55.603Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.805,
+      "lng": 67.07
+    },
+    "service_type": "Plumber"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2adc",
+        "id": "PL277",
+        "name": "Maryam",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8072,
+        "lng": 67.0656,
+        "distance_km": 0.77,
+        "rating": 4.2,
+        "reviews_count": 157,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0346-3185644",
+        "response_time_min": 2,
+        "verified": true,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 760,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Star Plumber Co.",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL277.jpg",
+        "haversine_km": 0.51,
+        "distance_text": "0.8 km",
+        "duration_text": "2 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0b",
+        "id": "PL068",
+        "name": "Rauf",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.805,
+        "lng": 67.0733,
+        "distance_km": 1.03,
+        "rating": 3.8,
+        "reviews_count": 35,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0377-1530573",
+        "response_time_min": 3,
+        "verified": true,
+        "specialization": [
+          "drain_cleaning",
+          "water_tank",
+          "motor_pump"
+        ],
+        "base_rate_pkr": 1586,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL068.jpg",
+        "company": "Royal Plumber Associates",
+        "haversine_km": 0.33,
+        "distance_text": "1.0 km",
+        "duration_text": "3 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2aa5",
+        "id": "PL222",
+        "name": "Bushra",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8061,
+        "lng": 67.0744,
+        "distance_km": 1.14,
+        "rating": 2.5,
+        "reviews_count": 6,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00"
+        ],
+        "phone": "0371-2750099",
+        "response_time_min": 3,
+        "verified": false,
+        "specialization": [
+          "motor_pump",
+          "drain_cleaning",
+          "water_tank"
+        ],
+        "base_rate_pkr": 1578,
+        "on_time_score": 62,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Green Plumber Pros",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL222.jpg",
+        "haversine_km": 0.46,
+        "distance_text": "1.1 km",
+        "duration_text": "3 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a79",
+        "id": "PL178",
+        "name": "Tariq",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Clifton",
+        "lat": 24.816,
+        "lng": 67.0256,
+        "distance_km": 7.75,
+        "rating": 4.2,
+        "reviews_count": 34,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00"
+        ],
+        "phone": "0327-2401663",
+        "response_time_min": 16,
+        "verified": true,
+        "specialization": [
+          "water_tank",
+          "motor_pump",
+          "drain_cleaning"
+        ],
+        "base_rate_pkr": 901,
+        "on_time_score": 96,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Clifton, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Metro Plumber Care",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL178.jpg",
+        "haversine_km": 4.65,
+        "distance_text": "7.8 km",
+        "duration_text": "16 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29d4",
+        "id": "PL013",
+        "name": "Fahad",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Saddar",
+        "lat": 24.8596,
+        "lng": 67.0126,
+        "distance_km": 9.7,
+        "rating": 4.8,
+        "reviews_count": 124,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0322-1095028",
+        "response_time_min": 24,
+        "verified": false,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 1453,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Strong local reputation in Saddar, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL013.jpg",
+        "company": "City Plumber Associates",
+        "haversine_km": 8.39,
+        "distance_text": "9.7 km",
+        "duration_text": "24 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 2221
+}

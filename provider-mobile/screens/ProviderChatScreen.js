@@ -125,6 +125,21 @@ export default function ProviderChatScreen() {
         // Auto-scroll to bottom
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 80);
       }
+
+      // Sync booking status to lock chat in real-time if status changed
+      const bookingsRes = await apiClient.get('/provider/bookings');
+      if (bookingsRes.data.success) {
+        const currentBooking = bookingsRes.data.bookings.find(b => (b._id || b.id) === bookingId);
+        if (currentBooking) {
+          setActiveChat(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              status: currentBooking.status || 'pending'
+            };
+          });
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
@@ -135,7 +150,7 @@ export default function ProviderChatScreen() {
   // ─── Polling: refresh messages every 5s when a chat is open ─────────────────
 
   useEffect(() => {
-    if (!activeChat) {
+    if (!activeChat?.bookingId) {
       clearInterval(pollTimer.current);
       return;
     }
@@ -144,7 +159,7 @@ export default function ProviderChatScreen() {
       fetchMessages(activeChat.bookingId, true); // silent = no spinner
     }, 5000);
     return () => clearInterval(pollTimer.current);
-  }, [activeChat, fetchMessages]);
+  }, [activeChat?.bookingId, fetchMessages]);
 
   // ─── Load chat list on focus ─────────────────────────────────────────────────
 
@@ -306,29 +321,31 @@ export default function ProviderChatScreen() {
             )}
           </ScrollView>
 
-          <View style={[styles.inputBar, { paddingBottom: insets.bottom + 90 }]}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type a message..."
-              placeholderTextColor={COLORS.textSecondary}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              maxLength={1000}
-              onSubmitEditing={sendMessage}
-            />
-            <TouchableOpacity
-              style={[styles.sendBtn, (!inputText.trim() || sending) && styles.sendBtnDisabled]}
-              onPress={sendMessage}
-              disabled={!inputText.trim() || sending}
-            >
-              {sending ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Ionicons name="send" size={18} color="white" />
-              )}
-            </TouchableOpacity>
-          </View>
+          {['canceled', 'completed', 'rejected'].includes(activeChat.status?.toLowerCase()) ? null : (
+            <View style={[styles.inputBar, { paddingBottom: insets.bottom + 90 }]}>
+              <TextInput
+                style={styles.input}
+                placeholder="Type a message..."
+                placeholderTextColor={COLORS.textSecondary}
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                maxLength={1000}
+                onSubmitEditing={sendMessage}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, (!inputText.trim() || sending) && styles.sendBtnDisabled]}
+                onPress={sendMessage}
+                disabled={!inputText.trim() || sending}
+              >
+                {sending ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="send" size={18} color="white" />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </KeyboardAvoidingView>
       )}
     </View>
@@ -449,4 +466,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendBtnDisabled: { opacity: 0.4 },
+  lockedBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    backgroundColor: COLORS.card,
+    borderTopColor: COLORS.border,
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  lockedText: {
+    ...FONTS.body2,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
 });
