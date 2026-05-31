@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:20.518Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "I need an electrician at 2 am",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "today_0200",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "english",
+    "reasoning": "Extracted time from user's request for urgency"
+  },
+  "durationMs": 637
+}

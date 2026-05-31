@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:24.232Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Ahmed",
+    "time_slot": "2:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780225464229",
+    "confirmation_message": "Booking confirmed! Ahmed arrives 31/05/2026 at 2:00 AM. Contact: 0365-1435545. Booking ID: BK_1780225464229",
+    "scheduled_time": "2026-05-30T21:00:00.000Z",
+    "time_slot": "2:00 AM"
+  },
+  "durationMs": 6
+}

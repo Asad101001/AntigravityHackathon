@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:05:37.122Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe ek AC technician chahiye kal subah das",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "tomorrow_0900",
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "Detected Urdu phrase 'kal subah das' indicating tomorrow morning, and 'ek AC technician chahiye' indicating need for AC technician."
+  },
+  "durationMs": 349
+}

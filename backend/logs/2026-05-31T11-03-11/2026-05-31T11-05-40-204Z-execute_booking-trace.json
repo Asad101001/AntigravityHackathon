@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:05:40.204Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Hassan",
+    "time_slot": "9:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780225540202",
+    "confirmation_message": "Booking confirmed! Hassan arrives 01/06/2026 at 9:00 AM. Contact: 0378-1538492. Booking ID: BK_1780225540202",
+    "scheduled_time": "2026-06-01T04:00:00.000Z",
+    "time_slot": "9:00 AM"
+  },
+  "durationMs": 4
+}

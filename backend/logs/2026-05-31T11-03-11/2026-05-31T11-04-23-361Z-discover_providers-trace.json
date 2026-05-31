@@ -1,0 +1,209 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:23.361Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859821181308583,
+      "lng": 67.07362902076824
+    },
+    "service_type": "Electrician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0a",
+        "id": "EL067",
+        "name": "Usman",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Clifton",
+        "lat": 24.8127,
+        "lng": 67.0322,
+        "distance_km": 9.57,
+        "rating": 4.8,
+        "reviews_count": 175,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0376-1522654",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "wiring",
+          "distribution_boards",
+          "inverter_installation"
+        ],
+        "base_rate_pkr": 1797,
+        "on_time_score": 91,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Clifton, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/EL067.jpg",
+        "company": "Prime Electrician Professionals",
+        "haversine_km": 6.7,
+        "distance_text": "9.6 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29d3",
+        "id": "EL012",
+        "name": "Ali",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "Clifton",
+        "lat": 24.8116,
+        "lng": 67.0311,
+        "distance_km": 9.88,
+        "rating": 4.4,
+        "reviews_count": 87,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0321-1087109",
+        "response_time_min": 21,
+        "verified": true,
+        "specialization": [
+          "ceiling_fans",
+          "fault_finding",
+          "UPS"
+        ],
+        "base_rate_pkr": 1664,
+        "on_time_score": 86,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Clifton, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/EL012.jpg",
+        "company": "Pak Electrician Professionals",
+        "haversine_km": 6.87,
+        "distance_text": "9.9 km",
+        "duration_text": "21 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a6d",
+        "id": "EL166",
+        "name": "Kashif",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8039,
+        "lng": 67.0722,
+        "distance_km": 11.64,
+        "rating": 4.8,
+        "reviews_count": 121,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0315-2306635",
+        "response_time_min": 22,
+        "verified": true,
+        "specialization": [
+          "UPS",
+          "ceiling_fans",
+          "fault_finding"
+        ],
+        "base_rate_pkr": 1656,
+        "on_time_score": 86,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Alpha Electrician Associates",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/EL166.jpg",
+        "haversine_km": 6.22,
+        "distance_text": "11.6 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a36",
+        "id": "EL111",
+        "name": "Ali",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8028,
+        "lng": 67.0711,
+        "distance_km": 11.85,
+        "rating": 2.5,
+        "reviews_count": 13,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0340-1871090",
+        "response_time_min": 22,
+        "verified": false,
+        "specialization": [
+          "distribution_boards",
+          "inverter_installation",
+          "wiring"
+        ],
+        "base_rate_pkr": 1523,
+        "on_time_score": 59,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/EL111.jpg",
+        "company": "Reliance Electrician Care",
+        "haversine_km": 6.35,
+        "distance_text": "11.9 km",
+        "duration_text": "22 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29ff",
+        "id": "EL056",
+        "name": "Ahmed",
+        "service": "Electrician",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8017,
+        "lng": 67.07,
+        "distance_km": 11.99,
+        "rating": 4.9,
+        "reviews_count": 122,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00"
+        ],
+        "phone": "0365-1435545",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "fault_finding",
+          "UPS",
+          "ceiling_fans"
+        ],
+        "base_rate_pkr": 1390,
+        "on_time_score": 90,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in DHA, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/EL056.jpg",
+        "company": "Pak Electrician Experts",
+        "haversine_km": 6.47,
+        "distance_text": "12.0 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 2819
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:52.054Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL254",
+    "ranked_ids": [
+      "EL254",
+      "EL199",
+      "EL144",
+      "EL034",
+      "EL166"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best electrician for the job is Danish (EL254) due to his high rating, excellent on-time score, and low cancellation risk. Although he is slightly farther away than Farhan, his exceptional reputation and reliability make him the top choice. The other providers, while having some strengths, do not quite match Danish's overall performance.",
+    "multi_factor": {
+      "overall_best_id": "EL254",
+      "most_affordable_id": "EL199",
+      "closest_fastest_id": "EL199",
+      "analysis": {
+        "overall_best_id": "Danish (EL254) stands out with his exceptional rating and on-time score, making him the top choice for this job.",
+        "most_affordable_id": "Farhan (EL199) offers the lowest base rate while still being verified and having available slots, making him the most affordable option.",
+        "closest_fastest_id": "Farhan (EL199) is the closest and fastest option, with a short distance and quick response time, making him the best choice for those prioritizing speed and proximity."
+      }
+    }
+  },
+  "durationMs": 1023
+}

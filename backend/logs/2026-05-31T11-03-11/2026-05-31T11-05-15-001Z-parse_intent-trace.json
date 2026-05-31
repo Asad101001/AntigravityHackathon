@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:05:15.002Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe ek electrician chahiye kal das tees par",
+  "output": {
+    "service_type": "Electrician",
+    "location": null,
+    "time_preference": "tomorrow_0900",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.9,
+    "language": "urdu",
+    "reasoning": "User asked for an electrician for tomorrow at 3 pm, indicating high urgency and neutral price sensitivity."
+  },
+  "durationMs": 381
+}

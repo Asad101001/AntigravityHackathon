@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:52.067Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Danish",
+    "time_slot": "8:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780225492063",
+    "confirmation_message": "Booking confirmed! Danish arrives 01/06/2026 at 8:00 AM. Contact: 0323-3003507. Booking ID: BK_1780225492063",
+    "scheduled_time": "2026-06-01T03:00:00.000Z",
+    "time_slot": "8:00 AM"
+  },
+  "durationMs": 4
+}

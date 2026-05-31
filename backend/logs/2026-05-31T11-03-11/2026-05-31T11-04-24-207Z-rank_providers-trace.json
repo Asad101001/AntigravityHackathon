@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:24.208Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "EL056",
+    "ranked_ids": [
+      "EL056",
+      "EL067",
+      "EL012",
+      "EL166",
+      "EL111"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the smallest distance and fastest response times. Among these, Ahmed (EL056) stood out with the highest rating, excellent on-time score, and low cancellation risk, making him the overall best choice. His base rate is also relatively affordable, but not the lowest, which aligns with the user's neutral price sensitivity.",
+    "multi_factor": {
+      "overall_best_id": "EL056",
+      "most_affordable_id": "EL111",
+      "closest_fastest_id": "EL012",
+      "analysis": {
+        "overall_best_id": "Ahmed (EL056) was chosen as the overall best provider due to his excellent rating, on-time score, and low cancellation risk, making him the most suitable for the high-urgency service request.",
+        "most_affordable_id": "Ali (EL111) has the lowest base rate, making him the most affordable option, despite his lower rating and higher cancellation risk.",
+        "closest_fastest_id": "Ali (EL012) has the smallest distance and fastest response time, making him the closest and fastest option, but his lower rating and on-time score make him less suitable overall."
+      }
+    }
+  },
+  "durationMs": 844
+}

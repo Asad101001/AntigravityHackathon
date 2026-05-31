@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-05-31T11-03-11",
+  "timestamp": "2026-05-31T11:04:48.199Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe ek lactation chahiye hai, 10",
+  "output": {
+    "service_type": "Electrician",
+    "location": "G-10 Islamabad",
+    "time_preference": null,
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "Detected 'lactation' as a misspelling of 'electrician' and '10' as a possible location. Pre-validated \"10\" → \"G-10 Islamabad\" via local catalog."
+  },
+  "durationMs": 537
+}
