@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../lib/secureStore';
 import apiClient from '../lib/apiClient';
 
 const AuthContext = createContext();

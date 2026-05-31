@@ -6,200 +6,65 @@ const requireAuth = require('../middleware/requireAuth');
 
 const router = express.Router();
 
-function generateEmailFromName(name) {
-  if (!name) return null;
-  const normalized = String(name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-  return `${normalized}@gmail.com`;
-}
-
-function generatePasswordFromService(service) {
-  if (!service) return 'service123';
-  const raw = String(service).toLowerCase();
-  const compact = raw.replace(/[^a-z]/g, '');
-
-  // If explicit AC mention, use ac123
-  if (/\bac\b/.test(raw) || raw.includes('ac') ) return 'ac123';
-
-  // Short services -> use compact + 123
-  if (compact.length <= 3) return `${compact}123`;
-
-  // Remove vowels but preserve trailing "er" if present (to match examples like plumber -> plmber)
-  let noVowels = compact.replace(/[aeiou]/g, '');
-  if (compact.endsWith('er') && !noVowels.endsWith('er')) {
-    // attempt to keep terminal 'er'
-    const prefix = noVowels.slice(0, -1);
-    noVowels = `${prefix}er`;
-  }
-
-  return `${noVowels}123`;
-}
-
-// POST /api/provider/seed-provider-credentials
-// Creates provider credentials in providers_users collection (no encryption, for reference only)
-// Query param: ?clearFirst=true to delete existing credentials first
-router.post('/seed-provider-credentials', async (req, res) => {
-  try {
-    const mongoDb = await db.getDb();
-    const providers = await mongoDb.collection(db.COLLECTIONS.providers).find({}).toArray();
-
-    // Clear existing if requested (check body or query param)
-    const shouldClear = req.body?.clearFirst === true || req.query?.clearFirst === 'true';
-    if (shouldClear) {
-      const result = await mongoDb.collection('providers_users').deleteMany({});
-      console.log(`[ProviderRoutes] Cleared ${result.deletedCount} old provider credentials`);
-    }
-
-    const created = [];
-    const skipped = [];
-    const usedEmails = new Set();
-
-    for (const provider of providers) {
-      const name = provider.name || provider.provider_name || provider.displayName || provider.provider || '';
-      const service = provider.service || provider.service_type || '';
-
-      if (!name || !service) {
-        skipped.push({ provider_id: provider._id || provider.id || null, reason: 'missing_name_or_service' });
-        continue;
-      }
-
-      // Generate email: name + service + @gmail.com
-      const namePart = String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
-      const servicePart = String(service).toLowerCase().replace(/[^a-z0-9]/g, '');
-      let email = `${namePart}${servicePart}@gmail.com`;
-
-      // Handle duplicates by appending numbers
-      let counter = 1;
-      const baseEmail = email.replace('@gmail.com', '');
-      while (usedEmails.has(email)) {
-        email = `${baseEmail}${counter}@gmail.com`;
-        counter++;
-      }
-      usedEmails.add(email);
-
-      // Generate password: service + "123"
-      const password = `${servicePart}123`;
-
-      // Check if already exists in providers_users (skip if not clearing)
-      if (!shouldClear) {
-        const existing = await mongoDb.collection('providers_users').findOne({ provider_id: provider._id || provider.id });
-        if (existing) {
-          skipped.push({ provider_id: provider._id || provider.id || null, provider_name: name, service, email, reason: 'already_exists' });
-          continue;
-        }
-      }
-
-      // Create entry - NO PASSWORD ENCRYPTION
-      const entry = {
-        _id: `PROV_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        provider_id: provider._id || provider.id || null,
-        name,
-        service,
-        email,
-        password, // PLAIN TEXT - NOT ENCRYPTED
-        createdAt: new Date().toISOString(),
-      };
-
-      await mongoDb.collection('providers_users').insertOne(entry);
-      created.push({ provider_id: provider._id || provider.id || null, name, service, email, password });
-    }
-
-    return res.json({ 
-      success: true, 
-      message: `Created ${created.length} provider credentials, skipped ${skipped.length}`, 
-      created_count: created.length, 
-      skipped_count: skipped.length, 
-      created: created.slice(0, 50), // Limit response 
-      skipped: skipped.slice(0, 10)
-    });
-  } catch (error) {
-    console.error('[ProviderRoutes] Seed provider credentials failed:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// POST /api/provider/seed-providers
-// Creates user accounts from providers collection if users don't already exist.
-router.post('/seed-providers', async (req, res) => {
-  try {
-    const mongoDb = await db.getDb();
-    const providers = await mongoDb.collection(db.COLLECTIONS.providers).find({}).toArray();
-
-    const created = [];
-    const skipped = [];
-
-    for (const provider of providers) {
-      const name = provider.name || provider.provider_name || provider.displayName || provider.provider || '';
-      const service = provider.service || provider.service_type || '';
-      const city = provider.city || '';
-
-      const email = generateEmailFromName(name);
-      const passwordPlain = generatePasswordFromService(service);
-
-      // If user already exists, skip
-      const existing = await mongoDb.collection(db.COLLECTIONS.users).findOne({ emailLower: String(email).toLowerCase() });
-      if (existing) {
-        skipped.push({ provider_id: provider._id || provider.id || null, provider_name: name, email, reason: 'user_exists' });
-        continue;
-      }
-
-      // Hash and create user
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(passwordPlain, salt);
-
-      const newUser = {
-        email,
-        emailLower: String(email).toLowerCase(),
-        displayName: name || email.split('@')[0],
-        city: city || null,
-        passwordHash,
-        provider_id: provider._id || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLoginAt: null,
-        loginCount: 0,
-      };
-
-      // Generate _id in same format as createUser
-      newUser._id = `USR_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-      await mongoDb.collection(db.COLLECTIONS.users).insertOne(newUser);
-      created.push({ provider_id: provider._id || provider.id || null, provider_name: name, email, password: passwordPlain });
-    }
-
-    return res.json({ success: true, created_count: created.length, skipped_count: skipped.length, created, skipped });
-  } catch (error) {
-    console.error('[ProviderRoutes] Seed providers failed:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // POST /api/provider/login
-// Provider login using generated email/password stored in users collection
+// Provider login using email/password stored strictly in providers_users collection (no encryption)
 router.post('/login', async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
 
+    console.log(`[ProviderRoutes] Login attempt for: "${email}" (password length: ${password.length})`);
+
     if (!email || !password) return res.status(400).json({ success: false, error: 'Email and password are required' });
 
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ emailLower: email });
-    if (!user) return res.status(401).json({ success: false, error: 'Invalid email or password' });
+    
+    // Find provider strictly in providers_users collection
+    const escapedEmailForRegex = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await mongoDb.collection('providers_users').findOne({ 
+      email: { $regex: new RegExp(`^${escapedEmailForRegex}$`, 'i') } 
+    });
 
-    const passwordOk = await bcrypt.compare(password, user.passwordHash || '');
-    if (!passwordOk) return res.status(401).json({ success: false, error: 'Invalid email or password' });
+    if (!user) {
+      console.log(`[ProviderRoutes] Login failed: Provider "${email}" not found in database.`);
+      return res.status(401).json({ success: false, error: 'Invalid email or password' });
+    }
+
+    if (user.password !== password) {
+      console.log(`[ProviderRoutes] Login failed: Password mismatch for provider "${email}".`);
+      return res.status(401).json({ success: false, error: 'Invalid email or password' });
+    }
+
+    console.log(`[ProviderRoutes] Login successful for: "${email}"`);
 
     // Create JWT
-    const jwt = require('jsonwebtoken');
     const secret = process.env.JWT_SECRET || process.env.ANTIGRAVITY_KEY || 'demo-secret';
-    const token = jwt.sign({ sub: user._id, email: user.emailLower, displayName: user.displayName }, secret, { expiresIn: '30d' });
+    const token = jwt.sign({ sub: user._id, email: user.email.toLowerCase(), displayName: user.name }, secret, { expiresIn: '30d' });
 
-    // Update login metadata
-    await mongoDb.collection(db.COLLECTIONS.users).updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, $inc: { loginCount: 1 } });
+    // Update login metadata directly on providers_users
+    await mongoDb.collection('providers_users').updateOne(
+      { _id: user._id }, 
+      { 
+        $set: { lastLoginAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, 
+        $inc: { loginCount: 1 } 
+      }
+    );
 
-    return res.json({ success: true, token, user: { id: user._id, email: user.email, displayName: user.displayName, city: user.city || null } });
+    return res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        displayName: user.name, 
+        city: user.city || null 
+      } 
+    });
+  } catch (error) {
+    console.error('[ProviderRoutes] login failed:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
   } catch (error) {
     console.error('[ProviderRoutes] login failed:', error);
     return res.status(500).json({ success: false, error: error.message });
@@ -211,16 +76,16 @@ router.post('/login', async (req, res) => {
 router.get('/profile', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     return res.json({
       success: true,
       provider: {
         id: user._id,
-        name: user.displayName,
+        name: user.name,
         email: user.email,
-        city: user.city,
+        city: user.city || null,
         provider_id: user.provider_id,
       },
     });
@@ -234,7 +99,7 @@ router.get('/profile', requireAuth, async (req, res) => {
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     const bookings = await mongoDb.collection(db.COLLECTIONS.bookings)
@@ -252,7 +117,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
 router.post('/bookings/:id/accept', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     const booking = await db.getBookingById(req.params.id);
@@ -270,7 +135,7 @@ router.post('/bookings/:id/accept', requireAuth, async (req, res) => {
 router.post('/bookings/:id/reject', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     const booking = await db.getBookingById(req.params.id);
@@ -288,7 +153,7 @@ router.post('/bookings/:id/reject', requireAuth, async (req, res) => {
 router.post('/bookings/:id/complete', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     const booking = await db.getBookingById(req.params.id);
@@ -306,7 +171,7 @@ router.post('/bookings/:id/complete', requireAuth, async (req, res) => {
 router.delete('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const mongoDb = await db.getDb();
-    const user = await mongoDb.collection(db.COLLECTIONS.users).findOne({ _id: req.auth.sub });
+    const user = await mongoDb.collection('providers_users').findOne({ _id: req.auth.sub });
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     const booking = await db.getBookingById(req.params.id);
