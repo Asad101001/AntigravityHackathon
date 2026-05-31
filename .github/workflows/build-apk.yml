@@ -42,8 +42,15 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🤖 Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: 🤖 Accept Android SDK Licenses
+        run: |
+          if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          elif [ -f "$ANDROID_HOME/tools/bin/sdkmanager" ]; then
+            yes | "$ANDROID_HOME/tools/bin/sdkmanager" --licenses || true
+          else
+            yes | sdkmanager --licenses || true
+          fi
 
       - name: 🏗 Setup Expo & EAS CLI
         uses: expo/expo-github-action@v8
