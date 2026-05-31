@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 
@@ -25,7 +24,6 @@ import { COLORS, SHADOWS } from './theme';
 import { ToastProvider } from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import LiquidGlass from './components/LiquidGlass';
-import { fontConfig } from './config/fonts';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -100,12 +98,6 @@ function ProviderTabNavigator() {
 }
 
 function AuthNavigator() {
-  const [fontsLoaded] = useFonts(fontConfig);
-
-  if (!fontsLoaded) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
-  }
-
   return (
     <Stack.Navigator
       screenOptions={{
@@ -120,12 +112,6 @@ function AuthNavigator() {
 }
 
 function ProviderNavigator() {
-  const [fontsLoaded] = useFonts(fontConfig);
-
-  if (!fontsLoaded) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
-  }
-
   return (
     <Stack.Navigator
       screenOptions={{
