@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
-  Keyboard,
   Modal,
   Platform,
   ScrollView,
@@ -56,6 +55,34 @@ function formatBookingInfo(booking) {
   ];
 
   return lines.join('\n');
+}
+
+function buildOrderAnswer(booking, originalQuestion = '') {
+  const lower = String(originalQuestion || '').toLowerCase();
+  const status = String(booking?.status || 'unknown').replace(/_/g, ' ');
+  const provider = booking?.provider_name || 'your provider';
+  const service = booking?.service_type || 'service';
+  const location = [booking?.area, booking?.city].filter(Boolean).join(', ') || booking?.location || 'your selected location';
+  const appointment = formatDate(booking?.booking_start_time);
+  const quote = booking?.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'pending';
+
+  if (lower.includes('status') || lower.includes('kya hua') || lower.includes('track')) {
+    return `This order is currently ${status}.\n\n${formatBookingInfo(booking)}`;
+  }
+
+  if (lower.includes('time') || lower.includes('appointment') || lower.includes('when') || lower.includes('kab')) {
+    return `Your ${service} appointment is scheduled for ${appointment} with ${provider}.\n\n${formatBookingInfo(booking)}`;
+  }
+
+  if (lower.includes('price') || lower.includes('quote') || lower.includes('cost') || lower.includes('fee') || lower.includes('kitna')) {
+    return `The quote for this ${service} order is ${quote}.\n\n${formatBookingInfo(booking)}`;
+  }
+
+  if (lower.includes('provider') || lower.includes('technician') || lower.includes('who') || lower.includes('kaun')) {
+    return `${provider} is assigned to this ${service} order in ${location}.\n\n${formatBookingInfo(booking)}`;
+  }
+
+  return `Here is the information for that order:\n\n${formatBookingInfo(booking)}`;
 }
 
 function getQuickReplies(activeBooking) {
@@ -111,6 +138,7 @@ export default function ChatScreen({ navigation }) {
   });
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const localGeneralRepliesRef = useRef([]);
   const {
     voiceVisible,
     voiceStatus,
@@ -133,22 +161,29 @@ export default function ChatScreen({ navigation }) {
 
   const [chatThreads, setChatThreads] = useState([]);
   const [isThreadsLoading, setIsThreadsLoading] = useState(true);
+  const [bookingPickerVisible, setBookingPickerVisible] = useState(false);
+
+  const bookingChoices = chatThreads
+    .filter(thread => thread.kind === 'booking' && thread.booking)
+    .map(thread => thread.booking);
+
+  const fetchThreads = useCallback(async () => {
+    try {
+      setIsThreadsLoading(true);
+      const response = await apiClient.get('/chat/threads');
+      if (response.data.success && response.data.threads) {
+        setChatThreads(response.data.threads);
+      }
+    } catch (error) {
+      console.error('Failed to fetch chats:', error);
+    } finally {
+      setIsThreadsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchThreads = async () => {
-      try {
-        const response = await apiClient.get('/chat/threads');
-        if (response.data.success && response.data.threads) {
-          setChatThreads(response.data.threads);
-        }
-      } catch (error) {
-        console.error('Failed to fetch chats:', error);
-      } finally {
-        setIsThreadsLoading(false);
-      }
-    };
     fetchThreads();
-  }, []);
+  }, [fetchThreads]);
 
   useEffect(() => {
     let pollTimer;
@@ -156,7 +191,11 @@ export default function ChatScreen({ navigation }) {
       try {
         const response = await apiClient.get(`/chat/${activeBooking.id || 'general'}`);
         if (response.data?.messages?.length) {
-          setMessages(response.data.messages.map(m => ({ ...m, time: m.created_at || stamp() })));
+          const loadedMessages = response.data.messages.map(m => ({ ...m, time: m.created_at || stamp() }));
+          setMessages((activeBooking.id || 'general') === 'general'
+            ? [...loadedMessages, ...localGeneralRepliesRef.current]
+            : loadedMessages
+          );
           return;
         }
 
@@ -168,6 +207,7 @@ export default function ChatScreen({ navigation }) {
               content: 'Hello. I am the Asaaniyat Assistant. I can help you manage your bookings and chat threads. How can I assist you today?',
               time: stamp(),
             },
+            ...localGeneralRepliesRef.current,
           ]);
         } else {
           setMessages([
@@ -220,20 +260,6 @@ export default function ChatScreen({ navigation }) {
   useEffect(() => {
     hideTabBar();
   }, [hideTabBar]);
-
-  // Scroll to bottom whenever messages update
-  useEffect(() => {
-    const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
-    return () => clearTimeout(timer);
-  }, [messages]);
-
-  // Also scroll to bottom when keyboard opens so input is never hidden
-  useEffect(() => {
-    const sub = Keyboard.addListener('keyboardDidShow', () => {
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
-    });
-    return () => sub.remove();
-  }, []);
 
   const send = async () => {
     const content = input.trim();
@@ -292,6 +318,8 @@ export default function ChatScreen({ navigation }) {
 
           // Store the user's original message so we can send it again after selection
           global.pendingOrderMessage = content;
+          await fetchThreads();
+          setBookingPickerVisible(true);
         } else {
           setMessages(prev => [
             ...prev,
@@ -337,37 +365,21 @@ export default function ChatScreen({ navigation }) {
   };
 
   const selectBooking = (booking) => {
-    const bookingData = {
-      id: booking._id,
-      service: booking.service_type,
-      provider: booking.provider_name,
-      area: booking.area,
-      slot: booking.booking_start_time,
-      quote_pkr: booking.quote_pkr,
-      status: booking.status,
+    setBookingPickerVisible(false);
+    const pendingMsg = global.pendingOrderMessage;
+    global.pendingOrderMessage = null;
+    const answerMessage = {
+      id: generateMessageId(),
+      role: 'assistant',
+      content: buildOrderAnswer(booking, pendingMsg),
+      time: stamp(),
     };
-
-    setActiveBooking(bookingData);
+    localGeneralRepliesRef.current = [...localGeneralRepliesRef.current, answerMessage];
 
     setMessages(prev => [
       ...prev,
-      {
-        id: generateMessageId(),
-        role: 'assistant',
-        content: `✅ Order selected!\n\n${formatBookingInfo(booking)}\n\nWhat would you like to do with this order?`,
-        time: stamp(),
-      },
+      answerMessage,
     ]);
-
-    // If there was a pending order-related message, send it now to this booking
-    if (global.pendingOrderMessage) {
-      const pendingMsg = global.pendingOrderMessage;
-      global.pendingOrderMessage = null;
-
-      setTimeout(() => {
-        handleSend(pendingMsg);
-      }, 500);
-    }
   };
 
   return (
@@ -493,7 +505,7 @@ export default function ChatScreen({ navigation }) {
           <ScrollView
             ref={scrollRef}
             style={styles.messageList}
-            contentContainerStyle={styles.messageContent}
+            contentContainerStyle={[styles.messageContent, { paddingBottom: Math.max(insets.bottom + 132, 156) }]}
             onScroll={registerScroll}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
@@ -552,14 +564,14 @@ export default function ChatScreen({ navigation }) {
 
           {/* Message Composer — send button + voice mic */}
           {['canceled', 'completed', 'rejected'].includes(activeBooking?.status?.toLowerCase()) ? (
-            <View style={[styles.lockedBar, { paddingBottom: Math.max(insets.bottom, 16), paddingTop: 16 }]}>
+            <View style={[styles.lockedBar, { paddingBottom: Math.max(insets.bottom + 92, 108), paddingTop: 16 }]}>
               <Ionicons name="lock-closed" size={18} color={COLORS.textSecondary} />
               <Text style={styles.lockedText}>
                 This chat is locked because the booking is {activeBooking?.status?.toLowerCase()}.
               </Text>
             </View>
           ) : (
-            <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+            <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom + 92, 108) }]}>
               <View style={styles.composer}>
                 <TextInput
                   style={styles.composerInput}
@@ -593,6 +605,74 @@ export default function ChatScreen({ navigation }) {
           )}
         </View>
       </KeyboardAvoidingView>
+
+      <Modal
+        transparent
+        animationType="slide"
+        visible={bookingPickerVisible}
+        onRequestClose={() => setBookingPickerVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose an order</Text>
+              <TouchableOpacity
+                onPress={() => setBookingPickerVisible(false)}
+                activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={22} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {isThreadsLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color={COLORS.primary} />
+                <Text style={styles.loadingText}>Loading your orders...</Text>
+              </View>
+            ) : bookingChoices.length === 0 ? (
+              <View style={styles.loadingContainer}>
+                <Ionicons name="calendar-clear-outline" size={34} color={COLORS.textSecondary} />
+                <Text style={styles.loadingText}>No active orders found</Text>
+              </View>
+            ) : (
+              <ScrollView contentContainerStyle={styles.bookingsList} showsVerticalScrollIndicator={false}>
+                {bookingChoices.map(booking => {
+                  const bookingId = booking._id || booking.booking_id || booking.id;
+                  return (
+                    <TouchableOpacity
+                      key={bookingId}
+                      style={styles.bookingRow}
+                      onPress={() => selectBooking(booking)}
+                      activeOpacity={0.84}
+                    >
+                      <View style={styles.bookingRowLeft}>
+                        <View style={[styles.serviceIcon, { backgroundColor: 'rgba(14,143,70,0.10)' }]}>
+                          <Ionicons name="construct-outline" size={20} color={COLORS.primary} />
+                        </View>
+                        <View style={styles.bookingInfo}>
+                          <Text style={styles.bookingProvider} numberOfLines={1}>
+                            {booking.provider_name || 'Provider pending'}
+                          </Text>
+                          <Text style={styles.bookingMeta} numberOfLines={1}>
+                            {[booking.service_type, booking.area].filter(Boolean).join(' • ') || 'Service booking'}
+                          </Text>
+                          <Text style={styles.bookingTime} numberOfLines={1}>
+                            {formatDate(booking.booking_start_time)}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.bookingRowRight}>
+                        <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
