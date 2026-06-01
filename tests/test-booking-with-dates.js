@@ -3,7 +3,7 @@
  * Run with: node test-booking-with-dates.js
  */
 
-const { parseDateTime, parseTimePreference } = require('./backend/utils/dateTimeParser');
+const { parseDateTime, parseTimePreference } = require('../backend/utils/dateTimeParser');
 
 console.log('=== BOOKING FLOW WITH DATE/TIME PARSING ===\n');
 

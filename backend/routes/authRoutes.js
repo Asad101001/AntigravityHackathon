@@ -13,6 +13,7 @@ function signToken(user) {
       sub: user._id,
       email: user.emailLower,
       displayName: user.displayName,
+      isAdmin: Boolean(user.isAdmin),
     },
     secret,
     { expiresIn: '30d' }
@@ -110,10 +111,26 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const user = await db.findUserById(req.auth.sub);
-    if (!user) {
-      return res.status(401).json({ success: false, error: 'Session expired' });
+    if (user) {
+      return res.json({ success: true, user: sanitizeUser(user) });
     }
-    return res.json({ success: true, user: sanitizeUser(user) });
+    const mongoDb = await db.getDb();
+    const adminUser = await mongoDb.collection(db.COLLECTIONS.adminUsers).findOne({ _id: req.auth.sub });
+    if (adminUser) {
+      return res.json({
+        success: true,
+        user: {
+          id: adminUser._id,
+          email: adminUser.email,
+          displayName: adminUser.displayName,
+          isAdmin: true,
+          createdAt: adminUser.createdAt,
+          lastLoginAt: adminUser.lastLoginAt,
+          loginCount: adminUser.loginCount || 0,
+        }
+      });
+    }
+    return res.status(401).json({ success: false, error: 'Session expired' });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
@@ -126,7 +143,7 @@ router.post('/push-token', requireAuth, async (req, res) => {
     if (!push_token) {
       return res.status(400).json({ success: false, error: 'push_token is required' });
     }
-    await db.updateUserPushToken(req.auth.sub, push_token);
+    await db.updatePrincipalPushToken(req.auth.sub, push_token);
     return res.json({ success: true, message: 'Push token updated successfully' });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });

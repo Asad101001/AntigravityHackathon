@@ -4,7 +4,7 @@
  * (I need a plumber tomorrow morning at 9 o'clock)
  */
 
-const { parseDateTime } = require('./backend/utils/dateTimeParser');
+const { parseDateTime } = require('../backend/utils/dateTimeParser');
 
 console.log('Testing exact user input:\n');
 

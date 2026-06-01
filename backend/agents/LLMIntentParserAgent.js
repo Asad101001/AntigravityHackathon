@@ -24,7 +24,7 @@ const IntentParserAgent = require('./IntentParserAgent');
 const db = require('../db');
 const { findLocationCandidate, normalizeLocation } = require('../utils/locationNormalizer');
 const { withRetry } = require('../utils/retryHelper');
-const { parseDateTime } = require('../utils/dateTimeParser');
+const { resolveBookingDateTime } = require('../utils/dateTimeParser');
 
 const GEOCODING_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 
@@ -112,9 +112,11 @@ class LLMIntentParserAgent extends BaseAgent {
       // handles the actual date math, PKT anchoring, and ISO formatting.
       // The LLM handles language; the parser handles math. Best of both worlds.
       let timePreference = parsed.time_preference || null;
+      let requestedDateTime = null;
       if (timePreference || userText) {
-        const parsedDT = parseDateTime(timePreference || userText);
-        if (parsedDT) {
+        const parsedDT = resolveBookingDateTime({ text: userText, timePreference: timePreference || '' });
+        if (parsedDT && parsedDT.scheduled_start_iso) {
+          requestedDateTime = parsedDT;
           timePreference = _buildTimePreference(parsedDT, timePreference || userText);
         }
       }
@@ -142,6 +144,8 @@ class LLMIntentParserAgent extends BaseAgent {
           service_type:               service,
           location,
           time_preference:            timePreference,
+          requested_datetime:         requestedDateTime,
+          requested_datetime_text:    timePreference || userText,
           user_text:                  userText,
           confidence,
           language,
@@ -275,36 +279,13 @@ function _getPKTNow() {
  * For dates beyond tomorrow: "specific_date_<YYYYMMDD>_<HHMM>"
  */
 function _buildTimePreference(parsedDateTime, rawText) {
-  if (!parsedDateTime) return null;
-
-  const pktNow = _getPKTNow();
-  pktNow.setHours(0, 0, 0, 0);
-
-  const tomorrow = new Date(pktNow);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const dayAfter = new Date(pktNow);
-  dayAfter.setDate(dayAfter.getDate() + 2);
-
-  const parsedDay = new Date(parsedDateTime.date);
-  parsedDay.setHours(0, 0, 0, 0);
-
-  const timeStr = parsedDateTime.timeIn24H.replace(':', ''); // "0900"
-
-  let prefix;
-  if (parsedDay.getTime() === pktNow.getTime()) {
-    prefix = 'today';
-  } else if (parsedDay.getTime() === tomorrow.getTime()) {
-    prefix = 'tomorrow';
-  } else if (parsedDay.getTime() === dayAfter.getTime()) {
-    prefix = 'day_after_tomorrow';
-  } else {
-    // Specific future date
-    const dateStr = parsedDateTime.date.toISOString().slice(0, 10).replace(/-/g, '');
-    return `specific_date_${dateStr}_${timeStr}`;
-  }
-
-  return `${prefix}_${timeStr}`;
+  if (!parsedDateTime) return rawText || null;
+  const iso = parsedDateTime.scheduled_start_iso || parsedDateTime.date?.toISOString?.();
+  const time = parsedDateTime.timeIn24H || parsedDateTime.timeLabel || '';
+  const source = String(rawText || '').trim();
+  return [source, iso ? `scheduled:${iso}` : '', time ? `time:${time}` : '']
+    .filter(Boolean)
+    .join(' | ');
 }
 
 module.exports = LLMIntentParserAgent;

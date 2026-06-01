@@ -175,7 +175,7 @@ export default function ReviewBookingScreen({ route, navigation }) {
     <View style={styles.container}>
       <ScreenHeader
         navigation={navigation}
-        title="Review Booking"
+        title="Review Request"
         stepLabel="STEP 4 OF 5"
       />
 
@@ -222,7 +222,7 @@ export default function ReviewBookingScreen({ route, navigation }) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.detailRowText}>
-                  {provider.confirmed_slot || 'Today, 14:00 - 15:00 (Estimated 1h)'}
+                  {fullResult?.scheduled_time ? new Date(fullResult.scheduled_time).toLocaleString('en-PK') : provider.confirmed_slot || 'Time to be confirmed'}
                 </Text>
               </View>
             </View>
@@ -352,7 +352,7 @@ export default function ReviewBookingScreen({ route, navigation }) {
           activeOpacity={0.85}
         >
           <View style={styles.buttonInner}>
-            <Text style={styles.buttonText}>Continue to Checkout</Text>
+            <Text style={styles.buttonText}>Continue to Send Request</Text>
             <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
           </View>
         </TouchableOpacity>

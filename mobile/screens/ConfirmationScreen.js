@@ -106,6 +106,9 @@ export default function ConfirmationScreen({ route, navigation }) {
   const [savedBooking, setSavedBooking] = useState(fullResult.booking || null);
   const [existingBooking, setExistingBooking] = useState(null);
 
+  const currentStatus = String(fullResult.booking?.status || fullResult.status || 'pending_provider_acceptance').toLowerCase();
+  const isPendingProvider = currentStatus === 'pending_provider_acceptance' || currentStatus === 'pending';
+
   const appointmentLabel = formatAppointmentLabel(
     fullResult.scheduled_time || fullResult.output?.scheduled_time || fullResult.booking?.scheduled_time || fullResult.booking_start_time || provider.scheduled_time,
     provider.confirmed_slot || 'Appointment scheduled'
@@ -144,7 +147,7 @@ export default function ConfirmationScreen({ route, navigation }) {
         area: provider.area || fullResult.parsed_intent?.resolved_area || 'Unknown',
         booking_start_time: bookingStartTime,
         quote_pkr: fullResult.quote_pkr || fullResult.total || null,
-        status: 'confirmed',
+        status: 'pending_provider_acceptance',
         raw_data: {
           booking_id: fullResult.booking_id,
           workflow_id: fullResult.workflow_id,
@@ -223,7 +226,7 @@ export default function ConfirmationScreen({ route, navigation }) {
 
       <ScreenHeader
         navigation={navigation}
-        title="Booking Confirmed"
+        title={isPendingProvider ? "Request Sent" : "Booking Confirmed"}
         noBorder
         right={
           <TouchableOpacity
@@ -244,9 +247,9 @@ export default function ConfirmationScreen({ route, navigation }) {
 
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
           <Text style={styles.copy}>
-            Your request has been successfully scheduled. A professional will be assigned shortly.
+            {isPendingProvider ? 'Your request has been sent to the provider. It will be confirmed after they accept.' : 'Your booking has been confirmed by the provider.'}
           </Text>
-          <Text style={styles.urduCopy}>بکنگ کامیاب</Text>
+          <Text style={styles.urduCopy}>{isPendingProvider ? 'درخواست بھیج دی گئی' : 'بکنگ کامیاب'}</Text>
         </View>
 
         {/* ── Booking Summary Card (Glassmorphic) ────────────────────── */}
@@ -257,7 +260,7 @@ export default function ConfirmationScreen({ route, navigation }) {
               <Text style={styles.bookingIdValue}>#{displayBookingId}</Text>
             </View>
             <View style={styles.scheduledBadge}>
-              <Text style={styles.scheduledBadgeText}>SCHEDULED</Text>
+              <Text style={styles.scheduledBadgeText}>{isPendingProvider ? 'PENDING' : 'SCHEDULED'}</Text>
             </View>
           </View>
 

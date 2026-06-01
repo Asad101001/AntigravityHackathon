@@ -4,7 +4,7 @@
  * Run with: node test-real-scenarios.js
  */
 
-const { parseDateTime, parseTimePreference } = require('./backend/utils/dateTimeParser');
+const { parseDateTime, parseTimePreference } = require('../backend/utils/dateTimeParser');
 
 console.log('╔═══════════════════════════════════════════════════════════════════╗');
 console.log('║           REAL-WORLD USER SCENARIOS - TESTING FIX                 ║');

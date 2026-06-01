@@ -18,8 +18,8 @@ export function addSessionBooking(fullResult = {}) {
     slot: provider.confirmed_slot || 'Today',
     quote_pkr: fullResult.quote_pkr || fullResult.total || null,
     rating: provider.rating || null,
-    status: 'confirmed',
-    stageIndex: 1,
+    status: fullResult.booking?.status || fullResult.status || 'pending_provider_acceptance',
+    stageIndex: 0,
     created_at: new Date().toISOString(),
     raw: fullResult,
   };

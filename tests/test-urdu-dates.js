@@ -3,7 +3,7 @@
  * Run with: node test-urdu-dates.js
  */
 
-const { parseDateTime } = require('./backend/utils/dateTimeParser');
+const { parseDateTime } = require('../backend/utils/dateTimeParser');
 
 console.log('=== Urdu/Roman Urdu Date Parsing Tests ===\n');
 

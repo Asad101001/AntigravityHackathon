@@ -21,9 +21,9 @@ export function AppContextProvider({ children }) {
   const triggerBookingConfirmedNotification = useCallback(async (job) => {
     if (!job) return false;
     return sendLocalNotification(
-      'Booking Confirmed - Provider En Route',
-      `${job.provider || 'Your provider'} is assigned for ${job.service || 'your service'}${job.area ? ` in ${job.area}` : ''}.`,
-      { booking_id: job.id, event: 'booking_confirmed', status: job.status || 'confirmed' }
+      'Provider accepted request',
+      `${job.provider || 'Your provider'} accepted ${job.service || 'your service'}${job.area ? ` in ${job.area}` : ''}.`,
+      { booking_id: job.id, event: 'request_sent', status: job.status || 'pending_provider_acceptance' }
     );
   }, []);
 

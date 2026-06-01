@@ -57,11 +57,11 @@ const ROUTE_LABELS = {
   OrderStatus: 'Order Status',
   IntentConfirm: 'Confirm Request',
   ProviderResults: 'Providers',
-  BookingConfirm: 'Confirm Booking',
+  BookingConfirm: 'Send Request',
   ReviewBooking: 'Review Booking',
   ProviderChat: 'Provider Chat',
   LocationPicker: 'Location',
-  Confirmation: 'Confirmed',
+  Confirmation: 'Request Sent',
   AgentTrace: 'Agent Trace',
   Loading: 'Matching',
 };

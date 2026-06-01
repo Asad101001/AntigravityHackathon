@@ -118,7 +118,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
         area: provider.area || fullResult.parsed_intent?.resolved_area || 'Unknown',
         booking_start_time: isoStartTime,
         quote_pkr: fullResult.quote_pkr || null,
-        status: 'confirmed',
+        status: 'pending_provider_acceptance',
         raw_data: {
           booking_id: fullResult.booking_id,
           workflow_id: fullResult.workflow_id,
@@ -142,32 +142,15 @@ export default function BookingConfirmScreen({ route, navigation }) {
           },
         });
       } else {
-        // Fallback for mock environment
-        navigation.navigate('Confirmation', {
-          fullResult: {
-            ...fullResult,
-            provider,
-            booking_id: fullResult.booking_id,
-            booking: fullResult.booking || null,
-            total: fullResult.quote_pkr || null,
-          },
-        });
+        toast.showWarning('Request could not be saved. Please try again.');
+        return;
       }
     } catch (err) {
       console.log('Booking creation failed:', err.response?.status, err.response?.data);
       if (err.response?.status === 409 || err.response?.data?.error === 'duplicate_booking') {
         setShowDuplicatePopup(true);
       } else {
-        // Fallback for general network errors - let user complete gracefully
-        navigation.navigate('Confirmation', {
-          fullResult: {
-            ...fullResult,
-            provider,
-            booking_id: fullResult.booking_id,
-            booking: fullResult.booking || null,
-            total: fullResult.quote_pkr || null,
-          },
-        });
+        toast.showError('Could not send request. Please check your connection and try again.');
       }
     } finally {
       setLoading(false);
@@ -245,7 +228,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
     <View style={styles.container}>
       <ScreenHeader
         navigation={navigation}
-        title="Confirm Booking"
+        title="Send Request"
         stepLabel="STEP 5 OF 5"
       />
 
@@ -337,7 +320,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.smallFooterText}>Secured by Asaaniyat AI Engine • 100% Reliable</Text>
+        <Text style={styles.smallFooterText}>Provider will receive this only after you send the request</Text>
 
         <View style={{ height: 20 }} />
 
@@ -354,7 +337,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Text style={styles.primaryText}>Confirm & Book Now</Text>
+            <Text style={styles.primaryText}>Send Request to Provider</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -374,7 +357,7 @@ export default function BookingConfirmScreen({ route, navigation }) {
             
             <Text style={styles.modalTitleCenter}>Duplicate Booking</Text>
             <Text style={styles.modalDescription}>
-              You already have a confirmed booking scheduled with <Text style={{ fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary }}>{provider.name}</Text> around this time slot.
+              You already have an active request scheduled with <Text style={{ fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary }}>{provider.name}</Text> around this time slot.
               {"\n\n"}
               To avoid double scheduling, this duplicate reservation has been blocked.
             </Text>

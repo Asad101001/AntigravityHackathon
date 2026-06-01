@@ -139,8 +139,12 @@ app.use((err, req, res, next) => {
 const server = http.createServer(app);
 
 server.listen(PORT, '0.0.0.0', async () => {
-  await db.setupDatabase();
   const jwtSecret = process.env.JWT_SECRET || process.env.ANTIGRAVITY_KEY || 'demo-secret';
+  try {
+    await db.setupDatabase();
+  } catch (error) {
+    console.error('[Server] MongoDB is not reachable yet. API will keep running and retry on DB-backed requests:', error.message);
+  }
   await initializeBookingRealtime(server, { db, jwtSecret });
   if (process.env.GENERATE_API_DOCS_ON_START === 'true') generateApiDocs();
   const lanUrls = getLanUrls(PORT);

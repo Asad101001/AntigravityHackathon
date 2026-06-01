@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 const bcryptjs = require('bcryptjs');
+const { STATUS, normalizeBookingStatus } = require('./utils/bookingStatus');
 
 const coordinatesByCityPath = path.join(__dirname, 'data', 'coordinates.json');
 const providersPath = path.join(__dirname, 'data', 'providers.json');
@@ -138,6 +139,7 @@ async function ensureIndexes(db) {
     db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ status: 1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, status: 1, booking_start_time: 1 }),
   ]);
 }
 
@@ -321,6 +323,19 @@ async function recordUserLogin(userId) {
   );
 }
 
+
+async function updatePrincipalPushToken(userId, pushToken) {
+  if (!userId) return null;
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  const update = { $set: { pushToken: pushToken ? String(pushToken) : null, updatedAt: now, updated_at: now } };
+  let result = await db.collection(COLLECTIONS.users).updateOne({ _id: String(userId) }, update);
+  if (result.matchedCount > 0) return { collection: COLLECTIONS.users, userId: String(userId) };
+  result = await db.collection('providers_users').updateOne({ _id: String(userId) }, update);
+  if (result.matchedCount > 0) return { collection: 'providers_users', userId: String(userId) };
+  return null;
+}
+
 async function updateUserPushToken(userId, pushToken) {
   if (!userId) return null;
   const db = await setupDatabase();
@@ -486,13 +501,14 @@ async function getRagChunks(limit = 200) {
     .toArray();
 }
 
-async function createBooking({ user_id, provider_id, provider_name, service_type, location, city, area, booking_start_time, quote_pkr, status = 'confirmed', raw_data = {} }) {
+async function createBooking({ user_id, provider_id, provider_name, service_type, location, city, area, booking_start_time, quote_pkr, status = STATUS.PENDING_PROVIDER, raw_data = {} }) {
   const db = await setupDatabase();
   const now = new Date().toISOString();
   const booking = {
     _id: `BK_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     user_id: String(user_id),
     provider_id: String(provider_id),
+    provider_public_id: raw_data?.provider_public_id ? String(raw_data.provider_public_id) : String(provider_id),
     provider_name: String(provider_name || ''),
     service_type: String(service_type || ''),
     location: String(location || ''),
@@ -500,7 +516,7 @@ async function createBooking({ user_id, provider_id, provider_name, service_type
     area: String(area || ''),
     booking_start_time: booking_start_time ? new Date(booking_start_time).toISOString() : null,
     quote_pkr: typeof quote_pkr === 'number' ? quote_pkr : null,
-    status: String(status),
+    status: normalizeBookingStatus(status),
     raw_data: raw_data || {},
     created_at: now,
     updated_at: now,
@@ -560,13 +576,13 @@ async function getBookingById(booking_id) {
   return booking;
 }
 
-async function updateBookingStatus(booking_id, new_status) {
+async function updateBookingStatus(booking_id, new_status, extraUpdates = {}) {
   if (!booking_id) return null;
   const db = await setupDatabase();
   const now = new Date().toISOString();
   const result = await db.collection(COLLECTIONS.bookings).findOneAndUpdate(
     { _id: String(booking_id) },
-    { $set: { status: String(new_status), updated_at: now } },
+    { $set: { ...extraUpdates, status: normalizeBookingStatus(new_status), updated_at: now } },
     { returnDocument: 'after' }
   );
   return result?.value || result || null;
@@ -580,12 +596,25 @@ async function checkDuplicateBooking(user_id, provider_id, booking_start_time) {
     user_id: String(user_id),
     provider_id: String(provider_id),
     booking_start_time: startTime,
-    status: { $in: ['confirmed', 'Operating'] },
+    status: { $in: [STATUS.PENDING_PROVIDER, STATUS.CONFIRMED, STATUS.ACTIVE, STATUS.IN_PROGRESS] },
   });
 }
 
 async function cancelBooking(booking_id) {
   return updateBookingStatus(booking_id, 'canceled');
+}
+
+
+async function updateBookingFeedback(booking_id, feedback) {
+  if (!booking_id) return null;
+  const db = await setupDatabase();
+  const now = new Date().toISOString();
+  const result = await db.collection(COLLECTIONS.bookings).findOneAndUpdate(
+    { _id: String(booking_id) },
+    { $set: { feedback, updated_at: now } },
+    { returnDocument: 'after' }
+  );
+  return result?.value || result || null;
 }
 
 async function getAllBookings(limit = 1000, skip = 0) {
@@ -613,6 +642,7 @@ module.exports = {
   createUser,
   recordUserLogin,
   updateUserPushToken,
+  updatePrincipalPushToken,
   findProviders,
   findProvidersByService,
   saveChatMessage,
@@ -626,6 +656,7 @@ module.exports = {
   updateBookingStatus,
   checkDuplicateBooking,
   cancelBooking,
+  updateBookingFeedback,
   getAllBookings,
   getDb,
   COLLECTIONS,

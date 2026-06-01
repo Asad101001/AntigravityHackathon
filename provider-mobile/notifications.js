@@ -159,7 +159,7 @@ export async function syncPushToken(authToken) {
 
     if (push_token) {
       const apiClient = require('./lib/apiClient').default;
-      await apiClient.post('/auth/push-token', { push_token }, {
+      await apiClient.post('/provider/push-token', { push_token }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
     }
