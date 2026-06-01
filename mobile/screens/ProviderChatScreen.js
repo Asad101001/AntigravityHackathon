@@ -17,6 +17,7 @@ import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
 import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 import apiClient from '../lib/apiClient';
+import { subscribeBookingRealtime } from '../lib/bookingRealtime';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -176,8 +177,25 @@ export default function ProviderChatScreen({ route, navigation }) {
     }
 
     loadBookingState();
-    return () => { mounted = false; };
-  }, [bookingId]);
+
+    const unsubscribe = subscribeBookingRealtime((event) => {
+      if (event?.type !== 'booking.updated' || event.booking_id !== bookingId) return;
+      const nextStatus = String(event.status || '').toLowerCase();
+      if (!nextStatus) return;
+
+      setBookingStatus(nextStatus);
+      if (nextStatus === 'canceled') {
+        setMessages([
+          { role: 'assistant', content: cancelledMessage, time: stamp() },
+        ]);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, [bookingId, cancelledMessage]);
 
   useEffect(() => {
     apiClient.get(`/chat/${bookingId}`).then(res => {

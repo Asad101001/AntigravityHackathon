@@ -6,6 +6,7 @@
 
 require('dotenv').config();
 const os = require('os');
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -17,6 +18,7 @@ const speechRoutes = require('./routes/speechRoutes');
 const providerRoutes = require('./routes/providerRoutes');
 const db = require('./db');
 const { generateApiDocs } = require('./traceLogger');
+const { initializeBookingRealtime } = require('./realtime/bookingRealtime');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -134,14 +136,17 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', async () => {
+const server = http.createServer(app);
+
+server.listen(PORT, '0.0.0.0', async () => {
   await db.setupDatabase();
+  const jwtSecret = process.env.JWT_SECRET || process.env.ANTIGRAVITY_KEY || 'demo-secret';
+  await initializeBookingRealtime(server, { db, jwtSecret });
   if (process.env.GENERATE_API_DOCS_ON_START === 'true') generateApiDocs();
   const lanUrls = getLanUrls(PORT);
 
   // Security check: warn if JWT_SECRET is using the insecure default
-  const jwtSecret = process.env.JWT_SECRET || process.env.ANTIGRAVITY_KEY;
-  if (!jwtSecret || jwtSecret === 'demo-secret') {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'demo-secret') {
     console.warn('\n⚠️  WARNING: JWT_SECRET is not set or is using the insecure default.');
     console.warn('   Set a strong JWT_SECRET environment variable before deploying to production.\n');
   }
@@ -155,6 +160,7 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.log('📱 Phone/LAN access: no non-internal IPv4 address detected');
   }
   console.log(`🔌 API endpoint: http://localhost:${PORT}/api/service-request\n`);
+  console.log(`⚡ Booking realtime WS: ws://localhost:${PORT}/ws/bookings\n`);
 });
 
 module.exports = app;

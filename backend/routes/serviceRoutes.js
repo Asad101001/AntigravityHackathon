@@ -11,6 +11,7 @@ const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
 const requireAuth = require('../middleware/requireAuth');
 const { sendPushNotification } = require('../utils/pushNotification');
+const { broadcastBookingUpdated } = require('../realtime/bookingRealtime');
 
 const orchestrator = new AntigravityOrchestrator({
   apiKey: process.env.ANTIGRAVITY_KEY || 'demo-key'
@@ -718,6 +719,8 @@ router.put('/bookings/:booking_id', async (req, res) => {
 
     const updatedBooking = await db.updateBookingStatus(req.params.booking_id, status);
 
+    broadcastBookingUpdated(updatedBooking, 'user');
+
     // Dispatch push notification about booking update
     await sendPushNotification(
       booking.user_id,
@@ -750,6 +753,8 @@ router.delete('/bookings/:booking_id', async (req, res) => {
     }
 
     const cancelledBooking = await db.cancelBooking(req.params.booking_id);
+
+    broadcastBookingUpdated(cancelledBooking, 'user');
 
     // Dispatch push notification about cancellation
     await sendPushNotification(

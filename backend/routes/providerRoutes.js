@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { sendPushNotification } = require('../utils/pushNotification');
 const requireAuth = require('../middleware/requireAuth');
+const { broadcastBookingUpdated } = require('../realtime/bookingRealtime');
 
 const router = express.Router();
 
@@ -97,6 +98,8 @@ async function executeStatusTransition(req, res, action, newStatus) {
     if (!updated) {
       return res.status(500).json({ success: false, error: 'Failed to update booking status' });
     }
+
+    broadcastBookingUpdated(updated, 'provider');
 
     console.log(`[ProviderRoutes] Booking ${req.params.id}: ${booking.status} → ${newStatus} by ${user.name}`);
     return res.json({ success: true, booking: updated });

@@ -8,6 +8,7 @@ import { useTabBarVisibility } from '../components/TabBarVisibility';
 import { COLORS, FONTS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { useAuth } from '../context/AuthContext';
+import { subscribeBookingRealtime } from '../lib/bookingRealtime';
 
 function money(value) {
   return typeof value === 'number' ? `PKR ${Math.round(value).toLocaleString('en-PK')}` : 'Quote pending';
@@ -67,25 +68,18 @@ export default function BookingsScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-      let timeoutId;
-
-      const poll = async () => {
-        if (!isActive) return;
-        await fetchBookings();
-        if (isActive) {
-          timeoutId = setTimeout(poll, 5000);
-        }
-      };
-
-      poll();
-
-      return () => {
-        isActive = false;
-        clearTimeout(timeoutId);
-      };
+      fetchBookings();
     }, [fetchBookings])
   );
+
+  useEffect(() => {
+    const unsubscribe = subscribeBookingRealtime((event) => {
+      if (event?.type !== 'booking.updated') return;
+      fetchBookings();
+    });
+
+    return unsubscribe;
+  }, [fetchBookings]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -31,6 +31,7 @@ if (Platform.OS !== 'web') {
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, SHADOWS, FONTS } from '../theme';
 import { sendLocalNotification } from '../notifications';
+import { subscribeBookingRealtime } from '../lib/bookingRealtime';
 
 const STAGES = [
   { key: 'pending',    label: 'Assigning',  icon: 'hourglass-outline' },
@@ -97,6 +98,30 @@ export default function OrderStatusScreen({ route, navigation }) {
   const routePath = useMemo(() => generateCityBlockPath(providerStartLoc, userLoc), [providerStartLoc, userLoc]);
   const pathProgressAnim = useRef(new Animated.Value(0)).current;
 
+  const applyBookingState = useCallback((nextBooking) => {
+    if (!nextBooking) return;
+
+    setCurrentBooking((prevBooking) => {
+      const previousStatus = String(prevBooking?.status || '').toLowerCase();
+      const nextStatus = String(nextBooking?.status || '').toLowerCase();
+      const nextStage = getInitialStageIndex(nextStatus);
+
+      setCurrentStage(nextStage);
+
+      if (nextStatus && nextStatus !== previousStatus) {
+        if (nextStatus === 'confirmed') {
+          sendLocalNotification('Provider Accepted!', 'Your provider has confirmed the booking.');
+        } else if (nextStatus === 'completed') {
+          sendLocalNotification('Service Completed', 'Your provider marked the job as done.');
+        } else if (nextStatus === 'rejected' || nextStatus === 'canceled') {
+          sendLocalNotification('Booking Update', 'Your booking status has changed. Please check the app.');
+        }
+      }
+
+      return { ...(prevBooking || {}), ...nextBooking };
+    });
+  }, []);
+
   useEffect(() => {
     const id = pathProgressAnim.addListener(({ value }) => {
       const totalSegments = routePath.length - 1;
@@ -119,43 +144,36 @@ export default function OrderStatusScreen({ route, navigation }) {
     return () => pathProgressAnim.removeListener(id);
   }, [pathProgressAnim, routePath]);
 
-  // ── Live Polling for Backend Status ───────────────────────────────────────
+  // ── Realtime Booking Status Sync ─────────────────────────────────────────
   useEffect(() => {
     // Use _id (MongoDB doc ID) which is the canonical booking identifier
     const bookingId = booking?._id || booking?.id;
     if (!bookingId) return;
 
-    const pollStatus = async () => {
+    const fetchLatestBooking = async () => {
       try {
         const res = await apiClient.get(`/bookings/${bookingId}`);
         if (res.data?.success && res.data.booking) {
-          setCurrentBooking(res.data.booking);
-          const serverStatus = res.data.booking.status;
-          const serverStage = getInitialStageIndex(serverStatus);
-          
-          if (serverStage !== currentStage) {
-            setCurrentStage(serverStage);
-            // Notify user of meaningful status changes
-            if (serverStatus === 'confirmed') {
-              sendLocalNotification('Provider Accepted!', 'Your provider has confirmed the booking.');
-            } else if (serverStatus === 'completed') {
-              sendLocalNotification('Service Completed', 'Your provider marked the job as done.');
-            } else if (serverStatus === 'rejected' || serverStatus === 'canceled') {
-              sendLocalNotification('Booking Update', 'Your booking status has changed. Please check the app.');
-            }
-          }
+          applyBookingState(res.data.booking);
         }
       } catch (err) {
-        // Ignore silent network errors on polling — don't disrupt the UI
-        console.debug('[OrderStatus] Poll error (silent):', err?.message);
+        console.debug('[OrderStatus] Initial sync error:', err?.message);
       }
     };
 
-    // Initial poll immediately, then every 5s
-    pollStatus();
-    const intervalId = setInterval(pollStatus, 5000);
-    return () => clearInterval(intervalId);
-  }, [booking?._id, booking?.id, currentStage]);
+    fetchLatestBooking();
+
+    const unsubscribe = subscribeBookingRealtime((event) => {
+      if (event?.type !== 'booking.updated' || event.booking_id !== bookingId) return;
+      applyBookingState({
+        _id: bookingId,
+        status: event.status,
+        updated_at: event.updated_at,
+      });
+    });
+
+    return unsubscribe;
+  }, [booking?._id, booking?.id, applyBookingState]);
 
   useEffect(() => {
     // UI Progress Bar goes 0 -> 1 based on 5 stages (0/4, 1/4, 2/4, 3/4, 4/4)

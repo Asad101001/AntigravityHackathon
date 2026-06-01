@@ -19,7 +19,8 @@
     "mongodb": "^7.2.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.2.0"

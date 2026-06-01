@@ -20,6 +20,7 @@ import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
+import { subscribeBookingRealtime } from '../lib/bookingRealtime';
 
 const TABS = ['Active', 'Completed', 'Canceled'];
 
@@ -158,14 +159,20 @@ export default function ProviderBookingsScreen({ navigation }) {
     if (Platform.OS !== 'web') Alert.alert('Success', msg);
   };
 
-  // Poll every 5 seconds for live updates
   useFocusEffect(
     useCallback(() => {
       fetchBookings();
-      const intervalId = setInterval(fetchBookings, 5000);
-      return () => clearInterval(intervalId);
     }, [fetchBookings])
   );
+
+  useEffect(() => {
+    const unsubscribe = subscribeBookingRealtime((event) => {
+      if (event?.type !== 'booking.updated') return;
+      fetchBookings();
+    });
+
+    return unsubscribe;
+  }, [fetchBookings]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
