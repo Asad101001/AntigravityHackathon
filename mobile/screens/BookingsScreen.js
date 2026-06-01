@@ -67,11 +67,23 @@ export default function BookingsScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchBookings();
-      const intervalId = setInterval(() => {
-        fetchBookings();
-      }, 5000);
-      return () => clearInterval(intervalId);
+      let isActive = true;
+      let timeoutId;
+
+      const poll = async () => {
+        if (!isActive) return;
+        await fetchBookings();
+        if (isActive) {
+          timeoutId = setTimeout(poll, 5000);
+        }
+      };
+
+      poll();
+
+      return () => {
+        isActive = false;
+        clearTimeout(timeoutId);
+      };
     }, [fetchBookings])
   );
 

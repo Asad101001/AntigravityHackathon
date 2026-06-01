@@ -86,7 +86,6 @@ function LiquidTabBar({ navigationRef, currentRouteName }) {
   }, [currentRouteName]);
 
   const MAIN_TABS = ['Dashboard', 'Bookings', 'Messages', 'Profile'];
-  if (!MAIN_TABS.includes(currentRouteName)) return null;
 
   return (
     <View
@@ -220,6 +219,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: 16,
+    zIndex: 9999,
+    elevation: 20,
   },
   tabBar: { height: 78 },
   tabBarInner: {
