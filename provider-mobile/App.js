@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +24,7 @@ import { COLORS, SHADOWS } from './theme';
 import { ToastProvider } from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import LiquidGlass from './components/LiquidGlass';
+import { TabBarVisibilityContext } from './components/TabBarVisibility';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -36,7 +36,6 @@ Notifications.setNotificationHandler({
 });
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
 
 const TAB_CONFIG = [
   { name: 'Dashboard', label: 'Dashboard', icon: 'speedometer-outline', activeIcon: 'speedometer' },
@@ -45,56 +44,151 @@ const TAB_CONFIG = [
   { name: 'Profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
 ];
 
-function ProviderTabNavigator() {
-  const insets = useSafeAreaInsets();
+function getCurrentRouteName(state) {
+  if (!state?.routes?.length) return 'Splash';
+  const route = state.routes[state.index ?? 0];
+  if (route.state) return getCurrentRouteName(route.state);
+  return route.name;
+}
+
+function AnimatedTabButton({ tab, active, onPress }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, { toValue: 0.88, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
+  };
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          const config = TAB_CONFIG.find(t => t.name === route.name);
+    <Animated.View style={[styles.tabButton, active && styles.tabButtonActive, { transform: [{ scale: scaleAnim }] }]}>
+      <TouchableOpacity
+        style={styles.tabButtonInner}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        <Ionicons name={active ? tab.activeIcon : tab.icon} size={22} color={active ? '#FFFFFF' : COLORS.textSecondary} />
+        <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) {
+  const insets = useSafeAreaInsets();
+  const translateY = useRef(new Animated.Value(0)).current;
+  const activeTab = useMemo(() => {
+    if (['Dashboard', 'Bookings', 'Messages', 'Profile'].includes(currentRouteName)) return currentRouteName;
+    return 'Dashboard';
+  }, [currentRouteName]);
+
+  useEffect(() => {
+    Animated.spring(translateY, {
+      toValue: visible ? 0 : 112,
+      useNativeDriver: true,
+      damping: 18,
+      stiffness: 180,
+    }).start();
+  }, [translateY, visible]);
+
+  const MAIN_TABS = ['Dashboard', 'Bookings', 'Messages', 'Profile'];
+  if (!MAIN_TABS.includes(currentRouteName)) return null;
+
+  return (
+    <Animated.View
+      style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 12), transform: [{ translateY }] }]}
+      pointerEvents="box-none"
+    >
+      <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={18}>
+        {TAB_CONFIG.map(tab => {
+          const active = activeTab === tab.name;
           return (
-            <Ionicons
-              name={focused ? config.activeIcon : config.icon}
-              size={size}
-              color={color}
+            <AnimatedTabButton
+              key={tab.name}
+              tab={tab}
+              active={active}
+              onPress={() => navigationRef.current?.navigate(tab.name)}
             />
           );
-        },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textSecondary,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: Math.max(insets.bottom, 16),
-          left: 16,
-          right: 16,
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          borderTopWidth: 0,
-          borderRadius: 24,
-          paddingBottom: 0,
-          height: 70,
-          shadowColor: 'rgba(14, 143, 70, 0.16)',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 1,
-          shadowRadius: 16,
-          elevation: 10,
-        },
-        tabBarItemStyle: {
-          paddingVertical: 10,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '700',
-          marginTop: 4,
-        },
-      })}
-    >
-      <Tab.Screen name="Dashboard" component={ProviderDashboardScreen} />
-      <Tab.Screen name="Bookings" component={ProviderBookingsScreen} />
-      <Tab.Screen name="Messages" component={ProviderChatScreen} />
-      <Tab.Screen name="Profile" component={ProviderProfileScreen} />
-    </Tab.Navigator>
+        })}
+      </LiquidGlass>
+    </Animated.View>
+  );
+}
+
+function ProviderNavigator() {
+  const navigationRef = useRef(null);
+  const [currentRouteName, setCurrentRouteName] = useState('Dashboard');
+  const [tabVisible, setTabVisible] = useState(true);
+  const idleTimer = useRef(null);
+  const lastOffset = useRef(0);
+
+  const hideTabBar = useCallback(() => {
+    setTabVisible(prev => {
+      if (prev === false) return prev;
+      return false;
+    });
+  }, []);
+
+  const showTabBar = useCallback(() => {
+    setTabVisible(prev => {
+      if (prev === true) return prev;
+      return true;
+    });
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      setTabVisible(prev => {
+        if (prev === false) return prev;
+        return false;
+      });
+    }, 3200);
+  }, []);
+
+  const registerScroll = useCallback((event) => {
+    const y = event.nativeEvent.contentOffset.y;
+    if (y > lastOffset.current + 8 && y > 24) hideTabBar();
+    if (y < lastOffset.current - 8) showTabBar();
+    lastOffset.current = y;
+  }, [hideTabBar, showTabBar]);
+
+  useEffect(() => {
+    showTabBar();
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, [currentRouteName, showTabBar]);
+
+  const contextValue = useMemo(() => ({ showTabBar, hideTabBar, registerScroll }), [showTabBar, hideTabBar, registerScroll]);
+
+  return (
+    <TabBarVisibilityContext.Provider value={contextValue}>
+      <View style={styles.appShell}>
+        <NavigationContainer
+          ref={navigationRef}
+          onReady={() => setCurrentRouteName(getCurrentRouteName(navigationRef.current?.getRootState()))}
+          onStateChange={state => setCurrentRouteName(getCurrentRouteName(state))}
+        >
+          <Stack.Navigator
+            initialRouteName="Dashboard"
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: COLORS.bg },
+              animation: 'slide_from_right',
+            }}
+          >
+            <Stack.Screen name="Dashboard" component={ProviderDashboardScreen} options={{ animation: 'fade' }} />
+            <Stack.Screen name="Bookings" component={ProviderBookingsScreen} options={{ animation: 'fade' }} />
+            <Stack.Screen name="Messages" component={ProviderChatScreen} options={{ animation: 'fade' }} />
+            <Stack.Screen name="Profile" component={ProviderProfileScreen} options={{ animation: 'fade' }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} visible={tabVisible} showTabBar={showTabBar} />
+      </View>
+    </TabBarVisibilityContext.Provider>
   );
 }
 
@@ -103,24 +197,11 @@ function AuthNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: COLORS.background },
+        contentStyle: { backgroundColor: COLORS.bg },
       }}
     >
       <Stack.Screen name="Auth" component={AuthScreen} />
       <Stack.Screen name="Splash" component={SplashScreen} />
-    </Stack.Navigator>
-  );
-}
-
-function ProviderNavigator() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        cardStyle: { backgroundColor: COLORS.background },
-      }}
-    >
-      <Stack.Screen name="ProviderTabs" component={ProviderTabNavigator} />
     </Stack.Navigator>
   );
 }
@@ -137,7 +218,13 @@ function RootNavigator() {
     );
   }
 
-  return user ? <ProviderNavigator /> : <AuthNavigator />;
+  return user ? (
+    <ProviderNavigator />
+  ) : (
+    <NavigationContainer>
+      <AuthNavigator />
+    </NavigationContainer>
+  );
 }
 
 export default function App() {
@@ -152,10 +239,8 @@ export default function App() {
           <AuthProvider>
             <AppContext>
               <ToastProvider>
-                <NavigationContainer>
-                  <RootNavigator />
-                </NavigationContainer>
-                <StatusBar barStyle="light-content" />
+                <RootNavigator />
+                <StatusBar barStyle="dark-content" />
               </ToastProvider>
             </AppContext>
           </AuthProvider>
@@ -170,6 +255,37 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.bg,
   },
+  appShell: { flex: 1, backgroundColor: COLORS.bg },
+  tabBarWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+  },
+  tabBar: { height: 78 },
+  tabBarInner: {
+    flex: 1,
+    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tabButton: {
+    flex: 1,
+    height: 60,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  tabButtonInner: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  tabButtonActive: { backgroundColor: COLORS.primary },
+  tabLabel: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
+  tabLabelActive: { color: '#FFFFFF' },
 });

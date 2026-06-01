@@ -20,9 +20,11 @@ import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { sendLocalNotification } from '../notifications';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 export default function ProviderDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { registerScroll } = useTabBarVisibility();
   const { user } = useAuth();
   const [stats, setStats] = useState({
     pendingBookings: 0,
@@ -197,15 +199,11 @@ export default function ProviderDashboardScreen({ navigation }) {
       />
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={COLORS.primary}
-          />
-        }
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={registerScroll}
       >
         {loading ? (
           <ActivityIndicator style={{ marginTop: 40 }} color={COLORS.primary} />

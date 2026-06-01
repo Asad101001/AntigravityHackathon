@@ -18,11 +18,13 @@ import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 const TABS = ['Active', 'Completed', 'Canceled'];
 
 export default function ProviderBookingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { registerScroll } = useTabBarVisibility();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -329,6 +331,8 @@ export default function ProviderBookingsScreen({ navigation }) {
               tintColor={COLORS.primary}
             />
           }
+          scrollEventThrottle={16}
+          onScroll={registerScroll}
         >
           <View style={styles.bookingsList}>
             {filteredBookings.map((booking) => (

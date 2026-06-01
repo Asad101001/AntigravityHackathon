@@ -187,7 +187,7 @@ export default function ReviewBookingScreen({ route, navigation }) {
           {/* ── Dynamic Profile Header (Name -> Service -> Company) ── */}
           <View style={styles.profileHeaderBlock}>
             <Image 
-              source={{ uri: provider.avatar || 'https://asaaniyat.blob.core.windows.net/avatars/default_provider.jpg' }} 
+              source={{ uri: provider.avatar || 'https://storage.googleapis.com/asaaniyat-avatars/default_provider.jpg' }} 
               style={styles.profileAvatar} 
             />
             <View style={{ flex: 1 }}>

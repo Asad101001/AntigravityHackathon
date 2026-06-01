@@ -18,6 +18,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 // Roles stored in DB that belong to the client/AI side
 const CLIENT_ROLES = new Set(['user', 'client', 'assistant', 'ai']);
@@ -28,6 +29,7 @@ function isProviderMessage(msg) {
 
 export default function ProviderChatScreen() {
   const insets = useSafeAreaInsets();
+  const { registerScroll } = useTabBarVisibility();
   const scrollRef = useRef(null);
   const pollTimer = useRef(null);
 
@@ -271,7 +273,12 @@ export default function ProviderChatScreen() {
             <Text style={styles.emptyText}>No bookings yet</Text>
           </View>
         ) : (
-          <ScrollView style={styles.scroll} contentContainerStyle={{ padding: 16 }}>
+          <ScrollView 
+            style={styles.scroll} 
+            contentContainerStyle={{ padding: 16 }}
+            scrollEventThrottle={16}
+            onScroll={registerScroll}
+          >
             {chats.map((chat) => (
               <ChatListItem key={chat.id} chat={chat} />
             ))}

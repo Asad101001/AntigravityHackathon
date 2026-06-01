@@ -183,7 +183,7 @@ function ProviderCard({ provider, estimatedPkr, onPress }) {
           <View style={styles.cardRow}>
             {/* Avatar */}
             <Image 
-              source={{ uri: provider.avatar || 'https://asaaniyat.blob.core.windows.net/avatars/default_provider.jpg' }} 
+              source={{ uri: provider.avatar || 'https://storage.googleapis.com/asaaniyat-avatars/default_provider.jpg' }} 
               style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]} 
             />
 

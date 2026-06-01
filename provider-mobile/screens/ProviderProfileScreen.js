@@ -18,9 +18,11 @@ import LiquidGlass from '../components/LiquidGlass';
 import { useAuth } from '../context/AuthContext';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
+import { useTabBarVisibility } from '../components/TabBarVisibility';
 
 export default function ProviderProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { registerScroll } = useTabBarVisibility();
   const { logout, user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,8 @@ export default function ProviderProfileScreen() {
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        scrollEventThrottle={16}
+        onScroll={registerScroll}
       >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
