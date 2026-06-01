@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS } from '../theme';
 
-export default function LiquidGlass({ opacity = 0.1, style }) {
+export default function LiquidGlass({ opacity = 0.1, style, children, contentStyle }) {
   return (
     <View
       style={[
@@ -13,7 +13,11 @@ export default function LiquidGlass({ opacity = 0.1, style }) {
         },
         style,
       ]}
-    />
+    >
+      <View style={contentStyle}>
+        {children}
+      </View>
+    </View>
   );
 }
 

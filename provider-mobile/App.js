@@ -92,19 +92,21 @@ function LiquidTabBar({ navigationRef, currentRouteName }) {
       style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}
       pointerEvents="box-none"
     >
-      <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={18}>
-        {TAB_CONFIG.map(tab => {
-          const active = activeTab === tab.name;
-          return (
-            <AnimatedTabButton
-              key={tab.name}
-              tab={tab}
-              active={active}
-              onPress={() => navigationRef.current?.navigate(tab.name)}
-            />
-          );
-        })}
-      </LiquidGlass>
+      <View style={[styles.tabBar, { backgroundColor: '#ffffff', borderRadius: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 10 }]}>
+        <View style={styles.tabBarInner}>
+          {TAB_CONFIG.map(tab => {
+            const active = activeTab === tab.name;
+            return (
+              <AnimatedTabButton
+                key={tab.name}
+                tab={tab}
+                active={active}
+                onPress={() => navigationRef.current?.navigate(tab.name)}
+              />
+            );
+          })}
+        </View>
+      </View>
     </View>
   );
 }
