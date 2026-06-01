@@ -78,29 +78,19 @@ function AnimatedTabButton({ tab, active, onPress }) {
   );
 }
 
-function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) {
+function LiquidTabBar({ navigationRef, currentRouteName }) {
   const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(0)).current;
   const activeTab = useMemo(() => {
     if (['Dashboard', 'Bookings', 'Messages', 'Profile'].includes(currentRouteName)) return currentRouteName;
     return 'Dashboard';
   }, [currentRouteName]);
 
-  useEffect(() => {
-    Animated.spring(translateY, {
-      toValue: visible ? 0 : 112,
-      useNativeDriver: true,
-      damping: 18,
-      stiffness: 180,
-    }).start();
-  }, [translateY, visible]);
-
   const MAIN_TABS = ['Dashboard', 'Bookings', 'Messages', 'Profile'];
   if (!MAIN_TABS.includes(currentRouteName)) return null;
 
   return (
-    <Animated.View
-      style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 12), transform: [{ translateY }] }]}
+    <View
+      style={[styles.tabBarWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}
       pointerEvents="box-none"
     >
       <LiquidGlass style={styles.tabBar} contentStyle={styles.tabBarInner} strong radius={18}>
@@ -116,34 +106,19 @@ function LiquidTabBar({ navigationRef, currentRouteName, visible, showTabBar }) 
           );
         })}
       </LiquidGlass>
-    </Animated.View>
+    </View>
   );
 }
 
 function ProviderNavigator() {
   const navigationRef = useRef(null);
   const [currentRouteName, setCurrentRouteName] = useState('Dashboard');
-  const [tabVisible, setTabVisible] = useState(true);
-  const idleTimer = useRef(null);
-  const lastOffset = useRef(0);
 
-  const hideTabBar = useCallback(() => {
-    setTabVisible(true); // Permanent visible
-  }, []);
+  const hideTabBar = useCallback(() => {}, []);
+  const showTabBar = useCallback(() => {}, []);
+  const registerScroll = useCallback((event) => {}, []);
 
-  const showTabBar = useCallback(() => {
-    setTabVisible(true); // Permanent visible
-  }, []);
-
-  const registerScroll = useCallback((event) => {
-    // Keep visible, no hiding on scroll
-  }, []);
-
-  useEffect(() => {
-    setTabVisible(true);
-  }, [currentRouteName]);
-
-  const contextValue = useMemo(() => ({ showTabBar, hideTabBar, registerScroll }), [showTabBar, hideTabBar, registerScroll]);
+  const contextValue = useMemo(() => ({ showTabBar, hideTabBar, registerScroll }), []);
 
   return (
     <TabBarVisibilityContext.Provider value={contextValue}>
@@ -167,7 +142,7 @@ function ProviderNavigator() {
             <Stack.Screen name="Profile" component={ProviderProfileScreen} options={{ animation: 'fade' }} />
           </Stack.Navigator>
         </NavigationContainer>
-        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} visible={tabVisible} showTabBar={showTabBar} />
+        <LiquidTabBar navigationRef={navigationRef} currentRouteName={currentRouteName} />
       </View>
     </TabBarVisibilityContext.Provider>
   );

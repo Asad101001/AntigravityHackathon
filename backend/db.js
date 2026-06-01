@@ -129,13 +129,14 @@ async function connectMongo() {
 async function ensureIndexes(db) {
   await Promise.all([
     db.collection(COLLECTIONS.providers).createIndex({ service: 1, city: 1, area: 1 }),
+    db.collection(COLLECTIONS.providers).createIndex({ id: 1 }, { unique: true, sparse: true }),
     db.collection(COLLECTIONS.users).createIndex({ emailLower: 1 }, { unique: true }),
     db.collection(COLLECTIONS.adminUsers).createIndex({ emailLower: 1 }, { unique: true }),
     db.collection(COLLECTIONS.chatMessages).createIndex({ booking_id: 1, created_at: 1 }),
     db.collection(COLLECTIONS.chatMessages).createIndex({ user_id: 1, booking_id: 1, created_at: -1 }),
     db.collection(COLLECTIONS.ragChunks).createIndex({ created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
-    db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }, { unique: true, sparse: true }),
+    db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ status: 1 }),
   ]);
 }
