@@ -19,6 +19,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import LiquidGlass from '../components/LiquidGlass';
 import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
+import { sendLocalNotification } from '../notifications';
 
 export default function ProviderDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -59,6 +60,11 @@ export default function ProviderDashboardScreen({ navigation }) {
         // Show modal for the first pending booking that hasn't been dismissed
         if (pending.length > 0 && !pendingBooking) {
           setPendingBooking(pending[0]);
+          sendLocalNotification(
+            'New Booking Request!',
+            `${pending[0].client_name || 'A customer'} needs ${pending[0].service_type || 'a service'} in ${pending[0].area || 'your area'}`,
+            { bookingId: pending[0]._id || pending[0].id }
+          );
         } else if (pending.length === 0) {
           setPendingBooking(null);
         }

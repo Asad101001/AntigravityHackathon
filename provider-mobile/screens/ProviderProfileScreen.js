@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -88,7 +89,11 @@ export default function ProviderProfileScreen() {
         <View style={styles.profileHeader}>
           <LiquidGlass opacity={0.02} />
           <View style={styles.avatarContainer}>
-            <Ionicons name="person-circle" size={80} color={COLORS.primary} />
+            {profile?.avatar ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatarImage} />
+            ) : (
+              <Ionicons name="person-circle" size={80} color={COLORS.primary} />
+            )}
           </View>
           <Text style={styles.profileName}>{profile?.name || 'Provider'}</Text>
           <Text style={styles.profileEmail}>{profile?.email || 'email@example.com'}</Text>
@@ -181,6 +186,11 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginBottom: 16,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   profileName: {
     ...FONTS.headline,

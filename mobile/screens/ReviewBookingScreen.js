@@ -186,13 +186,10 @@ export default function ReviewBookingScreen({ route, navigation }) {
         <LiquidGlass style={styles.card} radius={22}>
           {/* ── Dynamic Profile Header (Name -> Service -> Company) ── */}
           <View style={styles.profileHeaderBlock}>
-            {provider.avatar ? (
-              <Image source={{ uri: provider.avatar }} style={styles.profileAvatar} />
-            ) : (
-              <View style={styles.profileAvatar}>
-                <Text style={styles.profileAvatarText}>{provider.name?.charAt(0) || 'P'}</Text>
-              </View>
-            )}
+            <Image 
+              source={{ uri: provider.avatar || 'https://asaaniyat.blob.core.windows.net/avatars/default_provider.jpg' }} 
+              style={styles.profileAvatar} 
+            />
             <View style={{ flex: 1 }}>
               <Text style={styles.profileName}>{provider.name}</Text>
               <Text style={styles.profileService}>

@@ -68,6 +68,10 @@ export default function BookingsScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       fetchBookings();
+      const intervalId = setInterval(() => {
+        fetchBookings();
+      }, 5000);
+      return () => clearInterval(intervalId);
     }, [fetchBookings])
   );
 

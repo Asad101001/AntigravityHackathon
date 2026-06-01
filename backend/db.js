@@ -509,16 +509,38 @@ async function createBooking({ user_id, provider_id, provider_name, service_type
 async function getUserBookings(user_id) {
   if (!user_id) return [];
   const db = await setupDatabase();
-  return db.collection(COLLECTIONS.bookings)
+  const bookings = await db.collection(COLLECTIONS.bookings)
     .find({ user_id: String(user_id) })
     .sort({ created_at: -1 })
     .toArray();
+
+  // Enrich with provider avatar
+  for (const booking of bookings) {
+    if (booking.provider_id) {
+      const provider = await db.collection(COLLECTIONS.providers).findOne({ 
+        $or: [{ id: booking.provider_id }, { _id: booking.provider_id }] 
+      });
+      if (provider && provider.avatar) {
+        booking.provider_avatar = provider.avatar;
+      }
+    }
+  }
+  return bookings;
 }
 
 async function getBookingById(booking_id) {
   if (!booking_id) return null;
   const db = await setupDatabase();
-  return db.collection(COLLECTIONS.bookings).findOne({ _id: String(booking_id) });
+  const booking = await db.collection(COLLECTIONS.bookings).findOne({ _id: String(booking_id) });
+  if (booking && booking.provider_id) {
+    const provider = await db.collection(COLLECTIONS.providers).findOne({ 
+      $or: [{ id: booking.provider_id }, { _id: booking.provider_id }] 
+    });
+    if (provider && provider.avatar) {
+      booking.provider_avatar = provider.avatar;
+    }
+  }
+  return booking;
 }
 
 async function updateBookingStatus(booking_id, new_status) {

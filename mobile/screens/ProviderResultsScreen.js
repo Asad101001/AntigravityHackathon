@@ -182,16 +182,10 @@ function ProviderCard({ provider, estimatedPkr, onPress }) {
 
           <View style={styles.cardRow}>
             {/* Avatar */}
-            {provider.avatar ? (
-              <Image 
-                source={{ uri: provider.avatar }} 
-                style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]} 
-              />
-            ) : (
-              <View style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]}>
-                <Text style={styles.avatarText}>{provider.name?.charAt(0)?.toUpperCase() || 'P'}</Text>
-              </View>
-            )}
+            <Image 
+              source={{ uri: provider.avatar || 'https://asaaniyat.blob.core.windows.net/avatars/default_provider.jpg' }} 
+              style={[styles.avatar, provider.isRecommended && styles.avatarRecommended]} 
+            />
 
             <View style={{ flex: 1 }}>
               <Text style={styles.providerName} numberOfLines={1}>{provider.name}</Text>

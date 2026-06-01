@@ -7,6 +7,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { configureNotifications } from './notifications';
 
 // Screens
 import SplashScreen from './screens/SplashScreen';
@@ -140,6 +141,10 @@ function RootNavigator() {
 }
 
 export default function App() {
+  useEffect(() => {
+    configureNotifications();
+  }, []);
+
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
