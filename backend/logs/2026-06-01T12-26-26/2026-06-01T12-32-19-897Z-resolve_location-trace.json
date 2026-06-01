@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:19.897Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "location": "Gulshan-e-Iqbal Karachi",
+    "city": "Karachi"
+  },
+  "output": {
+    "lat": 24.926,
+    "lng": 67.092,
+    "area_name": "Gulshan-e-Iqbal Karachi",
+    "city": "Karachi",
+    "source": "local_fuzzy_catalog"
+  },
+  "durationMs": 99
+}

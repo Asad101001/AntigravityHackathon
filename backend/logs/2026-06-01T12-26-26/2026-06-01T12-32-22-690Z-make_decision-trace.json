@@ -1,0 +1,67 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:22.690Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5,
+    "qualified_count": 1
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a2ac6",
+      "id": "PL255",
+      "name": "Farhan",
+      "service": "Plumber",
+      "city": "Karachi",
+      "area": "Gulshan",
+      "lat": 24.9238,
+      "lng": 67.0931,
+      "distance_km": 0.71,
+      "rating": 3.8,
+      "reviews_count": 51,
+      "available_slots": [
+        "09:00",
+        "11:00",
+        "14:00",
+        "16:00"
+      ],
+      "phone": "0324-3011426",
+      "response_time_min": 3,
+      "verified": true,
+      "specialization": [
+        "pipe_fitting",
+        "bathroom_fitting",
+        "leak_repair"
+      ],
+      "base_rate_pkr": 897,
+      "on_time_score": 75,
+      "cancellation_risk": "medium",
+      "recent_sentiment": "Verified documents are on file. Solid plumber option for Gulshan; arrival windows can shift in traffic.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "company": "Metro Plumber Group",
+      "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL255.jpg",
+      "haversine_km": 0.27,
+      "distance_text": "0.7 km",
+      "duration_text": "3 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 0.9,
+        "distance": 0,
+        "rating": 0.76,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "closest_fastest",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": true,
+        "service_available": true
+      }
+    },
+    "constraint_checks": "✓ service_available = true\n✓ available_slots = 4 slots\n✓ provider_status = \"verified\"\n✓ distance_km = 0.71 (≤ 5km)",
+    "alternatives": []
+  },
+  "durationMs": 5
+}

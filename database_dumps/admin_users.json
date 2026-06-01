@@ -1,0 +1,13 @@
+[
+  {
+    "_id": "admin_1779099538764",
+    "email": "admin@asaaniyat.com",
+    "emailLower": "admin@asaaniyat.com",
+    "passwordHash": "$2b$10$nmnBD3l9nS/ieeGbvcswieee/4QT7v0ko97EdxRtUVg0Z2k55ma9C",
+    "displayName": "Admin User",
+    "isAdmin": true,
+    "createdAt": "2026-05-18T10:18:58.764Z",
+    "lastLoginAt": "2026-05-31T15:43:02.536Z",
+    "loginCount": 45
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:23.246Z",
+  "agent": "execute_booking",
+  "action": "execute_booking",
+  "input": {
+    "provider": "Farhan",
+    "time_slot": "9:00 AM"
+  },
+  "output": {
+    "booking_id": "BK_1780317142939",
+    "confirmation_message": "Job request sent! Waiting for Farhan to accept. They are scheduled to arrive 02/06/2026 at 9:00 AM. Contact: 0324-3011426. Booking ID: BK_1780317142939",
+    "scheduled_time": "2026-06-02T04:00:00.000Z",
+    "time_slot": "9:00 AM"
+  },
+  "durationMs": 312
+}

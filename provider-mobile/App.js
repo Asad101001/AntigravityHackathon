@@ -128,39 +128,20 @@ function ProviderNavigator() {
   const lastOffset = useRef(0);
 
   const hideTabBar = useCallback(() => {
-    setTabVisible(prev => {
-      if (prev === false) return prev;
-      return false;
-    });
+    setTabVisible(true); // Permanent visible
   }, []);
 
   const showTabBar = useCallback(() => {
-    setTabVisible(prev => {
-      if (prev === true) return prev;
-      return true;
-    });
-    if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => {
-      setTabVisible(prev => {
-        if (prev === false) return prev;
-        return false;
-      });
-    }, 3200);
+    setTabVisible(true); // Permanent visible
   }, []);
 
   const registerScroll = useCallback((event) => {
-    const y = event.nativeEvent.contentOffset.y;
-    if (y > lastOffset.current + 8 && y > 24) hideTabBar();
-    if (y < lastOffset.current - 8) showTabBar();
-    lastOffset.current = y;
-  }, [hideTabBar, showTabBar]);
+    // Keep visible, no hiding on scroll
+  }, []);
 
   useEffect(() => {
-    showTabBar();
-    return () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current);
-    };
-  }, [currentRouteName, showTabBar]);
+    setTabVisible(true);
+  }, [currentRouteName]);
 
   const contextValue = useMemo(() => ({ showTabBar, hideTabBar, registerScroll }), [showTabBar, hideTabBar, registerScroll]);
 

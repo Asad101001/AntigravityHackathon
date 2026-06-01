@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:19.676Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "plumber for gulshan",
+  "output": {
+    "service_type": "Plumber",
+    "location": "Gulshan-e-Iqbal Karachi",
+    "time_preference": null,
+    "urgency_level": "normal",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "roman_urdu",
+    "reasoning": "Plumber was explicitly mentioned, location was mentioned in Roman Urdu Pre-validated \"Gulshan\" → \"Gulshan-e-Iqbal Karachi\" via local catalog."
+  },
+  "durationMs": 729
+}

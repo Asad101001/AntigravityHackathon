@@ -347,6 +347,32 @@ router.post('/chat/message', async (req, res) => {
         metadata: { source: 'provider_chat' },
       });
 
+      // Notify the provider about the new user message
+      try {
+        const mongoDb = await db.getDb();
+        if (bookingInfo.provider_id) {
+          // Resolve provider ID to provider_users ID
+          const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ 
+            $or: [{ id: bookingInfo.provider_id }, { _id: bookingInfo.provider_id }] 
+          });
+          if (provDoc) {
+            const provUser = await mongoDb.collection('providers_users').findOne({
+              $or: [{ provider_id: provDoc._id }, { provider_id: String(provDoc._id) }]
+            });
+            if (provUser) {
+              await sendPushNotification(
+                provUser._id,
+                'New Message from Customer',
+                message,
+                { booking_id: booking_id || bookingInfo._id, type: 'chat' }
+              );
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[ServiceRoutes] Failed to notify provider:', err.message);
+      }
+
       await db.saveChatMessage({
         booking_id: booking_id || bookingInfo._id || 'general',
         user_id: user_id || req.auth.sub,

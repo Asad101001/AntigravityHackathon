@@ -287,7 +287,9 @@ async function findUserByEmail(email) {
 async function findUserById(userId) {
   if (!userId) return null;
   const db = await setupDatabase();
-  return db.collection(COLLECTIONS.users).findOne({ _id: String(userId) });
+  const user = await db.collection(COLLECTIONS.users).findOne({ _id: String(userId) });
+  if (user) return user;
+  return db.collection('providers_users').findOne({ _id: String(userId) });
 }
 
 async function createUser({ email, passwordHash, displayName, city }) {
@@ -514,17 +516,31 @@ async function getUserBookings(user_id) {
     .sort({ created_at: -1 })
     .toArray();
 
-  // Enrich with provider avatar
-  for (const booking of bookings) {
-    if (booking.provider_id) {
-      const provider = await db.collection(COLLECTIONS.providers).findOne({ 
-        $or: [{ id: booking.provider_id }, { _id: booking.provider_id }] 
-      });
-      if (provider && provider.avatar) {
-        booking.provider_avatar = provider.avatar;
+  const providerIds = [...new Set(bookings.map(b => b.provider_id).filter(Boolean))];
+  if (providerIds.length > 0) {
+    const providersList = await db.collection(COLLECTIONS.providers).find({
+      $or: [
+        { id: { $in: providerIds } },
+        { _id: { $in: providerIds } }
+      ]
+    }).toArray();
+
+    const providerMap = new Map();
+    providersList.forEach(p => {
+      if (p.id) providerMap.set(String(p.id), p);
+      if (p._id) providerMap.set(String(p._id), p);
+    });
+
+    for (const booking of bookings) {
+      if (booking.provider_id) {
+        const provider = providerMap.get(String(booking.provider_id));
+        if (provider && provider.avatar) {
+          booking.provider_avatar = provider.avatar;
+        }
       }
     }
   }
+
   return bookings;
 }
 

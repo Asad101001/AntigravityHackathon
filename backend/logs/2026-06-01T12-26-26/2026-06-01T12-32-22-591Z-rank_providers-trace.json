@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:22.591Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "PL200",
+    "ranked_ids": [
+      "PL200",
+      "PL255",
+      "PL013",
+      "PL145",
+      "PL222"
+    ],
+    "reasoning_log": "We selected Hassan as the overall best plumber due to his high rating, excellent response time, and availability. Although he is farther away, his quality and reliability outweigh the distance. Farhan is the second-best option, offering a good balance of distance, rating, and availability. Fahad is a close third, with excellent punctuality and a strong local reputation, but his unverified profile is a drawback. Imran and Bushra are less preferred due to their lower ratings and higher cancellation risks.",
+    "multi_factor": {
+      "overall_best_id": "PL200",
+      "most_affordable_id": "PL200",
+      "closest_fastest_id": "PL255",
+      "analysis": {
+        "overall_best_id": "Hassan was chosen as the overall best plumber due to his high rating and excellent response time, outweighing his distance.",
+        "most_affordable_id": "The most affordable plumber is Hassan, with a base rate of 764 PKR.",
+        "closest_fastest_id": "The closest and fastest plumber is Farhan, with a distance of 0.71 km and an available slot count of 4."
+      }
+    }
+  },
+  "durationMs": 833
+}

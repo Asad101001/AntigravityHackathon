@@ -75,6 +75,7 @@ export default function OrderStatusScreen({ route, navigation }) {
   const insets  = useSafeAreaInsets();
   const mapRef = useRef(null);
 
+  const [currentBooking, setCurrentBooking] = useState(booking);
   const [currentStage, setCurrentStage] = useState(getInitialStageIndex(booking?.status));
   const progressAnim = useRef(new Animated.Value(0)).current;
   const stageAnims = useRef(STAGES.map(() => new Animated.Value(0))).current;
@@ -82,11 +83,11 @@ export default function OrderStatusScreen({ route, navigation }) {
   // Locations
   const userLoc = useMemo(() => {
     // If the booking has coordinates, use them, otherwise mock it near Karachi
-    if (booking?.latitude && booking?.longitude) {
-      return { latitude: booking.latitude, longitude: booking.longitude };
+    if (currentBooking?.latitude && currentBooking?.longitude) {
+      return { latitude: currentBooking.latitude, longitude: currentBooking.longitude };
     }
     return DEFAULT_USER_DEST;
-  }, [booking]);
+  }, [currentBooking]);
 
   const providerStartLoc = useMemo(() => {
     return DEFAULT_PROVIDER_START;
@@ -128,6 +129,7 @@ export default function OrderStatusScreen({ route, navigation }) {
       try {
         const res = await apiClient.get(`/bookings/${bookingId}`);
         if (res.data?.success && res.data.booking) {
+          setCurrentBooking(res.data.booking);
           const serverStatus = res.data.booking.status;
           const serverStage = getInitialStageIndex(serverStatus);
           
@@ -201,11 +203,11 @@ export default function OrderStatusScreen({ route, navigation }) {
   };
 
   const info = useMemo(() => [
-    { label: 'SERVICE', value: booking?.service_type || booking?.service || 'Home Service', icon: 'briefcase-outline' },
-    { label: 'PROVIDER', value: booking?.provider_name || booking?.provider || 'Asaaniyat Pro', icon: 'person-outline' },
-    { label: 'QUOTE', value: formatQuote(booking), icon: 'cash-outline' },
-    { label: 'BOOKING ID', value: (booking?._id || booking?.id || 'N/A').slice(0, 16), icon: 'document-text-outline' },
-  ], [booking]);
+    { label: 'SERVICE', value: currentBooking?.service_type || currentBooking?.service || 'Home Service', icon: 'briefcase-outline' },
+    { label: 'PROVIDER', value: currentBooking?.provider_name || currentBooking?.provider || 'Asaaniyat Pro', icon: 'person-outline' },
+    { label: 'QUOTE', value: formatQuote(currentBooking), icon: 'cash-outline' },
+    { label: 'BOOKING ID', value: (currentBooking?._id || currentBooking?.id || 'N/A').slice(0, 16), icon: 'document-text-outline' },
+  ], [currentBooking]);
 
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
@@ -213,6 +215,9 @@ export default function OrderStatusScreen({ route, navigation }) {
   });
 
   const getStatusLabel = () => {
+    const s = currentBooking?.status?.toLowerCase();
+    if (s === 'canceled') return 'Booking Canceled ✗';
+    if (s === 'rejected') return 'Booking Rejected ✗';
     if (currentStage >= STAGES.length - 1) return 'Service Complete ✓';
     return `Status: ${STAGES[currentStage].label}`;
   };
@@ -272,16 +277,16 @@ export default function OrderStatusScreen({ route, navigation }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
             <View style={{ flex: 1 }}>
               <Text style={styles.heading}>
-                {booking?.service || 'Service'} Status
+                {currentBooking?.service || currentBooking?.service_type || 'Service'} Status
               </Text>
               <Text style={styles.subNoMargin}>Real-time tracking for your booking</Text>
             </View>
             <View style={styles.providerAvatarContainer}>
               <Image 
-                source={{ uri: booking?.provider_avatar || booking?.avatar || 'https://ui-avatars.com/api/?name=' + (booking?.provider_name || 'Provider') + '&background=random' }} 
+                source={{ uri: currentBooking?.provider_avatar || currentBooking?.avatar || 'https://ui-avatars.com/api/?name=' + (currentBooking?.provider_name || 'Provider') + '&background=random' }} 
                 style={styles.providerAvatarImage} 
               />
-              {currentStage >= STAGES.length - 1 && (
+              {currentStage >= STAGES.length - 1 && currentBooking?.status?.toLowerCase() !== 'canceled' && currentBooking?.status?.toLowerCase() !== 'rejected' && (
                 <View style={styles.completionTick}>
                   <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
                 </View>
@@ -344,10 +349,23 @@ export default function OrderStatusScreen({ route, navigation }) {
 
           {/* ── Status Indicator ───────────────────────── */}
           <View
-            style={[styles.updateBtn, currentStage >= STAGES.length - 1 ? styles.updateBtnComplete : styles.updateBtnLive]}
+            style={[
+              styles.updateBtn,
+              ['canceled', 'rejected'].includes(currentBooking?.status?.toLowerCase())
+                ? styles.updateBtnCanceled
+                : currentStage >= STAGES.length - 1
+                ? styles.updateBtnComplete
+                : styles.updateBtnLive
+            ]}
           >
             <Ionicons
-              name={currentStage >= STAGES.length - 1 ? 'checkmark-circle' : 'pulse'}
+              name={
+                ['canceled', 'rejected'].includes(currentBooking?.status?.toLowerCase())
+                  ? 'close-circle'
+                  : currentStage >= STAGES.length - 1
+                  ? 'checkmark-circle'
+                  : 'pulse'
+              }
               size={18}
               color="#FFFFFF"
               style={{ marginRight: 8 }}
@@ -537,6 +555,9 @@ const styles = StyleSheet.create({
   },
   updateBtnComplete: {
     backgroundColor: COLORS.textMuted,
+  },
+  updateBtnCanceled: {
+    backgroundColor: '#FF6B6B',
   },
   updateBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: FONTS.heading.fontFamily },
 });

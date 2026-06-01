@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl, Platform } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -164,9 +164,16 @@ export default function BookingsScreen({ navigation }) {
             <LiquidGlass key={booking._id} style={styles.bookingCard} contentStyle={styles.bookingContent}>
               {/* Header Row */}
               <View style={styles.bookingTop}>
-                <View style={[styles.serviceIcon, { backgroundColor: statusColor + '20' }]}>
-                  <Ionicons name={statusIcon} size={20} color={statusColor} />
-                </View>
+                {booking.provider_avatar ? (
+                  <Image 
+                    source={{ uri: booking.provider_avatar }} 
+                    style={styles.providerAvatarImage} 
+                  />
+                ) : (
+                  <View style={[styles.serviceIcon, { backgroundColor: statusColor + '20' }]}>
+                    <Ionicons name={statusIcon} size={20} color={statusColor} />
+                  </View>
+                )}
                 <View style={styles.bookingCopy}>
                   <Text style={styles.bookingTitle}>{booking.service_type}</Text>
                   <Text style={styles.bookingMeta}>{booking.provider_name}</Text>
@@ -268,6 +275,7 @@ const styles = StyleSheet.create({
   bookingContent: { padding: 16, gap: 14 },
   bookingTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   serviceIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  providerAvatarImage: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: 'rgba(14,143,70,0.1)' },
   bookingCopy: { flex: 1 },
   bookingTitle: { color: COLORS.textPrimary, fontSize: 19, fontFamily: FONTS.heading.fontFamily, letterSpacing: -0.2 },
   bookingMeta: { color: COLORS.textSecondary, fontSize: 13, fontFamily: FONTS.bold.fontFamily, marginTop: 3 },

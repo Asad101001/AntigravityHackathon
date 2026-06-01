@@ -1,0 +1,204 @@
+{
+  "run_id": "2026-06-01T12-26-26",
+  "timestamp": "2026-06-01T12:32:21.730Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.926,
+      "lng": 67.092
+    },
+    "service_type": "Plumber"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a2ac6",
+        "id": "PL255",
+        "name": "Farhan",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.9238,
+        "lng": 67.0931,
+        "distance_km": 0.71,
+        "rating": 3.8,
+        "reviews_count": 51,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0324-3011426",
+        "response_time_min": 3,
+        "verified": true,
+        "specialization": [
+          "pipe_fitting",
+          "bathroom_fitting",
+          "leak_repair"
+        ],
+        "base_rate_pkr": 897,
+        "on_time_score": 75,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Gulshan; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Metro Plumber Group",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL255.jpg",
+        "haversine_km": 0.27,
+        "distance_text": "0.7 km",
+        "duration_text": "3 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a58",
+        "id": "PL145",
+        "name": "Imran",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Gulistan-e-Johar",
+        "lat": 24.9163,
+        "lng": 67.1342,
+        "distance_km": 6.78,
+        "rating": 3.1,
+        "reviews_count": 52,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0374-2140336",
+        "response_time_min": 16,
+        "verified": true,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 1582,
+        "on_time_score": 69,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Gulistan-e-Johar; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Smart Plumber Co.",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL145.jpg",
+        "haversine_km": 4.39,
+        "distance_text": "6.8 km",
+        "duration_text": "16 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a8f",
+        "id": "PL200",
+        "name": "Hassan",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Scheme 33",
+        "lat": 24.9505,
+        "lng": 67.1629,
+        "distance_km": 9.86,
+        "rating": 4.9,
+        "reviews_count": 140,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0349-2575881",
+        "response_time_min": 24,
+        "verified": true,
+        "specialization": [
+          "drain_cleaning",
+          "water_tank",
+          "motor_pump"
+        ],
+        "base_rate_pkr": 764,
+        "on_time_score": 72,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid plumber option for Scheme 33; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Apex Plumber Group",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL200.jpg",
+        "haversine_km": 7.65,
+        "distance_text": "9.9 km",
+        "duration_text": "24 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2aa5",
+        "id": "PL222",
+        "name": "Bushra",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8061,
+        "lng": 67.0744,
+        "distance_km": 19.29,
+        "rating": 2.5,
+        "reviews_count": 6,
+        "available_slots": [
+          "09:00",
+          "11:00",
+          "14:00"
+        ],
+        "phone": "0371-2750099",
+        "response_time_min": 31,
+        "verified": false,
+        "specialization": [
+          "motor_pump",
+          "drain_cleaning",
+          "water_tank"
+        ],
+        "base_rate_pkr": 1578,
+        "on_time_score": 62,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Green Plumber Pros",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL222.jpg",
+        "haversine_km": 13.45,
+        "distance_text": "19.3 km",
+        "duration_text": "31 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29d4",
+        "id": "PL013",
+        "name": "Fahad",
+        "service": "Plumber",
+        "city": "Karachi",
+        "area": "Saddar",
+        "lat": 24.8596,
+        "lng": 67.0126,
+        "distance_km": 14.14,
+        "rating": 4.8,
+        "reviews_count": 124,
+        "available_slots": [
+          "09:00",
+          "11:00"
+        ],
+        "phone": "0322-1095028",
+        "response_time_min": 32,
+        "verified": false,
+        "specialization": [
+          "leak_repair",
+          "pipe_fitting",
+          "bathroom_fitting"
+        ],
+        "base_rate_pkr": 1453,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Strong local reputation in Saddar, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/PL013.jpg",
+        "company": "City Plumber Associates",
+        "haversine_km": 10.89,
+        "distance_text": "14.1 km",
+        "duration_text": "32 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 1637
+}

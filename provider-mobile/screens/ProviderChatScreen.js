@@ -27,7 +27,7 @@ function isProviderMessage(msg) {
   return msg.role === 'provider' || msg.role === 'assistant';
 }
 
-export default function ProviderChatScreen({ navigation }) {
+export default function ProviderChatScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
   const scrollRef = useRef(null);
@@ -40,6 +40,24 @@ export default function ProviderChatScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [chatsLoading, setChatsLoading] = useState(true);
   const [sending, setSending] = useState(false);
+
+  // Handle direct navigation from booking card deep link
+  useEffect(() => {
+    if (route.params?.booking_id) {
+      const { booking_id, clientName, serviceType, status } = route.params;
+      setActiveChat({
+        id: booking_id,
+        bookingId: booking_id,
+        clientName: clientName || 'Client',
+        serviceType: serviceType || 'Service',
+        status: status || 'pending',
+      });
+      fetchMessages(booking_id);
+      
+      // Clean up navigation params so switching tabs doesn't lock to this chat
+      navigation.setParams({ booking_id: undefined });
+    }
+  }, [route.params?.booking_id, navigation]);
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -73,38 +91,20 @@ export default function ProviderChatScreen({ navigation }) {
 
       const bookings = response.data.bookings || [];
 
-      // Fetch last message for each booking in parallel
-      const chatsList = await Promise.all(
-        bookings.map(async (booking) => {
-          const bookingId = booking._id || booking.id;
-          let lastMessage = booking.description || 'No messages yet';
-          let lastTime = booking.booking_start_time;
-
-          try {
-            const msgRes = await apiClient.get(`/provider/messages?booking_id=${bookingId}`);
-            if (msgRes.data.success) {
-              const msgs = msgRes.data.messages || [];
-              if (msgs.length > 0) {
-                const last = msgs[msgs.length - 1];
-                lastMessage = last.content || '';
-                lastTime = last.created_at || last.timestamp;
-              }
-            }
-          } catch (_) {
-            // ignore per-booking fetch failures
-          }
-
-          return {
-            id: bookingId,
-            bookingId,
-            clientName: booking.client_name || 'Client',
-            serviceType: booking.service_type || 'Service',
-            status: booking.status || 'pending',
-            lastMessage,
-            timestamp: formatRelTime(lastTime),
-          };
-        })
-      );
+      // We read the last message preview directly from the enriched bookings!
+      // This reduces N+1 database queries to 0 additional database queries!
+      const chatsList = bookings.map((booking) => {
+        const bookingId = booking._id || booking.id;
+        return {
+          id: bookingId,
+          bookingId,
+          clientName: booking.client_name || 'Client',
+          serviceType: booking.service_type || 'Service',
+          status: booking.status || 'pending',
+          lastMessage: booking.last_message || booking.description || 'No messages yet',
+          timestamp: formatRelTime(booking.last_message_time || booking.booking_start_time),
+        };
+      });
 
       setChats(chatsList);
     } catch (error) {

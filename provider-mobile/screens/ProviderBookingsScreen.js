@@ -10,6 +10,7 @@ import {
   Alert,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,25 +37,55 @@ export default function ProviderBookingsScreen({ navigation }) {
       const response = await apiClient.get('/provider/bookings');
       if (response.data.success) {
         // Transform backend booking data to UI format
-        const transformedBookings = (response.data.bookings || []).map(booking => ({
-          id: booking._id || booking.id,
-          clientName: booking.client_name || 'Customer',
-          serviceType: booking.service_type || 'Service',
-          location: booking.location || booking.area || 'Unknown Location',
-          status: mapBackendStatus(booking.status),
-          rawStatus: booking.status, // keep original for transition logic
-          quote: booking.quote ?? booking.quote_pkr ?? 0,
-          date: formatDate(booking.booking_start_time),
-          description: booking.description || '',
-          booking_id: booking._id || booking.id,
-          clientPhone: booking.client_phone || null,
-          raw: booking, // Keep original for actions
-        }));
+        const transformedBookings = (response.data.bookings || []).map(booking => {
+          let description = booking.description || booking.raw_data?.description;
+          let intentLog = booking.raw_data?.execution_logs?.find(l => l.name === 'parse_intent');
+          let urgency = 'normal';
+
+          if (intentLog?.output) {
+            const out = intentLog.output;
+            if (out.urgency || out.urgency_level) urgency = String(out.urgency || out.urgency_level).toLowerCase();
+
+            if (!description) {
+              const details = [];
+              if (out.service_type) details.push(`Intent: ${out.service_type}`);
+              if (out.location_hint || out.location) details.push(`Loc: ${out.location_hint || out.location}`);
+              if (out.time_hint || out.time_preference) details.push(`Time: ${out.time_hint || out.time_preference}`);
+              if (out.urgency || out.urgency_level) details.push(`Urgency: ${out.urgency || out.urgency_level}`);
+              description = details.join(' • ') || 'No additional details provided.';
+            }
+          }
+
+          if (!description) {
+            description = 'No additional details provided.';
+          }
+
+          let clientName = booking.client_name;
+          if (!clientName || clientName === 'Customer') {
+            clientName = booking.raw_data?.user_name || booking.raw_data?.customer_name || 'Guest User';
+          }
+
+          return {
+            id: booking._id || booking.id,
+            clientName: clientName,
+            serviceType: booking.service_type || 'Service',
+            location: booking.location || booking.area || 'Unknown Location',
+            status: mapBackendStatus(booking.status),
+            rawStatus: booking.status,
+            quote: booking.quote ?? booking.quote_pkr ?? 0,
+            date: getFriendlyTime(booking.booking_start_time),
+            description: description,
+            booking_id: booking._id || booking.id,
+            clientPhone: booking.client_phone || booking.raw_data?.phone || '+92 3XX XXXXXXX',
+            clientAvatar: booking.client_avatar || null,
+            urgency: urgency,
+            raw: booking,
+          };
+        });
         setBookings(transformedBookings);
       }
     } catch (error) {
       console.error('Failed to fetch bookings:', error?.message || error);
-      // Don't show alert on polling errors — only on manual refresh
       if (refreshing) {
         showError('Failed to load bookings');
       }
@@ -77,19 +108,42 @@ export default function ProviderBookingsScreen({ navigation }) {
     return statusMap[String(backendStatus || '').toLowerCase()] || 'pending';
   };
 
-  // Helper to format booking date
-  const formatDate = (isoString) => {
+  // Premium relative time formatter
+  const getFriendlyTime = (isoString) => {
     if (!isoString) return 'Date pending';
     try {
       const date = new Date(isoString);
       if (isNaN(date.getTime())) return 'Date pending';
-      return date.toLocaleString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      
+      const now = new Date();
+      const diffMs = date.getTime() - now.getTime();
+      const isToday = date.toDateString() === now.toDateString();
+      
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+      const timeString = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      if (isToday) {
+        if (diffMs > 0 && diffMs < 3600000) {
+          const diffMins = Math.round(diffMs / 60000);
+          return `Today in ${diffMins} min (${timeString})`;
+        }
+        if (diffMs < 0 && diffMs > -3600000) {
+          const diffMins = Math.round(Math.abs(diffMs) / 60000);
+          return `Started ${diffMins} min ago (${timeString})`;
+        }
+        return `Today at ${timeString}`;
+      } else if (isTomorrow) {
+        return `Tomorrow at ${timeString}`;
+      } else {
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric'
+        }) + ` at ${timeString}`;
+      }
     } catch {
       return 'Date pending';
     }
@@ -177,7 +231,23 @@ export default function ProviderBookingsScreen({ navigation }) {
     );
   };
 
-  const filteredBookings = bookings.filter(b => b?.status === String(activeTab || '').toLowerCase());
+  const filteredBookings = bookings
+    .filter(b => {
+      const tabLower = String(activeTab || '').toLowerCase();
+      if (tabLower === 'active') {
+        return b?.status === 'active' || b?.status === 'pending';
+      }
+      return b?.status === tabLower;
+    })
+    .sort((a, b) => {
+      const timeA = new Date(a.raw?.booking_start_time || a.raw?.created_at || 0).getTime();
+      const timeB = new Date(b.raw?.booking_start_time || b.raw?.created_at || 0).getTime();
+      if (activeTab === 'Active') {
+        return timeA - timeB; // Chronological (soonest first)
+      } else {
+        return timeB - timeA; // Most recent first
+      }
+    });
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -192,19 +262,56 @@ export default function ProviderBookingsScreen({ navigation }) {
   const BookingCard = ({ booking, onPress }) => {
     const isActioning = actionInProgress === booking.booking_id;
 
+    const navigateToChat = () => {
+      navigation.navigate('Messages', {
+        booking_id: booking.booking_id,
+        clientName: booking.clientName,
+        serviceType: booking.serviceType,
+        status: booking.status
+      });
+    };
+
     return (
       <TouchableOpacity
         style={styles.bookingCard}
-        onPress={onPress}
-        activeOpacity={0.7}
+        onPress={navigateToChat}
+        activeOpacity={0.8}
       >
         <LiquidGlass opacity={0.02} />
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.clientName}>{booking.clientName}</Text>
+          <View style={styles.avatarContainer}>
+            {booking.clientAvatar ? (
+              <Image 
+                source={{ uri: booking.clientAvatar }} 
+                style={{ width: '100%', height: '100%', borderRadius: 22 }} 
+              />
+            ) : (
+              <Text style={styles.avatarText}>
+                {booking.clientName
+                  ? booking.clientName
+                      .split(' ')
+                      .filter(Boolean)
+                      .map(n => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase()
+                  : 'CU'}
+              </Text>
+            )}
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+              <Text style={styles.clientName} numberOfLines={1}>{booking.clientName}</Text>
+              {(booking.urgency === 'high' || booking.urgency === 'urgent') && (
+                <View style={styles.urgencyBadge}>
+                  <Ionicons name="alert-circle" size={10} color="#FFFFFF" />
+                  <Text style={styles.urgencyText}>URGENT</Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.serviceType}>{booking.serviceType}</Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20', marginLeft: 8 }]}>
             <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
               {booking?.rawStatus?.toUpperCase() || String(booking?.status || '').toUpperCase()}
             </Text>
@@ -289,7 +396,7 @@ export default function ProviderBookingsScreen({ navigation }) {
 
               <TouchableOpacity
                 style={[styles.actionBtn, styles.chatBtn]}
-                onPress={() => navigation.navigate('Messages')}
+                onPress={navigateToChat}
               >
                 <Ionicons name="chatbubble" size={16} color="white" />
                 <Text style={styles.actionBtnText}>Chat</Text>
@@ -303,12 +410,18 @@ export default function ProviderBookingsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Bookings" subtitle="Manage your service requests" />
+      <ScreenHeader navigation={navigation} title="Bookings" subtitle="Manage your service requests" />
 
       {/* Tab Navigation */}
       <View style={[styles.tabScroll, styles.tabContent, { flexDirection: 'row' }]}>
         {TABS.map((tab) => {
-          const count = bookings.filter(b => b.status === tab.toLowerCase()).length;
+          const count = bookings.filter(b => {
+            const tabLower = tab.toLowerCase();
+            if (tabLower === 'active') {
+              return b.status === 'active' || b.status === 'pending';
+            }
+            return b.status === tabLower;
+          }).length;
           return (
             <TouchableOpacity
               key={tab}
@@ -406,7 +519,7 @@ const styles = StyleSheet.create({
   },
   bookingsList: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 140,
   },
   bookingCard: {
     backgroundColor: COLORS.card,
@@ -419,8 +532,37 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
+  },
+  avatarContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary + '18',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+  },
+  avatarText: {
+    color: COLORS.primary,
+    ...FONTS.subtitle2,
+    fontWeight: '700',
+  },
+  urgencyBadge: {
+    backgroundColor: '#E53E3E',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 3,
+  },
+  urgencyText: {
+    color: 'white',
+    fontSize: 9,
+    fontWeight: 'bold',
   },
   clientName: {
     ...FONTS.subtitle1,

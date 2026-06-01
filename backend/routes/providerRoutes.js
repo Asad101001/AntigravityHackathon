@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
+const { sendPushNotification } = require('../utils/pushNotification');
 const requireAuth = require('../middleware/requireAuth');
 
 const router = express.Router();
@@ -66,8 +67,20 @@ async function executeStatusTransition(req, res, action, newStatus) {
     const booking = await db.getBookingById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
 
+    // Resolve all possible provider IDs to handle different migration scenarios
+    let possibleIds = [];
+    if (user.provider_id) {
+       possibleIds.push(user.provider_id);
+       const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
+       if (provDoc && provDoc.id) possibleIds.push(provDoc.id);
+       if (provDoc && provDoc._id) possibleIds.push(String(provDoc._id));
+    }
     const shortId = await getBookingProviderId(mongoDb, user);
-    if (booking.provider_id !== shortId) {
+    if (shortId) possibleIds.push(shortId);
+
+    // Validate that the booking is indeed assigned to this provider
+    const isAuthorized = possibleIds.includes(booking.provider_id) || booking.provider_name === user.name;
+    if (!isAuthorized) {
       return res.status(403).json({ success: false, error: 'Unauthorized: this booking is not assigned to you' });
     }
 
@@ -198,20 +211,100 @@ router.get('/bookings', requireAuth, async (req, res) => {
     const user = await getProviderById(mongoDb, req.auth.sub);
     if (!user) return res.status(404).json({ success: false, error: 'Provider not found' });
 
-    // Resolve the short booking ID (e.g. 'PL002') used in the bookings collection
+    // Determine the provider's operational service type
+    let providerService = user.service;
+    if (!providerService && user.provider_id) {
+      const pDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
+      if (pDoc) providerService = pDoc.service;
+    }
+
+    // Resolve all possible provider IDs (short ID, string ObjectId, name) to handle migrated bookings
+    let possibleIds = [];
+    if (user.provider_id) {
+       possibleIds.push(user.provider_id);
+       const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
+       if (provDoc && provDoc.id) possibleIds.push(provDoc.id);
+       if (provDoc && provDoc._id) possibleIds.push(String(provDoc._id));
+    }
     const shortId = await getBookingProviderId(mongoDb, user);
-    if (!shortId) return res.json({ success: true, bookings: [] });
+    if (shortId) possibleIds.push(shortId);
+
+    const queryFilters = possibleIds.length > 0 ? { $in: possibleIds } : shortId;
+
+    // Build precise query criteria
+    const query = {
+      $or: [
+        { provider_id: queryFilters },
+        { provider_name: user.name }
+      ]
+    };
+
+    // Filter by service type case-insensitively so plumbers don't see electrician bookings!
+    if (providerService) {
+      query.service_type = { $regex: new RegExp(`^${providerService.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    }
 
     const rawBookings = await mongoDb
       .collection(db.COLLECTIONS.bookings)
-      .find({ provider_id: shortId })
+      .find(query)
       .sort({ created_at: -1 })
       .toArray();
 
-    // Enrich every booking with the customer's name, phone, and normalized quote
-    const enrichedBookings = await Promise.all(
-      rawBookings.map(b => enrichBookingWithUser(mongoDb, b))
-    );
+    if (rawBookings.length === 0) {
+      return res.json({ success: true, bookings: [] });
+    }
+
+    // ─── OPTIMIZATION 1: Bulk User Enrichment ───
+    const userIds = [...new Set(rawBookings.map(b => b.user_id).filter(Boolean))];
+    const usersList = await mongoDb.collection(db.COLLECTIONS.users).find({ _id: { $in: userIds } }).toArray();
+    const usersMap = new Map(usersList.map(u => [String(u._id), u]));
+
+    // ─── OPTIMIZATION 2: Bulk Last Message Preview Aggregation ───
+    const bookingIds = rawBookings.map(b => b._id || b.id).filter(Boolean);
+    const lastMessages = await mongoDb.collection('chat_messages').aggregate([
+      { $match: { booking_id: { $in: bookingIds } } },
+      { $sort: { created_at: -1 } },
+      { $group: {
+        _id: '$booking_id',
+        content: { $first: '$content' },
+        created_at: { $first: '$created_at' }
+      }}
+    ]).toArray();
+    const lastMessagesMap = new Map(lastMessages.map(m => [String(m._id), m]));
+
+    const enrichedBookings = rawBookings.map(b => {
+      const enriched = { ...b };
+      
+      // Normalize quote
+      enriched.quote = enriched.quote_pkr ?? enriched.quote ?? 0;
+
+      // Map client name and phone from the bulk user map
+      const customer = b.user_id ? usersMap.get(String(b.user_id)) : null;
+      if (customer) {
+        enriched.client_name = customer.displayName || customer.name || customer.email?.split('@')[0] || 'Customer';
+        enriched.client_phone = customer.phone || null;
+        enriched.client_email = customer.email || null;
+        enriched.client_avatar = customer.avatar || null;
+      } else {
+        enriched.client_name = b.client_name || 'Customer';
+        enriched.client_phone = b.client_phone || null;
+        enriched.client_email = b.client_email || null;
+        enriched.client_avatar = null;
+      }
+
+      // Attach last chat message preview
+      const bId = String(b._id || b.id);
+      const lm = lastMessagesMap.get(bId);
+      if (lm) {
+        enriched.last_message = lm.content;
+        enriched.last_message_time = lm.created_at;
+      } else {
+        enriched.last_message = b.description || 'No messages yet';
+        enriched.last_message_time = b.booking_start_time || b.created_at;
+      }
+
+      return enriched;
+    });
 
     return res.json({ success: true, bookings: enrichedBookings });
   } catch (error) {
@@ -266,6 +359,22 @@ router.post('/messages', requireAuth, async (req, res) => {
       role: 'provider',
       content: text,
     });
+
+    // Notify the user about the new message
+    try {
+      const mongoDb = await db.getDb();
+      const booking = await mongoDb.collection(db.COLLECTIONS.bookings).findOne({ _id: booking_id });
+      if (booking && booking.user_id) {
+        await sendPushNotification(
+          booking.user_id,
+          'New Message from Provider',
+          text,
+          { booking_id, type: 'chat' }
+        );
+      }
+    } catch (err) {
+      console.warn('[ProviderRoutes] Failed to dispatch push notification:', err.message);
+    }
 
     return res.json({ success: true, message });
   } catch (error) {
