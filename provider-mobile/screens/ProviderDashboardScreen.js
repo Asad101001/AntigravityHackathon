@@ -194,8 +194,9 @@ export default function ProviderDashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title={`Welcome, ${user?.displayName?.split(' ')[0] || 'Provider'}`}
+        title={`Welcome, ${user?.name?.split(' ')[0] || user?.displayName?.split(' ')[0] || 'Provider'}`}
         subtitle="Provider Dashboard"
+        avatar={user?.avatar}
       />
 
       <ScrollView

@@ -74,7 +74,7 @@ export default function ProviderBookingsScreen({ navigation }) {
       'canceled': 'canceled',
       'rejected': 'canceled',
     };
-    return statusMap[backendStatus?.toLowerCase()] || 'pending';
+    return statusMap[String(backendStatus || '').toLowerCase()] || 'pending';
   };
 
   // Helper to format booking date
@@ -177,7 +177,7 @@ export default function ProviderBookingsScreen({ navigation }) {
     );
   };
 
-  const filteredBookings = bookings.filter(b => b.status === activeTab.toLowerCase());
+  const filteredBookings = bookings.filter(b => b?.status === String(activeTab || '').toLowerCase());
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -206,22 +206,34 @@ export default function ProviderBookingsScreen({ navigation }) {
           </View>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
             <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-              {booking.rawStatus?.toUpperCase() || booking.status.toUpperCase()}
+              {booking?.rawStatus?.toUpperCase() || String(booking?.status || '').toUpperCase()}
             </Text>
           </View>
         </View>
 
         <View style={styles.cardDetails}>
           <View style={styles.detailRow}>
-            <Ionicons name="location" size={16} color={COLORS.textSecondary} />
+            <Ionicons name="location" size={14} color={COLORS.textSecondary} />
             <Text style={styles.detailText}>{booking.location}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Ionicons name="time" size={16} color={COLORS.textSecondary} />
+            <Ionicons name="time" size={14} color={COLORS.textSecondary} />
             <Text style={styles.detailText}>{booking.date}</Text>
           </View>
+          {booking.clientPhone && (
+            <View style={styles.detailRow}>
+              <Ionicons name="call" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.detailText}>{booking.clientPhone}</Text>
+            </View>
+          )}
+          {booking.description ? (
+            <View style={styles.detailRow}>
+              <Ionicons name="document-text" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.detailText} numberOfLines={2}>{booking.description}</Text>
+            </View>
+          ) : null}
           <View style={styles.detailRow}>
-            <Ionicons name="cash" size={16} color={COLORS.textSecondary} />
+            <Ionicons name="cash" size={14} color={COLORS.textSecondary} />
             <Text style={styles.detailText}>
               {typeof booking.quote === 'number' && booking.quote > 0
                 ? `PKR ${Math.round(booking.quote).toLocaleString()}`
@@ -433,18 +445,19 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderBottomColor: COLORS.border,
     borderBottomWidth: 1,
-    paddingVertical: 12,
-    marginVertical: 12,
+    paddingVertical: 10,
+    marginVertical: 8,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   detailText: {
     ...FONTS.body2,
     color: COLORS.textSecondary,
-    marginLeft: 8,
+    marginLeft: 6,
+    flex: 1,
   },
   cardActions: {
     flexDirection: 'row',

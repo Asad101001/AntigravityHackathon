@@ -27,7 +27,7 @@ function isProviderMessage(msg) {
   return msg.role === 'provider' || msg.role === 'assistant';
 }
 
-export default function ProviderChatScreen() {
+export default function ProviderChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
   const scrollRef = useRef(null);
@@ -262,7 +262,11 @@ export default function ProviderChatScreen() {
   if (!activeChat) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Messages" subtitle="Connect with your clients" />
+        <ScreenHeader 
+          title="Messages" 
+          subtitle="Connect with your clients" 
+          onBack={() => navigation.canGoBack() ? navigation.goBack() : null}
+        />
         {chatsLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={COLORS.primary} />

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -268,10 +269,25 @@ export default function OrderStatusScreen({ route, navigation }) {
       <View style={[styles.bottomSheet, { paddingBottom: insets.bottom + 20 }]}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
           
-          <Text style={styles.heading}>
-            {booking?.service || 'Service'} Status
-          </Text>
-          <Text style={styles.sub}>Real-time tracking for your booking</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.heading}>
+                {booking?.service || 'Service'} Status
+              </Text>
+              <Text style={styles.subNoMargin}>Real-time tracking for your booking</Text>
+            </View>
+            <View style={styles.providerAvatarContainer}>
+              <Image 
+                source={{ uri: booking?.provider_avatar || booking?.avatar || 'https://ui-avatars.com/api/?name=' + (booking?.provider_name || 'Provider') + '&background=random' }} 
+                style={styles.providerAvatarImage} 
+              />
+              {currentStage >= STAGES.length - 1 && (
+                <View style={styles.completionTick}>
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                </View>
+              )}
+            </View>
+          </View>
 
           {/* ── Progress Bar ───────────────────────────────── */}
           <View style={styles.progressTrack}>
@@ -406,6 +422,27 @@ const styles = StyleSheet.create({
 
   heading: { fontSize: 26, fontFamily: FONTS.heading.fontFamily, color: COLORS.textPrimary, letterSpacing: -0.3, lineHeight: 32 },
   sub: { color: COLORS.textSecondary, fontSize: 13, fontFamily: FONTS.bold.fontFamily, marginTop: 4, marginBottom: 18, lineHeight: 20 },
+  subNoMargin: { color: COLORS.textSecondary, fontSize: 13, fontFamily: FONTS.bold.fontFamily, marginTop: 4, lineHeight: 20 },
+
+  providerAvatarContainer: {
+    position: 'relative',
+    marginLeft: 16,
+  },
+  providerAvatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'rgba(14,143,70,0.1)',
+  },
+  completionTick: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 1,
+  },
 
   // Progress bar — taller with glow
   progressTrack: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '../theme';
@@ -10,7 +10,8 @@ export default function ScreenHeader({
   onBack, 
   rightAction, 
   rightIcon,
-  onRightPress 
+  onRightPress,
+  avatar
 }) {
   const insets = useSafeAreaInsets();
 
@@ -22,6 +23,18 @@ export default function ScreenHeader({
             <TouchableOpacity onPress={onBack} style={styles.backButton}>
               <Ionicons name="chevron-back" size={28} color={COLORS.textPrimary} />
             </TouchableOpacity>
+          )}
+          {avatar && (
+            <View style={styles.avatarContainer}>
+              <React.Fragment>
+                {typeof avatar === 'string' ? (
+                  <View style={styles.avatarImageWrapper}>
+                    {/* Using basic Image component - replace with FastImage if available */}
+                    <Image source={{ uri: avatar }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                  </View>
+                ) : null}
+              </React.Fragment>
+            </View>
           )}
           <View style={styles.textContainer}>
             <Text style={styles.title}>{title}</Text>
@@ -60,6 +73,18 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 8,
+  },
+  avatarContainer: {
+    marginRight: 12,
+  },
+  avatarImageWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   textContainer: {
     flex: 1,

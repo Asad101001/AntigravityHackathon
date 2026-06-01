@@ -20,7 +20,7 @@ import { COLORS, FONTS, SHADOWS } from '../theme';
 import apiClient from '../lib/apiClient';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 
-export default function ProviderProfileScreen() {
+export default function ProviderProfileScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
   const { logout, user } = useAuth();
@@ -71,7 +71,7 @@ export default function ProviderProfileScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Profile" subtitle="Your account information" />
+        <ScreenHeader title="Profile" subtitle="Your account information" onBack={() => navigation.canGoBack() ? navigation.goBack() : null} />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
@@ -81,7 +81,7 @@ export default function ProviderProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Profile" subtitle="Your account information" />
+      <ScreenHeader title="Profile" subtitle="Your account information" onBack={() => navigation.canGoBack() ? navigation.goBack() : null} />
 
       <ScrollView
         style={styles.scroll}
