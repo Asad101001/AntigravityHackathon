@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:43:14.620Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe kal ek AC technician chahiye paanch",
+  "output": {
+    "service_type": "AC Technician",
+    "location": "Karachi, Pakistan",
+    "time_preference": "kal | scheduled:2026-06-03T04:00:00.000Z | time:09:00",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "detected Urdu phrase 'Mujhe kal ek AC technician chahiye paanch' Geocoded \"paanch\" → \"Karachi, Pakistan\" (no local catalog match)."
+  },
+  "durationMs": 692
+}

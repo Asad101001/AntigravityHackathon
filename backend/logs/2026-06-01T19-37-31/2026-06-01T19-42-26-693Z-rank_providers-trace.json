@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:42:26.693Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency and neutral price sensitivity, the overall best provider is AC069, who offers a great balance of distance, rating, availability, on-time score, and cancellation risk. AC179 is a close second, offering a lower base rate and similar overall score. The other providers are ranked based on their individual strengths and weaknesses.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "AC069 has the best overall score due to its excellent rating, on-time score, and low cancellation risk, making it the top choice for urgent AC technician service.",
+        "most_affordable_id": "AC179 offers the lowest base rate while still being verified and having available slots, making it the most affordable option.",
+        "closest_fastest_id": "AC069 has the smallest distance and fastest response time, making it the closest and fastest option."
+      }
+    }
+  },
+  "durationMs": 1223
+}

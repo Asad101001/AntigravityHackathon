@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:43:17.075Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC256",
+    "ranked_ids": [
+      "AC256",
+      "AC069",
+      "AC014",
+      "AC201",
+      "AC036"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with high ratings, on-time scores, and low cancellation risks. We also considered the distance and specialization of each provider. Among the top contenders, Hassan (AC256) stood out for his exceptional on-time score and low cancellation risk, making him the best choice for this high-priority request.",
+    "multi_factor": {
+      "overall_best_id": "AC256",
+      "most_affordable_id": "AC069",
+      "closest_fastest_id": "AC036",
+      "analysis": {
+        "overall_best_id": "Hassan (AC256) was chosen for his exceptional on-time score and low cancellation risk, making him the best choice for this high-priority request.",
+        "most_affordable_id": "Hassan (AC069) was the cheapest qualified provider, with a base rate of 1395 PKR.",
+        "closest_fastest_id": "Rizwan (AC036) was the closest and fastest qualified provider, with a distance of 4.91 km and an available slot count of 5."
+      }
+    }
+  },
+  "durationMs": 921
+}

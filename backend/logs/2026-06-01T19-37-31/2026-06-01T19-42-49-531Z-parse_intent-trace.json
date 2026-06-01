@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:42:49.531Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe kal ek AC technician chahiye pa",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "kal | scheduled:2026-06-03T04:00:00.000Z | time:09:00",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "User requested an AC technician for tomorrow, indicating high urgency."
+  },
+  "durationMs": 409
+}

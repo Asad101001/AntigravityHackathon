@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:49.684Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "مجھے کل پانچ بجے ایک ایسی تیکنیشن کی نیڑ ہے",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "kal 5 baje | scheduled:2026-06-02T12:00:00.000Z | time:17:00",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "User mentioned \"کل پانچ بجے\" which implies a specific time for the next day."
+  },
+  "durationMs": 304
+}

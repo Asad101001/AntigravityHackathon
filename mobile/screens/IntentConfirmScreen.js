@@ -38,6 +38,15 @@ function getServiceIcon(serviceType = '') {
 
 function formatTimePreference(tp) {
   if (!tp) return 'Earliest available';
+  const scheduledIsoMatch = String(tp).match(/scheduled:([^|]+)/i);
+  if (scheduledIsoMatch?.[1]) {
+    const scheduledDate = new Date(scheduledIsoMatch[1].trim());
+    if (!Number.isNaN(scheduledDate.getTime())) {
+      return scheduledDate.toLocaleDateString('en-PK', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+    }
+  }
   return tp
     .replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase())
@@ -65,6 +74,13 @@ export default function IntentConfirmScreen({ route, navigation }) {
   const buildInitialDate = () => {
     const tp = parsedIntent.time_preference;
     if (!tp) return new Date();
+    const scheduledIsoMatch = String(tp).match(/scheduled:([^|]+)/i);
+    if (scheduledIsoMatch?.[1]) {
+      const scheduledDate = new Date(scheduledIsoMatch[1].trim());
+      if (!Number.isNaN(scheduledDate.getTime())) {
+        return scheduledDate;
+      }
+    }
     const timeMatch = String(tp).trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
     if (timeMatch) {
       const hours = Number(timeMatch[1]);

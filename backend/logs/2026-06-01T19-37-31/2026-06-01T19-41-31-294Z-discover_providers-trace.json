@@ -1,0 +1,205 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:41:31.294Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.892277777777778,
+      "lng": 67.10496666666666
+    },
+    "service_type": "AC Technician"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a29eb",
+        "id": "AC036",
+        "name": "Rizwan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Bahadurabad",
+        "lat": 24.8893,
+        "lng": 67.0657,
+        "distance_km": 4.91,
+        "rating": 4.1,
+        "reviews_count": 90,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0345-1277165",
+        "response_time_min": 10,
+        "verified": true,
+        "specialization": [
+          "compressor_check",
+          "inverter_ac",
+          "coil_cleaning"
+        ],
+        "base_rate_pkr": 1575,
+        "on_time_score": 84,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid ac technician option for Bahadurabad; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/AC036.jpg",
+        "company": "Quick AC Technician Pros",
+        "haversine_km": 3.97,
+        "distance_text": "4.9 km",
+        "duration_text": "10 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a0c",
+        "id": "AC069",
+        "name": "Hassan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "PECHS",
+        "lat": 24.8761,
+        "lng": 67.0644,
+        "distance_km": 6.28,
+        "rating": 4.7,
+        "reviews_count": 72,
+        "available_slots": [
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0378-1538492",
+        "response_time_min": 17,
+        "verified": true,
+        "specialization": [
+          "gas_refill",
+          "installation",
+          "split_ac"
+        ],
+        "base_rate_pkr": 1395,
+        "on_time_score": 95,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in PECHS, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/AC069.jpg",
+        "company": "Independent Expert",
+        "haversine_km": 4.47,
+        "distance_text": "6.3 km",
+        "duration_text": "17 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a29d5",
+        "id": "AC014",
+        "name": "Ayesha",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Gulshan",
+        "lat": 24.926,
+        "lng": 67.0953,
+        "distance_km": 9.01,
+        "rating": 4.3,
+        "reviews_count": 161,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00"
+        ],
+        "phone": "0323-1102947",
+        "response_time_min": 19,
+        "verified": true,
+        "specialization": [
+          "inverter_ac",
+          "coil_cleaning",
+          "compressor_check"
+        ],
+        "base_rate_pkr": 2162,
+        "on_time_score": 90,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Gulshan, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/AC014.jpg",
+        "company": "Reliance AC Technician Associates",
+        "haversine_km": 3.87,
+        "distance_text": "9.0 km",
+        "duration_text": "19 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a90",
+        "id": "AC201",
+        "name": "Imran",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "Nazimabad",
+        "lat": 24.9124,
+        "lng": 67.0322,
+        "distance_km": 9.82,
+        "rating": 4.4,
+        "reviews_count": 177,
+        "available_slots": [
+          "10:00",
+          "12:00"
+        ],
+        "phone": "0350-2583800",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "gas_refill",
+          "installation",
+          "split_ac"
+        ],
+        "base_rate_pkr": 2076,
+        "on_time_score": 93,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in Nazimabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Prime AC Technician Pros",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/AC201.jpg",
+        "haversine_km": 7.67,
+        "distance_text": "9.8 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2ac7",
+        "id": "AC256",
+        "name": "Hassan",
+        "service": "AC Technician",
+        "city": "Karachi",
+        "area": "North Nazimabad",
+        "lat": 24.9361,
+        "lng": 67.0454,
+        "distance_km": 10.64,
+        "rating": 4.8,
+        "reviews_count": 88,
+        "available_slots": [
+          "10:00",
+          "12:00",
+          "15:00",
+          "17:00",
+          "20:00"
+        ],
+        "phone": "0325-3019345",
+        "response_time_min": 25,
+        "verified": true,
+        "specialization": [
+          "coil_cleaning",
+          "compressor_check",
+          "inverter_ac"
+        ],
+        "base_rate_pkr": 1309,
+        "on_time_score": 98,
+        "cancellation_risk": "low",
+        "recent_sentiment": "Verified documents are on file. Strong local reputation in North Nazimabad, Karachi; customers mention punctuality, clear pricing, and tidy work.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "City AC Technician Professionals",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/AC256.jpg",
+        "haversine_km": 7.73,
+        "distance_text": "10.6 km",
+        "duration_text": "25 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 1473
+}

@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:17.247Z",
+  "agent": "make_decision",
+  "action": "make_decision",
+  "input": {
+    "ranked_count": 5
+  },
+  "output": {
+    "selected_provider": {
+      "_id": "6a09d38c7e5edb01df9a2a9e",
+      "id": "HM215",
+      "name": "Mehwish",
+      "service": "Handyman",
+      "city": "Karachi",
+      "area": "Clifton",
+      "lat": 24.8171,
+      "lng": 67.0267,
+      "distance_km": 10.43,
+      "rating": 4.6,
+      "reviews_count": 164,
+      "available_slots": [
+        "08:00",
+        "14:00",
+        "16:00",
+        "18:00"
+      ],
+      "phone": "0364-2694666",
+      "response_time_min": 21,
+      "verified": true,
+      "specialization": [
+        "curtain_rods",
+        "general_repair",
+        "minor_plumbing"
+      ],
+      "base_rate_pkr": 1205,
+      "on_time_score": 83,
+      "cancellation_risk": "medium",
+      "recent_sentiment": "Verified documents are on file. Solid handyman option for Clifton; arrival windows can shift in traffic.",
+      "created_at": "2026-05-17T14:41:16.499Z",
+      "company": "Urban Handyman Solutions",
+      "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM215.jpg",
+      "haversine_km": 6.68,
+      "distance_text": "10.4 km",
+      "duration_text": "21 mins",
+      "distance_source": "distance_matrix_api",
+      "scores": {
+        "total": 1,
+        "distance": 0,
+        "rating": 0.9199999999999999,
+        "availability": 0,
+        "response_time": 0
+      },
+      "multi_factor_badge": "overall_best",
+      "_constraint_checks": {
+        "verified": true,
+        "has_slots": true,
+        "within_range": false,
+        "service_available": true
+      }
+    },
+    "relaxed_constraints": true
+  },
+  "durationMs": 5
+}

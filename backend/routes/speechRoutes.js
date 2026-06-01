@@ -80,10 +80,11 @@ router.post('/speech-to-text', async (req, res) => {
         const headerBytes = Buffer.from(body);
         const modelPart = `\r\n--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\nwhisper-large-v3-turbo`;
         
-        // Force Urdu transcription when language hint suggests Urdu/Hindi
-        // This prevents Whisper from outputting Devanagari (Hindi script)
-        const langHint = (language_hint || '').toLowerCase();
-        const whisperLang = /(^|[,_\s-])(ur|urdu|roman|romanurdu|hinglish|pakistani|hi|hindi)([,_\s-]|$)/i.test(langHint) ? 'ur' : null;
+        // Only force Urdu when the hint is explicit. Otherwise let Whisper auto-detect.
+        const langHint = String(language_hint || '').toLowerCase().trim();
+        const whisperLang = /(^|[,_\s-])(ur|urdu|roman_urdu|romanurdu|hinglish|hi|hindi)([,_\s-]|$)/i.test(langHint)
+          ? 'ur'
+          : null;
         const languagePart = whisperLang
           ? `\r\n--${boundary}\r\nContent-Disposition: form-data; name="language"\r\n\r\n${whisperLang}`
           : '';
@@ -221,9 +222,12 @@ function detectLanguage(text) {
     /\bwala\b/i, /\bkarwana\b/i, /\bbanwana\b/i, /\bacha\b/i,
     /\bthik\b/i, /\btheek\b/i, /\bbaat\b/i, /\bnahin\b/i, /\bnahi\b/i,
   ];
+  const englishMarkers = [/\b(the|and|is|are|please|need|book|booking|today|tomorrow|now|here|want)\b/i];
   const hinglishScore = hinglishPatterns.filter((p) => p.test(text)).length;
-  
-  if (hinglishScore >= 2) return 'ur'; // Hinglish detected
+  const englishScore = englishMarkers.filter((p) => p.test(text)).length;
+
+  if (hinglishScore >= 3) return 'ur'; // Strong Roman Urdu signal
+  if (hinglishScore >= 1 && englishScore >= 1) return 'mixed';
   
   return 'en'; // Default to English
 }

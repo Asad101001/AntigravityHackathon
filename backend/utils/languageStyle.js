@@ -5,9 +5,9 @@ const URDU_RE = /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 const ROMAN_URDU_PATTERNS = [
   /\b(mujhe|mujhay|mjy|muje|mere|meri|mera|meray|hamara|hum|main|mein|mai)\b/i,
   /\b(chahiye|chaiye|chahye|chaahiye|zaroorat|zroorat|need)\b/i,
-  /\b(kal|aaj|parso|parson|tarso|subah|subha|dopahar|dopehar|shaam|sham|raat|baje|bajay)\b/i,
-  /\b(plumber|electrician|bijli|pani|paani|nal|pipe|motor|fan|ac|safai|kaam|karwana|theek|thik)\b/i,
-  /\b(haan|han|nahi|nahin|kar do|bhej do|kitna|kab|kidhar|kahan)\b/i,
+  /\b(kal|aaj|parso|parson|tarso|subah|subha|sawera|sawere|dopahar|dopehar|shaam|sham|raat|baje|bajay|abhi|foran|jaldi)\b/i,
+  /\b(plumber|electrician|bijli|pani|paani|nal|pipe|motor|fan|ac|safai|kaam|karwana|theek|thik|repair|fix|install|mount|wiring)\b/i,
+  /\b(haan|han|nahi|nahin|kar do|bhej do|kitna|kab|kidhar|kahan|waqt|waqt par)\b/i,
 ];
 
 const DEVANAGARI_MAP = {
@@ -33,8 +33,10 @@ function detectLanguageStyle(text = '') {
   if (containsDevanagari(value)) return 'blocked_devanagari';
   if (containsUrduScript(value)) return 'urdu';
   const romanScore = ROMAN_URDU_PATTERNS.filter((pattern) => pattern.test(value)).length;
-  if (romanScore >= 2) return /\b(the|is|are|please|need|today|tomorrow)\b/i.test(value) ? 'mixed' : 'roman_urdu';
-  if (romanScore === 1 && /\b(plumber|electrician|ac|booking|provider)\b/i.test(value)) return 'mixed';
+  const englishScore = /\b(the|is|are|please|need|today|tomorrow|book|booking|service|provider|when|where|how)\b/i.test(value);
+  if (romanScore >= 3) return englishScore ? 'mixed' : 'roman_urdu';
+  if (romanScore >= 2) return englishScore ? 'mixed' : 'roman_urdu';
+  if (romanScore === 1 && /\b(plumber|electrician|ac|booking|provider|service|when|where)\b/i.test(value)) return 'mixed';
   return 'english';
 }
 

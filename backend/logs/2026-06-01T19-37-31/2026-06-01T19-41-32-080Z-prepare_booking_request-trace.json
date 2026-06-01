@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:41:32.080Z",
+  "agent": "prepare_booking_request",
+  "action": "prepare_booking_request",
+  "input": {
+    "provider": "Rizwan",
+    "time_slot": "9:00 AM"
+  },
+  "output": {
+    "booking_id": "REQ_1780342892080",
+    "confirmation_message": "Provider match ready. If you approve, we will send the request to Rizwan for accept/reject.",
+    "scheduled_time": "2026-06-03T04:00:00.000Z",
+    "booking_start_time": "2026-06-03T04:00:00.000Z",
+    "time_slot": "9:00 AM",
+    "booking_status": "proposal"
+  },
+  "durationMs": 0
+}

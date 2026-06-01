@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:41:32.070Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC256",
+      "AC036",
+      "AC014",
+      "AC201"
+    ],
+    "reasoning_log": "Given the high urgency of the booking, we prioritized providers with high on-time scores and low cancellation risks. Among these, Hassan (AC069) stood out for his exceptional punctuality and strong local reputation in PECHS, Karachi. While Ayesha (AC014) and Imran (AC201) also have good ratings and on-time scores, Hassan's lower base rate and verified documents made him the most suitable choice. Rizwan (AC036) and the other providers were ranked lower due to their relatively lower on-time scores and higher base rates.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC256",
+      "closest_fastest_id": "AC036",
+      "analysis": {
+        "overall_best_id": "Hassan (AC069) was chosen as the overall best provider due to his exceptional punctuality, strong local reputation, and verified documents.",
+        "most_affordable_id": "The most affordable provider was Hassan (AC256) with a base rate of 1309 PKR, who also has a high on-time score and low cancellation risk.",
+        "closest_fastest_id": "The closest and fastest provider was Rizwan (AC036) with a distance of 4.91 km and available slots, but his on-time score and cancellation risk were lower than Hassan's."
+      }
+    }
+  },
+  "durationMs": 772
+}

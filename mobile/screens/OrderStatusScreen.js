@@ -78,6 +78,7 @@ export default function OrderStatusScreen({ route, navigation }) {
 
   const [currentBooking, setCurrentBooking] = useState(booking);
   const [currentStage, setCurrentStage] = useState(getInitialStageIndex(booking?.status));
+  const syncInFlightRef = useRef(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const stageAnims = useRef(STAGES.map(() => new Animated.Value(0))).current;
 
@@ -150,7 +151,10 @@ export default function OrderStatusScreen({ route, navigation }) {
     const bookingId = booking?._id || booking?.id;
     if (!bookingId) return;
 
+    if (syncInFlightRef.current) return;
+
     const fetchLatestBooking = async () => {
+      syncInFlightRef.current = true;
       try {
         const res = await apiClient.get(`/bookings/${bookingId}`);
         if (res.data?.success && res.data.booking) {
@@ -158,6 +162,8 @@ export default function OrderStatusScreen({ route, navigation }) {
         }
       } catch (err) {
         console.debug('[OrderStatus] Initial sync error:', err?.message);
+      } finally {
+        syncInFlightRef.current = false;
       }
     };
 

@@ -7,7 +7,7 @@ export async function transcribeAudioUri(
   uri,
   {
     mimeType = inferMimeTypeFromUri(uri),
-    languageHint = 'roman_urdu',
+    languageHint = 'auto',
   } = {}
 ) {
   if (!uri) {
@@ -35,8 +35,11 @@ export async function transcribeAudioUri(
   const requestData = {
     audio_base64: audioBase64,
     mime_type: mimeType,
-    language_hint: languageHint,
   };
+
+  if (languageHint && languageHint !== 'auto') {
+    requestData.language_hint = languageHint;
+  }
   
   console.log(`[speechToText] Request data object created`);
   console.log(`[speechToText] requestData.audio_base64 type: ${typeof requestData.audio_base64}`);

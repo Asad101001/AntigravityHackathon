@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:14.751Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.859825,
+      "lng": 67.073303,
+      "label": "Karachi, Pakistan"
+    },
+    "parsed_location": null,
+    "user_text": "مجھے کل پانچ بجے ایک ایسی ٹیکنیشن کی نیڑا ہے"
+  },
+  "output": {
+    "lat": 24.859825,
+    "lng": 67.073303,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 4
+}

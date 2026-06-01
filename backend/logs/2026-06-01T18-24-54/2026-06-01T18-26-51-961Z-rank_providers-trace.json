@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:51.961Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the shortest response times and highest ratings. Among the top contenders, Hassan (AC069) stood out for his excellent rating, low cancellation risk, and competitive pricing, making him the overall best choice. Usman (AC179) was a close second, but Hassan's slightly better rating and lower base rate tipped the balance in his favor.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "Hassan (AC069) was chosen as the overall best provider due to his excellent rating, low cancellation risk, and competitive pricing.",
+        "most_affordable_id": "Usman (AC179) offered the lowest base rate among verified and available providers.",
+        "closest_fastest_id": "Hassan (AC069) had the shortest response time and was the closest provider to the service location."
+      }
+    }
+  },
+  "durationMs": 662
+}

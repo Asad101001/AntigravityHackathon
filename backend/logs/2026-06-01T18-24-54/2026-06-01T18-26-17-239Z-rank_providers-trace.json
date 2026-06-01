@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:17.239Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "HM215",
+    "ranked_ids": [
+      "HM215",
+      "HM050",
+      "HM105",
+      "HM160",
+      "HM259"
+    ],
+    "reasoning_log": "Given the high urgency of the request, we prioritized providers with the shortest response times and highest on-time scores. Mehwish (HM215) stood out with a 4.6 rating, 83 on-time score, and 4 available slots, making her the best overall choice. Danish (HM050) and Imran (HM105) were close seconds, but Mehwish's higher on-time score and more available slots tipped the balance in her favor.",
+    "multi_factor": {
+      "overall_best_id": "HM215",
+      "most_affordable_id": "HM160",
+      "closest_fastest_id": "HM050",
+      "analysis": {
+        "overall_best_id": "Mehwish (HM215) was chosen as the overall best provider due to her high rating, excellent on-time score, and multiple available slots.",
+        "most_affordable_id": "Shazia (HM160) was the cheapest qualified provider, with a base rate of 872 PKR.",
+        "closest_fastest_id": "Danish (HM050) was the closest and fastest qualified provider, with a distance of 7.99 km and a response time of 20 minutes."
+      }
+    }
+  },
+  "durationMs": 701
+}

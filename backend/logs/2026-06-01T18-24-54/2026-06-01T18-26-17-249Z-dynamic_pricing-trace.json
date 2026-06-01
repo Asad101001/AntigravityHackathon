@@ -1,0 +1,22 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:17.249Z",
+  "agent": "dynamic_pricing",
+  "action": "dynamic_pricing",
+  "input": {
+    "provider_id": "HM215",
+    "distance_km": 10.43,
+    "urgency": "high"
+  },
+  "output": {
+    "quote_pkr": 4155,
+    "quote_breakdown": {
+      "base_rate": 1205,
+      "distance_surcharge": 1565,
+      "urgency_multiplier": 1.5,
+      "subtotal": 2770,
+      "total": 4155
+    }
+  },
+  "durationMs": 1
+}

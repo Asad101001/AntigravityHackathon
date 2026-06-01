@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:38:31.995Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Based on the provided constraints, the overall best AC technician for the job in Tariq Road Karachi is Hassan (AC069). He offers a great balance of quality and affordability, with a high rating, low cancellation risk, and a competitive base rate. His recent sentiment analysis also highlights his strong local reputation and punctuality.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "Hassan (AC069) is the overall best choice due to his high rating, low cancellation risk, and competitive base rate.",
+        "most_affordable_id": "Usman (AC179) is the most affordable option with a base rate of 1262 PKR, while still being verified and having available slots.",
+        "closest_fastest_id": "Hassan (AC069) is the closest and fastest option with a distance of 4.32 km and a response time of 11 minutes."
+      }
+    }
+  },
+  "durationMs": 681
+}

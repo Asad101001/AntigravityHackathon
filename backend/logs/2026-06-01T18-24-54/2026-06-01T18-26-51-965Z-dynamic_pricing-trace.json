@@ -1,0 +1,22 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:51.965Z",
+  "agent": "dynamic_pricing",
+  "action": "dynamic_pricing",
+  "input": {
+    "provider_id": "AC069",
+    "distance_km": 4.31,
+    "urgency": "high"
+  },
+  "output": {
+    "quote_pkr": 3062,
+    "quote_breakdown": {
+      "base_rate": 1395,
+      "distance_surcharge": 646,
+      "urgency_multiplier": 1.5,
+      "subtotal": 2041,
+      "total": 3062
+    }
+  },
+  "durationMs": 0
+}

@@ -86,7 +86,7 @@ export default function useVoiceInput({ onTranscript } = {}) {
       }
       recordingRef.current = null;
 
-      const result = await transcribeAudioUri(uri);
+      const result = await transcribeAudioUri(uri, { languageHint: 'auto' });
       setTranscript(result.text);
       setError('');
       onTranscript?.(result.text, result);

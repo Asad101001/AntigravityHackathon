@@ -153,21 +153,33 @@ export default function ProviderChatScreen({ route, navigation }) {
   ]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const initialLoadDoneRef = useRef(false);
 
   const cancelledMessage = 'The order is cancelled by you so I cant help further more! Sorry';
 
   useEffect(() => {
     let mounted = true;
-    async function loadBookingState() {
+
+    async function loadInitialData() {
+      if (initialLoadDoneRef.current) return;
+      initialLoadDoneRef.current = true;
+
       try {
-        const res = await apiClient.get(`/bookings/${bookingId}`);
-        const status = String(res.data?.booking?.status || '').toLowerCase();
+        const [bookingRes, chatRes] = await Promise.all([
+          apiClient.get(`/bookings/${bookingId}`),
+          apiClient.get(`/chat/${bookingId}`),
+        ]);
+
         if (!mounted) return;
+
+        const status = String(bookingRes.data?.booking?.status || '').toLowerCase();
         setBookingStatus(status || null);
         if (status === 'canceled') {
           setMessages([
             { role: 'assistant', content: cancelledMessage, time: stamp() },
           ]);
+        } else if (chatRes.data?.messages?.length) {
+          setMessages(chatRes.data.messages.map(m => ({ ...m, time: m.created_at || stamp() })));
         }
       } catch (error) {
         // Keep chat usable if booking state cannot be fetched
@@ -176,7 +188,7 @@ export default function ProviderChatScreen({ route, navigation }) {
       }
     }
 
-    loadBookingState();
+    loadInitialData();
 
     const unsubscribe = subscribeBookingRealtime((event) => {
       if (event?.type !== 'booking.updated' || event.booking_id !== bookingId) return;
@@ -196,12 +208,6 @@ export default function ProviderChatScreen({ route, navigation }) {
       unsubscribe();
     };
   }, [bookingId, cancelledMessage]);
-
-  useEffect(() => {
-    apiClient.get(`/chat/${bookingId}`).then(res => {
-      if (res.data?.messages?.length) setMessages(res.data.messages.map(m => ({ ...m, time: m.created_at || stamp() })));
-    }).catch(() => {});
-  }, [bookingId]);
 
   useEffect(() => {
     const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);

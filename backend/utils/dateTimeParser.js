@@ -21,6 +21,8 @@ const PERIODS = [
   { slot: 'night', hours: 20, minutes: 0, label: '8:00 PM', confidence: 0.82, re: /\b(night|raat|rat|late|der raat)\b|رات/i },
 ];
 
+const IMMEDIATE_PATTERNS = /\b(now|right now|abhi|abhi hi|foran|jaldi|asap|emergency|urgent|immediately)\b|ابھی|فوراً|جلدی/i;
+
 function _getPKTNow() {
   const now = new Date();
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -46,6 +48,17 @@ function _pktDateParts(reference = _getPKTNow()) {
   };
 }
 
+function _getPKTDateTimeParts(reference = _getPKTNow()) {
+  const ref = new Date(reference);
+  return {
+    year: ref.getUTCFullYear(),
+    month: ref.getUTCMonth(),
+    day: ref.getUTCDate(),
+    hours: ref.getUTCHours(),
+    minutes: ref.getUTCMinutes(),
+  };
+}
+
 function _pktWallToUtcDate(year, monthIndex, day, hours = 9, minutes = 0) {
   // PKT is UTC+5 with no DST.
   return new Date(Date.UTC(year, monthIndex, day, hours - 5, minutes, 0, 0));
@@ -60,6 +73,8 @@ function normalizeText(input = '') {
   return String(input || '')
     .toLowerCase()
     .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/\b([ap])\s*\.\s*m\s*\.?\b/g, '$1m')
+    .replace(/\b([ap])\s*m\s*\.?\b/g, '$1m')
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -87,7 +102,11 @@ function resolveBookingDateTime({ text = '', timePreference = '', reference = _g
   let finalTime = timeResult || periodResult;
   let timeInferred = false;
   if (!finalTime) {
-    finalTime = { hours: 9, minutes: 0, label: '9:00 AM', confidence: 0.40, slot: 'default' };
+    if (dateResult?.label === 'immediate') {
+      finalTime = _currentImmediateTime(reference);
+    } else {
+      finalTime = { hours: 9, minutes: 0, label: '9:00 AM', confidence: 0.40, slot: 'default' };
+    }
     timeInferred = true;
   }
 
@@ -139,6 +158,10 @@ function _buildClarification(field, prompt) {
 
 function _parseDate(input, reference = _getPKTNow()) {
   const refParts = _pktDateParts(reference);
+
+  if (IMMEDIATE_PATTERNS.test(input)) {
+    return { parts: refParts, confidence: 0.99, label: 'immediate' };
+  }
 
   for (const item of RELATIVE_DATE_PATTERNS) {
     if (item.re.test(input)) {
@@ -207,9 +230,19 @@ function _parseDate(input, reference = _getPKTNow()) {
 
 function _parseTime(input) {
   const lower = normalizeText(input);
-  const standard = lower.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)\b/i);
+  const standard = lower.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.?m\.?|p\.?m\.?)\b/i);
   if (standard) {
     return _buildClock(Number(standard[1]), Number(standard[2] || '0'), standard[3], 0.98, 'explicit_ampm');
+  }
+
+  // Spoken Urdu/Roman Urdu hours often arrive as words without "baje"
+  // e.g. "paanch", "aik", "teen".
+  const wordHour = lower.match(/\b(aik|ek|one|do|two|teen|three|chaar|char|four|paanch|panch|five|che|six|saat|sat|seven|aath|ath|eight|nau|no|nine|das|ten|gyaarah|gyarah|eleven|baarah|barah|twelve)\b/i);
+  if (wordHour) {
+    const hour = _wordHourToNumber(wordHour[1]);
+    if (hour !== null) {
+      return _inferAmbiguousHour(hour, 0, lower, 0.79, 'word_hour');
+    }
   }
 
   const time24 = lower.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
@@ -292,6 +325,25 @@ function _getMonthNumber(monthName) {
   return months[String(monthName || '').toLowerCase()] ?? 0;
 }
 
+function _wordHourToNumber(word) {
+  const map = {
+    aik: 1, ek: 1, one: 1,
+    do: 2, two: 2,
+    teen: 3, three: 3,
+    chaar: 4, char: 4, four: 4,
+    paanch: 5, panch: 5, five: 5,
+    che: 6, six: 6,
+    saat: 7, sat: 7, seven: 7,
+    aath: 8, ath: 8, eight: 8,
+    nau: 9, no: 9, nine: 9,
+    das: 10, ten: 10,
+    gyaarah: 11, gyarah: 11, eleven: 11,
+    baarah: 12, barah: 12, twelve: 12,
+  };
+  const normalized = String(word || '').toLowerCase();
+  return map[normalized] ?? null;
+}
+
 function _formatTime12H(hours24, minutes) {
   const period = hours24 >= 12 ? 'PM' : 'AM';
   const hours12 = hours24 % 12 || 12;
@@ -303,6 +355,19 @@ function _formatDateLabel(date) {
     timeZone: PK_TZ,
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   }).format(date);
+}
+
+function _currentImmediateTime(reference = _getPKTNow()) {
+  const parts = _getPKTDateTimeParts(reference);
+  const roundedMinutes = Math.ceil(parts.minutes / 15) * 15;
+  let hours = parts.hours;
+  let minutes = roundedMinutes;
+  if (minutes >= 60) {
+    hours = (hours + 1) % 24;
+    minutes = 0;
+  }
+  const label = _formatTime12H(hours, minutes);
+  return { hours, minutes, label, confidence: 0.92, slot: 'immediate' };
 }
 
 function parseTimePreference(timePreference = '') {

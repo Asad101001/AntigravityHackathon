@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity, Alert, RefreshControl, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,19 +55,42 @@ export default function BookingsScreen({ navigation }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const fetchInFlightRef = useRef(null);
+  const queuedRefreshRef = useRef(false);
 
-  const fetchBookings = useCallback(async () => {
-    try {
-      const response = await apiClient.get('/bookings');
-      if (response.data.success) {
-        setBookings(response.data.bookings || []);
+  const fetchBookings = useCallback(async function fetchBookings() {
+    if (fetchInFlightRef.current) {
+      queuedRefreshRef.current = true;
+      return fetchInFlightRef.current;
+    }
+
+    const request = (async () => {
+      try {
+        const response = await apiClient.get('/bookings');
+        if (response.data.success) {
+          setBookings(response.data.bookings || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        Alert.alert('Error', 'Failed to load bookings');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch bookings:', error);
-      Alert.alert('Error', 'Failed to load bookings');
+    })();
+
+    fetchInFlightRef.current = request;
+
+    try {
+      return await request;
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      fetchInFlightRef.current = null;
+      if (queuedRefreshRef.current) {
+        queuedRefreshRef.current = false;
+        setTimeout(() => {
+          void fetchBookings();
+        }, 0);
+      }
     }
   }, []);
 

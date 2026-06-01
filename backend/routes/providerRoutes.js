@@ -228,8 +228,18 @@ router.get('/bookings', requireAuth, async (req, res) => {
 
     // Determine the provider's operational service type
     let providerService = user.service;
+    let provDoc = null;
+    if (user.provider_id) {
+      provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne(
+        { _id: user.provider_id },
+        { projection: { id: 1, service: 1, _id: 1 } }
+      );
+    }
+    if (!providerService && provDoc) {
+      providerService = provDoc.service;
+    }
     if (!providerService && user.provider_id) {
-      const pDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
+      const pDoc = provDoc || await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
       if (pDoc) providerService = pDoc.service;
     }
 
@@ -237,19 +247,16 @@ router.get('/bookings', requireAuth, async (req, res) => {
     let possibleIds = [];
     if (user.provider_id) {
        possibleIds.push(user.provider_id);
-       const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
        if (provDoc && provDoc.id) possibleIds.push(provDoc.id, String(provDoc.id));
        if (provDoc && provDoc._id) possibleIds.push(String(provDoc._id));
     }
     const shortId = await getBookingProviderId(mongoDb, user);
     if (shortId) possibleIds.push(shortId);
 
-    const queryFilters = possibleIds.length > 0 ? { $in: possibleIds } : shortId;
-
     // Build precise query criteria
     const query = {
       $or: [
-        { provider_id: queryFilters },
+        ...(possibleIds.length > 0 ? [{ provider_id: { $in: [...new Set(possibleIds.map(String))] } }] : []),
         { provider_name: user.name }
       ]
     };
@@ -259,11 +266,18 @@ router.get('/bookings', requireAuth, async (req, res) => {
       query.service_type = { $regex: new RegExp(`^${providerService.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
     }
 
-    const rawBookings = await mongoDb
+    const bookingsCursor = mongoDb
       .collection(db.COLLECTIONS.bookings)
-      .find(query)
+      .find(query, {
+        projection: {
+          raw_data: 0,
+        }
+      })
       .sort({ created_at: -1 })
-      .toArray();
+      .limit(200)
+      .maxTimeMS(5000);
+
+    const rawBookings = await bookingsCursor.toArray();
 
     if (rawBookings.length === 0) {
       return res.json({ success: true, bookings: [] });
@@ -271,20 +285,28 @@ router.get('/bookings', requireAuth, async (req, res) => {
 
     // ─── OPTIMIZATION 1: Bulk User Enrichment ───
     const userIds = [...new Set(rawBookings.map(b => b.user_id).filter(Boolean))];
-    const usersList = await mongoDb.collection(db.COLLECTIONS.users).find({ _id: { $in: userIds } }).toArray();
-    const usersMap = new Map(usersList.map(u => [String(u._id), u]));
 
     // ─── OPTIMIZATION 2: Bulk Last Message Preview Aggregation ───
     const bookingIds = rawBookings.map(b => b._id || b.id).filter(Boolean);
-    const lastMessages = await mongoDb.collection('chat_messages').aggregate([
-      { $match: { booking_id: { $in: bookingIds } } },
-      { $sort: { created_at: -1 } },
-      { $group: {
-        _id: '$booking_id',
-        content: { $first: '$content' },
-        created_at: { $first: '$created_at' }
-      }}
-    ]).toArray();
+    const [usersList, lastMessages] = await Promise.all([
+      userIds.length
+        ? mongoDb.collection(db.COLLECTIONS.users)
+            .find({ _id: { $in: userIds } }, { projection: { displayName: 1, name: 1, phone: 1, email: 1, avatar: 1 } })
+            .toArray()
+        : Promise.resolve([]),
+      bookingIds.length
+        ? mongoDb.collection('chat_messages').aggregate([
+            { $match: { booking_id: { $in: bookingIds } } },
+            { $sort: { created_at: -1 } },
+            { $group: {
+              _id: '$booking_id',
+              content: { $first: '$content' },
+              created_at: { $first: '$created_at' }
+            }}
+          ], { maxTimeMS: 5000 }).toArray()
+        : Promise.resolve([]),
+    ]);
+    const usersMap = new Map(usersList.map(u => [String(u._id), u]));
     const lastMessagesMap = new Map(lastMessages.map(m => [String(m._id), m]));
 
     const enrichedBookings = rawBookings.map(b => {

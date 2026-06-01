@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:46:38.404Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency and neutral price sensitivity, the overall best provider is AC069 due to its excellent rating, low cancellation risk, and high on-time score. It also has a relatively low base rate compared to other top options. While AC179 is a close second, AC069's slightly better rating and on-time score make it the top choice.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "AC069's excellent rating, low cancellation risk, and high on-time score make it the top choice for high-urgency bookings with neutral price sensitivity.",
+        "most_affordable_id": "AC179 has the lowest base rate among qualified providers, making it the most affordable option.",
+        "closest_fastest_id": "AC069 is the closest and fastest qualified provider, with a distance of 4.32 km and a response time of 11 minutes."
+      }
+    }
+  },
+  "durationMs": 801
+}

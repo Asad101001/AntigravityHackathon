@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:40:58.124Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "normal",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC179",
+    "ranked_ids": [
+      "AC179",
+      "AC069",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Based on the given constraints, the overall best AC technician for the job is Usman (AC179) due to his excellent rating, low cancellation risk, and competitive base rate. He is also one of the closest options, with a distance of 11.32 km from Tariq Road Karachi. While Hassan (AC069) is a close second, Usman's slightly lower base rate and higher on-time score make him the preferred choice.",
+    "multi_factor": {
+      "overall_best_id": "AC179",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC179",
+      "analysis": {
+        "overall_best_id": "Usman (AC179) is the overall best choice due to his excellent rating, low cancellation risk, and competitive base rate.",
+        "most_affordable_id": "Usman (AC179) is the most affordable option with a base rate of 1262 PKR, which is lower than the other qualified providers.",
+        "closest_fastest_id": "Usman (AC179) is the closest option with a distance of 11.32 km from Tariq Road Karachi, making him the fastest choice as well."
+      }
+    }
+  },
+  "durationMs": 723
+}

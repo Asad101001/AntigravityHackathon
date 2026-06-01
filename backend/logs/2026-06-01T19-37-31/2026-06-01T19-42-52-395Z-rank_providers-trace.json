@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:42:52.395Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the shortest response time and highest on-time scores. Among these, Hassan (AC069) stood out for his excellent rating, low cancellation risk, and competitive base rate. He is the overall best choice due to his balanced performance across multiple factors.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best": "Hassan (AC069) is the overall best choice due to his excellent rating, low cancellation risk, and competitive base rate.",
+        "most_affordable": "Usman (AC179) is the most affordable option with a verified profile and available slots.",
+        "closest_fastest": "Hassan (AC069) is the closest and fastest option with a short response time and high on-time score."
+      }
+    }
+  },
+  "durationMs": 713
+}

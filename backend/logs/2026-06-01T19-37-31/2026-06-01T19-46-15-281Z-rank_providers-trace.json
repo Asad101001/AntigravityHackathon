@@ -1,0 +1,33 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:46:15.281Z",
+  "agent": "rank_providers",
+  "action": "rank_providers",
+  "input": {
+    "provider_count": 5,
+    "urgency": "high",
+    "price_sensitivity": "neutral"
+  },
+  "output": {
+    "selected_provider_id": "AC069",
+    "ranked_ids": [
+      "AC069",
+      "AC179",
+      "AC036",
+      "AC124",
+      "AC234"
+    ],
+    "reasoning_log": "Given the high urgency of the service request, we prioritized providers with the shortest response times and highest ratings. Among them, Hassan (AC069) stood out for his excellent on-time score, low cancellation risk, and strong local reputation in PECHS, Karachi. Although Usman (AC179) had a slightly lower base rate, Hassan's overall performance and reliability made him the top choice.",
+    "multi_factor": {
+      "overall_best_id": "AC069",
+      "most_affordable_id": "AC179",
+      "closest_fastest_id": "AC069",
+      "analysis": {
+        "overall_best_id": "Hassan (AC069) was chosen for his exceptional on-time score, low cancellation risk, and strong local reputation, making him the best trade-off of distance, rating, availability, on-time score, and cancellation risk.",
+        "most_affordable_id": "Usman (AC179) had the lowest base rate among verified providers with available slots, making him the most affordable option.",
+        "closest_fastest_id": "Hassan (AC069) had the shortest distance and response time, making him the closest and fastest option."
+      }
+    }
+  },
+  "durationMs": 838
+}

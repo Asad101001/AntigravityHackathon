@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:46:35.552Z",
+  "agent": "resolve_location",
+  "action": "resolve_location",
+  "input": {
+    "pin": {
+      "lat": 24.85983323477232,
+      "lng": 67.0734744052336,
+      "label": "Karachi, Pakistan"
+    },
+    "parsed_location": null,
+    "user_text": "Mujhe abhi AC technician chahiye pa"
+  },
+  "output": {
+    "lat": 24.85983323477232,
+    "lng": 67.0734744052336,
+    "area_name": "Tariq Road Karachi",
+    "city": "Karachi",
+    "source": "local_reverse_geocode"
+  },
+  "durationMs": 6
+}

@@ -8,6 +8,7 @@ const BaseAgent = require('./BaseAgent');
 const db = require('../db');
 const { tokenize } = require('../utils/textTokenizer');
 const { findLocationCandidate } = require('../utils/locationNormalizer');
+const { normalizeText, resolveBookingDateTime } = require('../utils/dateTimeParser');
 
 class IntentParserAgent extends BaseAgent {
   constructor() {
@@ -15,7 +16,8 @@ class IntentParserAgent extends BaseAgent {
   }
 
   async execute(context) {
-    const text = (context.user_text || '').toLowerCase().trim();
+    const rawText = String(context.user_text || '').trim();
+    const text = normalizeText(rawText);
     const tokenized = tokenize(context.user_text || '');
     const keywords = await this._getKeywords();
     
@@ -40,6 +42,7 @@ class IntentParserAgent extends BaseAgent {
 
     // ── Parse Time Preference ──
     const time = this._parseTime(text, keywords);
+    const requestedDateTime = resolveBookingDateTime({ text: rawText, defaultFuture: false });
 
     // ── Detect Urgency ──
     const urgency = this._detectUrgency(text, keywords);
@@ -72,6 +75,8 @@ class IntentParserAgent extends BaseAgent {
         tokens: tokenized.tokens,
         tokenized_input: tokenized,
         time_preference: time,
+        requested_datetime: requestedDateTime?.scheduled_start_iso ? requestedDateTime : null,
+        requested_datetime_text: rawText,
         confidence,
         language,
         urgency
@@ -81,9 +86,9 @@ class IntentParserAgent extends BaseAgent {
 
   _detectLanguage(text) {
     // Check for Urdu script characters
-    if (/[\u0600-\u06FF]/.test(text)) return 'urdu';
+    if (/[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) return 'urdu';
     // Check for Roman Urdu indicators
-    const romanUrduWords = ['chahiye', 'chahye', 'chaiye', 'zaroorat', 'kal', 'subah', 'shaam', 'abhi', 'mein', 'wala', 'karo', 'bulao'];
+    const romanUrduWords = ['chahiye', 'chahye', 'chaiye', 'zaroorat', 'kal', 'subah', 'shaam', 'abhi', 'mein', 'main', 'wala', 'karo', 'bulao', 'parso', 'foran', 'jaldi', 'bajay', 'baje'];
     for (const word of romanUrduWords) {
       if (text.includes(word)) return 'roman_urdu';
     }
@@ -107,6 +112,20 @@ class IntentParserAgent extends BaseAgent {
           return serviceData.canonical;
         }
       }
+    }
+
+    const serviceFallbacks = [
+      { canonical: 'Plumber', re: /\b(plumber|pani|paani|nal|pipe|leak|tap|drain|washroom|bathroom)\b|پلمب|پانی|نال/i },
+      { canonical: 'Electrician', re: /\b(electrician|bijli|wiring|wire|fan|switch|light|socket|mcb)\b|بجلی|وائرنگ|سوئچ|پنکھا|لائٹ/i },
+      { canonical: 'AC Technician', re: /\b(ac|air\s*condition|aircondition|cooling|gas\s*refill|split\s*ac|ac\s*repair)\b|اے\s?سی|ایئر\s?کنڈیشن|ٹھنڈا/i },
+      { canonical: 'Carpenter', re: /\b(carpenter|wood|furniture|door|cupboard|cabinet|table|chair)\b|بڑھئی|لکڑی|دروازہ|الماری/i },
+      { canonical: 'Painter', re: /\b(painter|paint|colour|wall)\b|رنگ|پینٹ|دیوار/i },
+      { canonical: 'Cleaning', re: /\b(cleaning|clean|safai|house\s*clean|maid)\b|صفائی|صاف/i },
+      { canonical: 'Handyman', re: /\b(handyman|repair|fix|mount|install|general\s*repair)\b|مرمت|ٹھیک|فکس|لگاؤ/i },
+    ];
+
+    for (const item of serviceFallbacks) {
+      if (item.re.test(text)) return item.canonical;
     }
     return null;
   }
@@ -137,6 +156,10 @@ class IntentParserAgent extends BaseAgent {
   }
 
   _parseTime(text, keywords = {}) {
+    if (/\b(abhi|abhi hi|foran|jaldi|asap|now|right now)\b|ابھی|فوراً|جلدی/i.test(text)) {
+      return 'today_now';
+    }
+
     // Check multi-word time expressions first (longer matches first)
     const sortedEntries = Object.entries(keywords.time_expressions || {})
       .sort(([, a], [, b]) => {
@@ -152,6 +175,21 @@ class IntentParserAgent extends BaseAgent {
         }
       }
     }
+
+    if (/\b(parso|parson|day after tomorrow)\b|پرسوں/i.test(text)) {
+      if (/\b(subah|subha|morning|sawere|fajr)\b|صبح/i.test(text)) return 'day_after_tomorrow_morning';
+      if (/\b(shaam|sham|evening|maghrib)\b|شام/i.test(text)) return 'day_after_tomorrow_evening';
+      return 'day_after_tomorrow';
+    }
+
+    if (/\b(kal|tomorrow)\b|کل/i.test(text)) {
+      if (/\b(subah|subha|morning|sawere|fajr)\b|صبح/i.test(text)) return 'tomorrow_morning';
+      if (/\b(shaam|sham|evening|maghrib)\b|شام/i.test(text)) return 'tomorrow_evening';
+      return 'tomorrow';
+    }
+
+    if (/\b(aaj|today)\b|آج/i.test(text)) return 'today_now';
+
     return null;
   }
 

@@ -137,9 +137,12 @@ async function ensureIndexes(db) {
     db.collection(COLLECTIONS.chatMessages).createIndex({ user_id: 1, booking_id: 1, created_at: -1 }),
     db.collection(COLLECTIONS.ragChunks).createIndex({ created_at: -1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ user_id: 1, created_at: -1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ booking_id: 1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, user_id: 1, booking_start_time: 1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ status: 1 }),
     db.collection(COLLECTIONS.bookings).createIndex({ provider_id: 1, status: 1, booking_start_time: 1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ provider_name: 1, created_at: -1 }),
+    db.collection(COLLECTIONS.bookings).createIndex({ service_type: 1, status: 1, created_at: -1 }),
   ]);
 }
 
@@ -506,6 +509,8 @@ async function createBooking({ user_id, provider_id, provider_name, service_type
   const now = new Date().toISOString();
   const booking = {
     _id: `BK_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    booking_id: null,
+    id: null,
     user_id: String(user_id),
     provider_id: String(provider_id),
     provider_public_id: raw_data?.provider_public_id ? String(raw_data.provider_public_id) : String(provider_id),
@@ -521,6 +526,8 @@ async function createBooking({ user_id, provider_id, provider_name, service_type
     created_at: now,
     updated_at: now,
   };
+  booking.booking_id = booking._id;
+  booking.id = booking._id;
   await db.collection(COLLECTIONS.bookings).insertOne(booking);
   return booking;
 }
@@ -564,11 +571,15 @@ async function getUserBookings(user_id) {
 async function getBookingById(booking_id) {
   if (!booking_id) return null;
   const db = await setupDatabase();
-  const booking = await db.collection(COLLECTIONS.bookings).findOne({ _id: String(booking_id) });
+  const booking = await db.collection(COLLECTIONS.bookings).findOne(
+    _bookingLookupQuery(booking_id),
+    { projection: { raw_data: 0 } }
+  );
   if (booking && booking.provider_id) {
-    const provider = await db.collection(COLLECTIONS.providers).findOne({ 
-      $or: [{ id: booking.provider_id }, { _id: booking.provider_id }] 
-    });
+    const provider = await db.collection(COLLECTIONS.providers).findOne(
+      { $or: [{ id: booking.provider_id }, { _id: booking.provider_id }] },
+      { projection: { avatar: 1, id: 1, _id: 1 } }
+    );
     if (provider && provider.avatar) {
       booking.provider_avatar = provider.avatar;
     }
@@ -581,7 +592,7 @@ async function updateBookingStatus(booking_id, new_status, extraUpdates = {}) {
   const db = await setupDatabase();
   const now = new Date().toISOString();
   const result = await db.collection(COLLECTIONS.bookings).findOneAndUpdate(
-    { _id: String(booking_id) },
+    _bookingLookupQuery(booking_id),
     { $set: { ...extraUpdates, status: normalizeBookingStatus(new_status), updated_at: now } },
     { returnDocument: 'after' }
   );
@@ -602,6 +613,21 @@ async function checkDuplicateBooking(user_id, provider_id, booking_start_time) {
 
 async function cancelBooking(booking_id) {
   return updateBookingStatus(booking_id, 'canceled');
+}
+
+async function deleteBooking(booking_id) {
+  if (!booking_id) return null;
+  const db = await setupDatabase();
+  const query = _bookingLookupQuery(booking_id);
+  const booking = await db.collection(COLLECTIONS.bookings).findOne(query, { projection: { _id: 1 } });
+  if (!booking) return null;
+
+  const [bookingDelete, chatDelete] = await Promise.all([
+    db.collection(COLLECTIONS.bookings).deleteOne(query),
+    db.collection(COLLECTIONS.chatMessages).deleteMany({ booking_id: String(booking._id) }),
+  ]);
+
+  return bookingDelete.deletedCount > 0 ? { deletedCount: bookingDelete.deletedCount, bookingId: String(booking._id), chatDeletedCount: chatDelete.deletedCount } : null;
 }
 
 
@@ -631,6 +657,17 @@ function escapeRegExp(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function _bookingLookupQuery(booking_id) {
+  const id = String(booking_id || '').trim();
+  return {
+    $or: [
+      { _id: id },
+      { booking_id: id },
+      { id },
+    ],
+  };
+}
+
 module.exports = {
   setupDatabase,
   getCoordinatesByCity,
@@ -656,6 +693,7 @@ module.exports = {
   updateBookingStatus,
   checkDuplicateBooking,
   cancelBooking,
+  deleteBooking,
   updateBookingFeedback,
   getAllBookings,
   getDb,

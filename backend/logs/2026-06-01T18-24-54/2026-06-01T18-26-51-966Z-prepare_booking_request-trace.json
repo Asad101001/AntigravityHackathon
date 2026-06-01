@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:51.966Z",
+  "agent": "prepare_booking_request",
+  "action": "prepare_booking_request",
+  "input": {
+    "provider": "Hassan",
+    "time_slot": "5:00 PM"
+  },
+  "output": {
+    "booking_id": "REQ_1780338411966",
+    "confirmation_message": "Provider match ready. If you approve, we will send the request to Hassan for accept/reject.",
+    "scheduled_time": "2026-06-02T12:00:00.000Z",
+    "booking_start_time": "2026-06-02T12:00:00.000Z",
+    "time_slot": "5:00 PM",
+    "booking_status": "proposal"
+  },
+  "durationMs": 0
+}

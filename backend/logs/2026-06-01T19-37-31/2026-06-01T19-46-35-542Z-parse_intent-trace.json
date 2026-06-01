@@ -1,0 +1,18 @@
+{
+  "run_id": "2026-06-01T19-37-31",
+  "timestamp": "2026-06-01T19:46:35.542Z",
+  "agent": "parse_intent",
+  "action": "parse_intent",
+  "input": "Mujhe abhi AC technician chahiye pa",
+  "output": {
+    "service_type": "AC Technician",
+    "location": null,
+    "time_preference": "Mujhe abhi AC technician chahiye pa | scheduled:2026-06-01T20:00:00.000Z | time:01:00",
+    "urgency_level": "high",
+    "price_sensitivity": "neutral",
+    "confidence": 0.8,
+    "language": "urdu",
+    "reasoning": "User requested an AC technician immediately, implying high urgency."
+  },
+  "durationMs": 342
+}

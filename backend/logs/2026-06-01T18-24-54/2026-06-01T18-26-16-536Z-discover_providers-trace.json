@@ -1,0 +1,206 @@
+{
+  "run_id": "2026-06-01T18-24-54",
+  "timestamp": "2026-06-01T18:26:16.536Z",
+  "agent": "discover_providers",
+  "action": "discover_providers",
+  "input": {
+    "coordinates": {
+      "lat": 24.859825,
+      "lng": 67.073303
+    },
+    "service_type": "Handyman"
+  },
+  "output": {
+    "providers": [
+      {
+        "_id": "6a09d38c7e5edb01df9a29f9",
+        "id": "HM050",
+        "name": "Danish",
+        "service": "Handyman",
+        "city": "Karachi",
+        "area": "Saddar",
+        "lat": 24.8607,
+        "lng": 67.0137,
+        "distance_km": 7.99,
+        "rating": 4.3,
+        "reviews_count": 77,
+        "available_slots": [
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0359-1388031",
+        "response_time_min": 20,
+        "verified": true,
+        "specialization": [
+          "mounting",
+          "minor_electrical",
+          "furniture_assembly"
+        ],
+        "base_rate_pkr": 1057,
+        "on_time_score": 74,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid handyman option for Saddar; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM050.jpg",
+        "company": "Metro Handyman Solutions",
+        "haversine_km": 6.01,
+        "distance_text": "8.0 km",
+        "duration_text": "20 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a30",
+        "id": "HM105",
+        "name": "Imran",
+        "service": "Handyman",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8061,
+        "lng": 67.0744,
+        "distance_km": 11.36,
+        "rating": 4.7,
+        "reviews_count": 165,
+        "available_slots": [
+          "14:00",
+          "16:00"
+        ],
+        "phone": "0334-1823576",
+        "response_time_min": 21,
+        "verified": true,
+        "specialization": [
+          "minor_plumbing",
+          "curtain_rods",
+          "general_repair"
+        ],
+        "base_rate_pkr": 1390,
+        "on_time_score": 77,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid handyman option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM105.jpg",
+        "company": "Prime Handyman Enterprises",
+        "haversine_km": 5.97,
+        "distance_text": "11.4 km",
+        "duration_text": "21 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a9e",
+        "id": "HM215",
+        "name": "Mehwish",
+        "service": "Handyman",
+        "city": "Karachi",
+        "area": "Clifton",
+        "lat": 24.8171,
+        "lng": 67.0267,
+        "distance_km": 10.43,
+        "rating": 4.6,
+        "reviews_count": 164,
+        "available_slots": [
+          "08:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0364-2694666",
+        "response_time_min": 21,
+        "verified": true,
+        "specialization": [
+          "curtain_rods",
+          "general_repair",
+          "minor_plumbing"
+        ],
+        "base_rate_pkr": 1205,
+        "on_time_score": 83,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid handyman option for Clifton; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Urban Handyman Solutions",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM215.jpg",
+        "haversine_km": 6.68,
+        "distance_text": "10.4 km",
+        "duration_text": "21 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2a67",
+        "id": "HM160",
+        "name": "Shazia",
+        "service": "Handyman",
+        "city": "Karachi",
+        "area": "Defence",
+        "lat": 24.8072,
+        "lng": 67.0656,
+        "distance_km": 11.43,
+        "rating": 4.2,
+        "reviews_count": 76,
+        "available_slots": [
+          "08:00",
+          "10:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0389-2259121",
+        "response_time_min": 23,
+        "verified": true,
+        "specialization": [
+          "minor_electrical",
+          "furniture_assembly",
+          "mounting"
+        ],
+        "base_rate_pkr": 872,
+        "on_time_score": 80,
+        "cancellation_risk": "medium",
+        "recent_sentiment": "Verified documents are on file. Solid handyman option for Defence; arrival windows can shift in traffic.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "Eco Handyman Experts",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM160.jpg",
+        "haversine_km": 5.9,
+        "distance_text": "11.4 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      },
+      {
+        "_id": "6a09d38c7e5edb01df9a2aca",
+        "id": "HM259",
+        "name": "Adnan",
+        "service": "Handyman",
+        "city": "Karachi",
+        "area": "DHA",
+        "lat": 24.8072,
+        "lng": 67.0656,
+        "distance_km": 11.43,
+        "rating": 2.5,
+        "reviews_count": 15,
+        "available_slots": [
+          "08:00",
+          "14:00",
+          "16:00",
+          "18:00"
+        ],
+        "phone": "0328-3043102",
+        "response_time_min": 23,
+        "verified": false,
+        "specialization": [
+          "general_repair",
+          "minor_plumbing",
+          "curtain_rods"
+        ],
+        "base_rate_pkr": 1131,
+        "on_time_score": 63,
+        "cancellation_risk": "high",
+        "recent_sentiment": "Unverified profile; suitable only after user confirmation. Recent reviews report late arrivals and inconsistent quality in DHA, Karachi. Keep as an edge-case fallback only.",
+        "created_at": "2026-05-17T14:41:16.499Z",
+        "company": "A-One Handyman Professionals",
+        "avatar": "https://storage.googleapis.com/asaaniyat-avatars-2026/avatars/HM259.jpg",
+        "haversine_km": 5.9,
+        "distance_text": "11.4 km",
+        "duration_text": "23 mins",
+        "distance_source": "distance_matrix_api"
+      }
+    ]
+  },
+  "durationMs": 1784
+}

@@ -473,16 +473,17 @@ router.put('/bookings/:bookingId/status', async (req, res) => {
  */
 router.delete('/bookings/:bookingId', async (req, res) => {
   try {
-    const mongoDb = await db.getDb();
-    const bookingsCollection = mongoDb.collection(db.COLLECTIONS.bookings);
+    const result = await db.deleteBooking(req.params.bookingId);
 
-    const result = await bookingsCollection.deleteOne({ _id: req.params.bookingId });
-
-    if (result.deletedCount === 0) {
+    if (!result) {
       return res.status(404).json({ success: false, error: 'Booking not found' });
     }
 
-    res.status(200).json({ success: true, message: 'Booking deleted' });
+    res.status(200).json({
+      success: true,
+      message: 'Booking deleted',
+      deleted_count: result.deletedCount,
+    });
   } catch (error) {
     console.error('Delete booking error:', error);
     res.status(500).json({ success: false, error: 'Failed to delete booking', message: error.message });
