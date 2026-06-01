@@ -45,7 +45,7 @@ export default function ProviderDashboardScreen({ navigation }) {
         const bookings = response.data.bookings || [];
         const today = new Date().toDateString();
 
-        const pending = bookings.filter(b => b.status === 'pending');
+        const pending = bookings.filter(b => ['pending', 'pending_provider_acceptance'].includes(String(b.status).toLowerCase()));
         const active = bookings.filter(b => ['confirmed', 'active'].includes(b.status)).length;
         const completedToday = bookings.filter(b => {
           if (b.status !== 'completed') return false;
@@ -108,13 +108,13 @@ export default function ProviderDashboardScreen({ navigation }) {
       const bookingId = pendingBooking._id || pendingBooking.id;
       const response = await apiClient.post(`/provider/bookings/${bookingId}/accept`);
       if (response.data.success) {
-        if (Platform.OS !== 'web') Alert.alert('Success', 'Booking accepted!');
+        if (Platform.OS !== 'web') Alert.alert('Success', 'Request accepted!');
         setPendingBooking(null);
         fetchStats();
         navigation.navigate('Bookings');
       }
     } catch (error) {
-      const errMsg = error.response?.data?.error || 'Failed to accept booking';
+      const errMsg = error.response?.data?.error || 'Failed to accept request';
       showError(errMsg);
     } finally {
       setActionLoading(false);
@@ -132,7 +132,7 @@ export default function ProviderDashboardScreen({ navigation }) {
         fetchStats();
       }
     } catch (error) {
-      const errMsg = error.response?.data?.error || 'Failed to reject booking';
+      const errMsg = error.response?.data?.error || 'Failed to reject request';
       showError(errMsg);
     } finally {
       setActionLoading(false);

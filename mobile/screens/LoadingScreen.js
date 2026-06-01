@@ -87,24 +87,24 @@ const PIPELINE = [
   },
   {
     id: 7,
-    label: 'Executing Booking',
+    label: 'Preparing Request',
     icon: 'document-text',
-    agentName: 'BookingExecutorAgent',
+    agentName: 'BookingProposalAgent',
     narration: [
-      'Reserving provider slot...',
-      'Writing booking ledger...',
-      'Booking confirmed ✓',
+      'Checking selected provider slot...',
+      'Preparing provider request...',
+      'Request ready ✓',
     ],
   },
   {
     id: 8,
-    label: 'Scheduling Follow-up',
+    label: 'Readying Updates',
     icon: 'notifications',
-    agentName: 'FollowUpManagerAgent',
+    agentName: 'RealtimeSyncAgent',
     narration: [
-      'Preparing reminders...',
-      'Queueing alerts...',
-      'Follow-up active ✓',
+      'Preparing live status sync...',
+      'Waiting for your confirmation...',
+      'Provider will be notified after confirm ✓',
     ],
   },
 ];
@@ -224,8 +224,8 @@ export default function LoadingScreen({ route, navigation }) {
         }
 
         void sendLocalNotification(
-          'Provider match found',
-          `${response.data.provider?.name || 'A provider'} is ready for your ${response.data.provider?.service || 'service'} request.`,
+          'Provider match ready',
+          `${response.data.provider?.name || 'A provider'} is ready. Confirm to send the request for accept/reject.`,
           { booking_id: response.data.booking_id || null, event: 'provider_match' }
         );
       }

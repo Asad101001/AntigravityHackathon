@@ -4,7 +4,7 @@
  * Run with: node test-urdu-comprehensive.js
  */
 
-const { parseDateTime } = require('./backend/utils/dateTimeParser');
+const { parseDateTime } = require('../backend/utils/dateTimeParser');
 
 console.log('╔════════════════════════════════════════════════════════════╗');
 console.log('║     COMPREHENSIVE URDU/ROMAN URDU DATE PARSING TEST        ║');

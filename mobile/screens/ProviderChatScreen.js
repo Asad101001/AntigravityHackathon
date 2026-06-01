@@ -251,7 +251,7 @@ export default function ProviderChatScreen({ route, navigation }) {
       } else if (text.toLowerCase().includes('profile') || text.toLowerCase().includes('technician') || text.toLowerCase().includes('who')) {
         reply = `👨‍🔧 Technician Profile:\nName: Muhammad Ali\nRating: ⭐ 4.9/5 (182 completed jobs)\nExperience: 6+ Years\nSpecialization: AC Diagnostics & Rapid Repairs`;
       } else if (text.toLowerCase().includes('confirm') || text.toLowerCase().includes('yes')) {
-        reply = "✅ Request confirmed successfully! The service provider has been notified and is on their way.\n\nEstimated Arrival: 25 minutes\nStandard Diagnostic Fee: PKR 1,500";
+        reply = "Request provider ko bhej di gayi hai. Provider accept karega to booking confirm hogi.";
       }
 
       setMessages(prev => [

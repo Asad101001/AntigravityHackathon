@@ -43,7 +43,7 @@ const STAGES = [
 ];
 
 function getInitialStageIndex(status) {
-  const map = { pending: 0, confirmed: 1, dispatched: 2, arriving: 3, en_route: 3, working: 4, in_progress: 4, completed: 5, done: 5 };
+  const map = { pending: 0, pending_provider_acceptance: 0, confirmed: 1, active: 1, dispatched: 2, arriving: 3, en_route: 3, working: 4, in_progress: 4, completed: 5, done: 5 };
   return map[status?.toLowerCase()] ?? 0;
 }
 

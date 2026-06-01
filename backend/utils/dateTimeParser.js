@@ -1,495 +1,322 @@
-/**
- * Comprehensive date and time parser for booking requests
- * Handles relative dates (tomorrow, next week, etc.) and specific times (2 pm, 14:00, etc.)
- * All dates are computed relative to Pakistan Standard Time (PKT = UTC+5).
- */
+'use strict';
 
 /**
- * Get the current date/time adjusted to Pakistan Standard Time (UTC+5).
- * This ensures "tomorrow", "today" etc. are correct for Pakistani users.
+ * Urdu/Roman Urdu aware booking date-time resolver.
+ * Dates are interpreted as Pakistan local time and emitted as real UTC Date objects.
  */
+
+const PK_TZ = 'Asia/Karachi';
+
+const RELATIVE_DATE_PATTERNS = [
+  { offset: 3, confidence: 0.92, re: /\b(tarso|tarson|tarsoon|tarsoo)\b|تارسو/i },
+  { offset: 2, confidence: 0.98, re: /\b(day after tomorrow|parso|parson|parsoon|parsoo)\b|پرسوں/i },
+  { offset: 1, confidence: 0.98, re: /\b(tomorrow|kal|kall)\b|کل/i },
+  { offset: 0, confidence: 0.98, re: /\b(today|aaj|aj|abhi|tonight|tonite)\b|آج|ابھی/i },
+];
+
+const PERIODS = [
+  { slot: 'morning', hours: 9, minutes: 0, label: '9:00 AM', confidence: 0.86, re: /\b(morning|subah|subha|sawere|savera|fajr|pehle|pehli)\b|صبح/i },
+  { slot: 'afternoon', hours: 14, minutes: 0, label: '2:00 PM', confidence: 0.84, re: /\b(afternoon|dopahar|dopehar|dopehir|dupehar|zohar|zuhr)\b|دوپہر/i },
+  { slot: 'evening', hours: 18, minutes: 0, label: '6:00 PM', confidence: 0.84, re: /\b(evening|shaam|sham|maghrib|saam)\b|شام/i },
+  { slot: 'night', hours: 20, minutes: 0, label: '8:00 PM', confidence: 0.82, re: /\b(night|raat|rat|late|der raat)\b|رات/i },
+];
+
 function _getPKTNow() {
   const now = new Date();
-  // PKT = UTC+5, offset = 5*60*60*1000 ms
-  const pktOffset = 5 * 60 * 60 * 1000;
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
-  return new Date(utc + pktOffset);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: PK_TZ,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).formatToParts(now).reduce((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return new Date(Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour), Number(parts.minute), Number(parts.second || 0), 0
+  ));
 }
 
-/**
- * Parse a date and time string into a Date object
- * Supports:
- *   - Relative dates: "today", "tomorrow", "next month", "agla mahina", "next week", "agla hafta"
- *   - Specific dates: "May 20", "20/05/2026", "2026-05-20", etc.
- *   - Time expressions: "2 pm", "14:00", "9 bajay", "subah", etc.
- * 
- * @param {string} input - User input text
- * @param {Date} reference - Reference date (default: PKT now)
- * @returns {object|null} - { date: Date, time: string, confidence: number } or null if no parse
- */
-function parseDateTime(input = '', reference = _getPKTNow()) {
-  if (!input || typeof input !== 'string') return null;
+function _pktDateParts(reference = _getPKTNow()) {
+  const ref = new Date(reference);
+  return {
+    year: ref.getUTCFullYear(),
+    month: ref.getUTCMonth(),
+    day: ref.getUTCDate(),
+  };
+}
 
-  input = input.toLowerCase().trim();
-  const referenceDate = new Date(reference);
-  referenceDate.setHours(0, 0, 0, 0);
+function _pktWallToUtcDate(year, monthIndex, day, hours = 9, minutes = 0) {
+  // PKT is UTC+5 with no DST.
+  return new Date(Date.UTC(year, monthIndex, day, hours - 5, minutes, 0, 0));
+}
 
-  // Parse date first
-  const dateResult = _parseDate(input, referenceDate);
-  if (!dateResult) {
-    // Try chrono fallback for date+time
-    const chronoRes = _chronoFallback(input, reference);
-    if (chronoRes) return chronoRes;
-    return null;
+function _addDaysToParts(parts, days) {
+  const d = new Date(Date.UTC(parts.year, parts.month, parts.day + days, 0, 0, 0, 0));
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth(), day: d.getUTCDate() };
+}
+
+function normalizeText(input = '') {
+  return String(input || '')
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function resolveBookingDateTime({ text = '', timePreference = '', reference = _getPKTNow(), defaultFuture = true } = {}) {
+  const source = [timePreference, text].filter(Boolean).join(' ').trim();
+  if (!source) {
+    return _buildClarification('date_time', 'Aap kis din aur kis waqt service chahte hain?');
   }
 
-  // Parse time from input
-  let timeResult = _parseTime(input);
-  if (!timeResult) {
-    const slotMatch = _detectSlot(input);
-    if (slotMatch) {
-      timeResult = {
-        hours: slotMatch.hours,
-        minutes: slotMatch.minutes,
-        label: slotMatch.label,
-        confidence: 0.80
-      };
-    } else {
-      timeResult = {
-        hours: 9,
-        minutes: 0,
-        label: '9:00 AM',
-        confidence: 0.50
-      };
-    }
+  const normalized = normalizeText(source);
+  const dateResult = _parseDate(normalized, reference);
+  const timeResult = _parseTime(normalized) || _detectSlot(normalized);
+  const periodResult = _detectPeriod(normalized);
+
+  let finalDate = dateResult;
+  let dateInferred = false;
+  if (!finalDate) {
+    const refParts = _pktDateParts(reference);
+    finalDate = { parts: _addDaysToParts(refParts, defaultFuture ? 1 : 0), confidence: defaultFuture ? 0.45 : 0.35, label: defaultFuture ? 'tomorrow (inferred)' : 'today (inferred)' };
+    dateInferred = true;
   }
 
-  // Combine date and time
-  const resultDate = new Date(dateResult.date.getTime()); // Create a copy
-  resultDate.setHours(timeResult.hours, timeResult.minutes, 0, 0);
+  let finalTime = timeResult || periodResult;
+  let timeInferred = false;
+  if (!finalTime) {
+    finalTime = { hours: 9, minutes: 0, label: '9:00 AM', confidence: 0.40, slot: 'default' };
+    timeInferred = true;
+  }
+
+  const date = _pktWallToUtcDate(finalDate.parts.year, finalDate.parts.month, finalDate.parts.day, finalTime.hours, finalTime.minutes);
+  const confidence = Number((finalDate.confidence * finalTime.confidence).toFixed(3));
+  const needsClarification = confidence < 0.45 || (dateInferred && timeInferred);
 
   return {
-    date: resultDate,
-    dateLabel: _formatDateLabel(resultDate),
-    timeLabel: timeResult.label,
-    timeIn24H: `${String(timeResult.hours).padStart(2, '0')}:${String(timeResult.minutes).padStart(2, '0')}`,
-    timeIn12H: _formatTime12H(timeResult.hours, timeResult.minutes),
-    confidence: dateResult.confidence * timeResult.confidence
+    ok: !needsClarification,
+    date,
+    scheduled_start_iso: date.toISOString(),
+    dateLabel: _formatDateLabel(date),
+    timeLabel: finalTime.label,
+    timeIn24H: `${String(finalTime.hours).padStart(2, '0')}:${String(finalTime.minutes).padStart(2, '0')}`,
+    timeIn12H: _formatTime12H(finalTime.hours, finalTime.minutes),
+    timezone: PK_TZ,
+    confidence,
+    dateConfidence: finalDate.confidence,
+    timeConfidence: finalTime.confidence,
+    dateInferred,
+    timeInferred,
+    needs_clarification: needsClarification,
+    clarification_prompt: needsClarification ? 'Aap kis din aur kis waqt service chahte hain?' : null,
+    source_text: source,
+    date_source: finalDate.label,
+    time_source: finalTime.slot || finalTime.label,
   };
 }
 
-// Fallback: try chrono-node if installed (handles many natural language cases)
-let _chrono = null;
-try {
-  _chrono = require('chrono-node');
-} catch (e) {
-  _chrono = null; // optional dependency
+function parseDateTime(input = '', reference = _getPKTNow()) {
+  if (!input || typeof input !== 'string') return null;
+  const resolved = resolveBookingDateTime({ text: input, reference, defaultFuture: false });
+  if (!resolved || (resolved.dateInferred && resolved.timeInferred)) return null;
+  return {
+    date: resolved.date,
+    dateLabel: resolved.dateLabel,
+    timeLabel: resolved.timeLabel,
+    timeIn24H: resolved.timeIn24H,
+    timeIn12H: resolved.timeIn12H,
+    confidence: resolved.confidence,
+    timezone: resolved.timezone,
+    needs_clarification: resolved.needs_clarification,
+  };
 }
 
-// If parseDateTime above returns null (no parse), we'll attempt chrono as a last resort
-function _chronoFallback(input, reference) {
-  if (!_chrono) return null;
-  try {
-    const dt = _chrono.parseDate(input, reference);
-    if (!dt) return null;
-    const hours = dt.getHours();
-    const minutes = dt.getMinutes();
-    return {
-      date: dt,
-      dateLabel: _formatDateLabel(dt),
-      timeLabel: _formatTime12H(hours, minutes),
-      timeIn24H: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
-      timeIn12H: _formatTime12H(hours, minutes),
-      confidence: 0.7
-    };
-  } catch (err) {
-    return null;
-  }
+function _buildClarification(field, prompt) {
+  return { ok: false, needs_clarification: true, ambiguity: { field }, clarification_prompt: prompt, confidence: 0 };
 }
 
-/**
- * Helper to detect time slot from Roman Urdu or English keywords
- * @private
- */
-function _detectSlot(input) {
-  const lower = input.toLowerCase();
-  // Morning variants: English, Roman Urdu, Urdu script
-  if (/morning|subah|subha|subhe|subhey|صبح|saver|savere/.test(lower)) {
-    return { hours: 9, minutes: 0, label: '9:00 AM' };
-  }
-  // Afternoon variants
-  if (/afternoon|dopehar|dopahar|dophr|dupe?hr|دوپہر|dopaher/.test(lower)) {
-    return { hours: 14, minutes: 0, label: '2:00 PM' };
-  }
-  // Evening variants
-  if (/evening|shaam|sham|شام|saam|shamm/.test(lower)) {
-    return { hours: 18, minutes: 0, label: '6:00 PM' };
-  }
-  // Night variants
-  if (/night|raat|رات|late evening|der raat/.test(lower)) {
-    return { hours: 20, minutes: 0, label: '8:00 PM' };
-  }
-  return null;
-}
+function _parseDate(input, reference = _getPKTNow()) {
+  const refParts = _pktDateParts(reference);
 
-/**
- * Parse only the date part (without time)
- * @private
- */
-function _parseDate(input, reference) {
-  // Always anchor to PKT (Pakistan Standard Time = UTC+5)
-  const pktNow = _getPKTNow();
-  let date = new Date(pktNow);
-  date.setHours(0, 0, 0, 0);
-
-  // ── Relative date keywords ───────────────────────────────────────────────────
-
-  // Tomorrow / Kal
-  if (/\btomorrow\b|\bkal\b/.test(input)) {
-    date.setDate(date.getDate() + 1);
-    return { date: new Date(date), confidence: 0.98 };
+  for (const item of RELATIVE_DATE_PATTERNS) {
+    if (item.re.test(input)) {
+      return { parts: _addDaysToParts(refParts, item.offset), confidence: item.confidence, label: `relative+${item.offset}` };
+    }
   }
 
-  // Day after tomorrow / Parso
-  if (/\bday after tomorrow\b|\bparso\b|\bparsoon\b/.test(input)) {
-    date.setDate(date.getDate() + 2);
-    return { date: new Date(date), confidence: 0.98 };
+  const inDays = input.match(/\b(?:in|after)\s+(\d{1,2})\s+days?\b/i) || input.match(/\b(\d{1,2})\s+din\s+(?:baad|bad)\b/i);
+  if (inDays) {
+    return { parts: _addDaysToParts(refParts, Number(inDays[1])), confidence: 0.9, label: `in ${inDays[1]} days` };
   }
 
-  // Today / Aaj / Ab
-  if (/\btoday\b|\btonite\b|\btonight\b|\baaj\b|\bab\b/.test(input)) {
-    return { date: new Date(date), confidence: 0.98 };
+  if (/\b(next week|agla hafta|aglay haftay|aglay hafte)\b/i.test(input)) {
+    return { parts: _addDaysToParts(refParts, 7), confidence: 0.86, label: 'next week' };
   }
 
-  // Next month / Agla mahina (any variation)
-  if (/\bnext month\b|\bagla mahina\b|\baglay mahine\b|\baglay mahina\b|\bagla mah[ie]nay?\b/i.test(input)) {
-    date.setMonth(date.getMonth() + 1);
-    date.setDate(1); // First of next month as anchor
-    return { date: new Date(date), confidence: 0.90 };
+  if (/\b(weekend|haftay ke end|haftay kay end)\b/i.test(input)) {
+    const day = new Date(Date.UTC(refParts.year, refParts.month, refParts.day)).getUTCDay();
+    let add = 6 - day;
+    if (add <= 0) add += 7;
+    return { parts: _addDaysToParts(refParts, add), confidence: 0.82, label: 'weekend' };
   }
 
-  // Next week / Agla hafta
-  if (/\bnext week\b|\bagla hafta\b|\baglay hafte\b|\bagla hafte\b/i.test(input)) {
-    date.setDate(date.getDate() + 7);
-    return { date: new Date(date), confidence: 0.90 };
+  const nextWeekday = input.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
+  const weekday = nextWeekday || input.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
+  if (weekday) {
+    const target = _getDayOfWeekNumber(weekday[1]);
+    const current = new Date(Date.UTC(refParts.year, refParts.month, refParts.day)).getUTCDay();
+    let add = target - current;
+    if (add <= 0 || nextWeekday) add += 7;
+    return { parts: _addDaysToParts(refParts, add), confidence: nextWeekday ? 0.93 : 0.84, label: weekday[1] };
   }
 
-  // This week
-  if (/\bthis week\b/i.test(input)) {
-    return { date: new Date(date), confidence: 0.70 };
-  }
-
-  // Weekend → next Saturday
-  if (/\bweekend\b/i.test(input)) {
-    const currentDay = date.getDay();
-    let daysToAdd = 6 - currentDay;
-    if (daysToAdd <= 0) daysToAdd += 7;
-    date.setDate(date.getDate() + daysToAdd);
-    return { date: new Date(date), confidence: 0.80 };
-  }
-
-  // "next [weekday]" — e.g., "next Monday"
-  const nextDayMatch = input.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
-  if (nextDayMatch) {
-    const targetDay = _getDayOfWeekNumber(nextDayMatch[1]);
-    const currentDay = date.getDay();
-    let daysToAdd = targetDay - currentDay;
-    if (daysToAdd <= 0) daysToAdd += 7;
-    date.setDate(date.getDate() + daysToAdd);
-    return { date: new Date(date), confidence: 0.95 };
-  }
-
-  // Standalone weekday name — e.g., "Monday"
-  const dayMatch = input.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
-  if (dayMatch) {
-    const targetDay = _getDayOfWeekNumber(dayMatch[1]);
-    const currentDay = date.getDay();
-    let daysToAdd = targetDay - currentDay;
-    if (daysToAdd < 0) daysToAdd += 7;
-    if (daysToAdd === 0) daysToAdd = 7; // If today, interpret as next occurrence
-    date.setDate(date.getDate() + daysToAdd);
-    return { date: new Date(date), confidence: 0.85 };
-  }
-
-  // "in X days" — e.g., "in 3 days"
-  const inDaysMatch = input.match(/\bin\s+(\d{1,2})\s+days?\b/i);
-  if (inDaysMatch) {
-    const days = parseInt(inDaysMatch[1], 10);
-    date.setDate(date.getDate() + days);
-    return { date: new Date(date), confidence: 0.92 };
-  }
-
-  // ── Specific date formats ────────────────────────────────────────────────────
-
-  // "May 20", "May 20 2026", "20 May", etc.
   const monthDate = input.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b/i);
   if (monthDate) {
-    const monthNum = _getMonthNumber(monthDate[1]);
-    const day = parseInt(monthDate[2], 10);
-    const year = monthDate[3] ? parseInt(monthDate[3], 10) : pktNow.getFullYear();
-    date = new Date(year, monthNum, day, 0, 0, 0, 0);
-    return { date: new Date(date), confidence: 0.96 };
+    const month = _getMonthNumber(monthDate[1]);
+    const day = Number(monthDate[2]);
+    let year = monthDate[3] ? Number(monthDate[3]) : refParts.year;
+    let parts = { year, month, day };
+    const candidate = _pktWallToUtcDate(parts.year, parts.month, parts.day, 0, 0);
+    const ref = _pktWallToUtcDate(refParts.year, refParts.month, refParts.day, 0, 0);
+    if (!monthDate[3] && candidate < ref) parts = { ...parts, year: year + 1 };
+    return { parts, confidence: 0.94, label: 'specific date' };
   }
 
-  // "20/05", "20/05/2026", "20-05-2026"
   const numDate = input.match(/\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{4}))?\b/);
   if (numDate) {
-    const day = parseInt(numDate[1], 10);
-    const month = parseInt(numDate[2], 10) - 1;
-    const year = numDate[3] ? parseInt(numDate[3], 10) : pktNow.getFullYear();
+    const day = Number(numDate[1]);
+    const month = Number(numDate[2]) - 1;
+    let year = numDate[3] ? Number(numDate[3]) : refParts.year;
     if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
-      date = new Date(year, month, day, 0, 0, 0, 0);
-      return { date: new Date(date), confidence: 0.96 };
+      let parts = { year, month, day };
+      const candidate = _pktWallToUtcDate(parts.year, parts.month, parts.day, 0, 0);
+      const ref = _pktWallToUtcDate(refParts.year, refParts.month, refParts.day, 0, 0);
+      if (!numDate[3] && candidate < ref) parts = { ...parts, year: year + 1 };
+      return { parts, confidence: 0.92, label: 'numeric date' };
     }
   }
 
-  // No date keyword found; default to today only if a time was specified
-  if (_parseTime(input)) {
-    return { date: new Date(date), confidence: 0.50 };
+  if (_parseTime(input) || _detectPeriod(input)) {
+    return { parts: refParts, confidence: 0.48, label: 'today inferred from time-only' };
   }
 
   return null;
 }
 
-/**
- * Parse only the time part (without date)
- * @private
- */
 function _parseTime(input) {
-  // Standard time format: "2 pm", "2:30 PM", "14:00", "1430", etc.
-  // This regex covers: 1-2 digits, optional colon + 2 digits, optional spaces, am/pm
-  const timeRegex = /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)\b/i;
-  const match = input.match(timeRegex);
-  
-  if (match) {
-    let hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2] || '0', 10);
-    const period = (match[3] || '').toUpperCase().replace(/\./g, '');
+  const lower = normalizeText(input);
+  const standard = lower.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)\b/i);
+  if (standard) {
+    return _buildClock(Number(standard[1]), Number(standard[2] || '0'), standard[3], 0.98, 'explicit_ampm');
+  }
 
-    // Convert to 24-hour format
-    if (period === 'PM' || period === 'P.M') {
-      if (hours !== 12) hours += 12;
-    } else if (period === 'AM' || period === 'A.M') {
-      if (hours === 12) hours = 0;
-    }
+  const time24 = lower.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  if (time24) {
+    const hours = Number(time24[1]);
+    const minutes = Number(time24[2]);
+    return { hours, minutes, label: _formatTime12H(hours, minutes), confidence: 0.94, slot: '24h' };
+  }
 
-    if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-      return {
-        hours,
-        minutes,
-        label: _formatTime12H(hours, minutes),
-        confidence: 0.98
-      };
-    }
-  } else {
-    // Try Urdu "bajay" format: "9 bajay", "10 bajay", etc.
-    const bajayRegex = /\b(\d{1,2})\s*bajay?\b/i;
-    const matchBajay = input.match(bajayRegex);
-    if (matchBajay) {
-      let hours = parseInt(matchBajay[1], 10);
-      const minutes = 0;
-      
-      // "bajay" in Urdu can mean AM (morning/afternoon) - assume AM unless context suggests otherwise
-      // If hour is 12 or higher, it's likely PM
-      if (hours > 12) {
-        // Keep as is (24-hour format)
-      } else if (hours < 12 && input.toLowerCase().includes('evening|shaam|sham|raat|night')) {
-        // Evening/night context, add 12
-        hours += 12;
-      }
-      
-      if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-        return {
-          hours,
-          minutes,
-          label: _formatTime12H(hours, minutes),
-          confidence: 0.85
-        };
-      }
-    }
+  const halfPast = lower.match(/\b(saarhay|saare|sarhay|saray)\s+(\d{1,2})\b/i);
+  if (halfPast) {
+    return _inferAmbiguousHour(Number(halfPast[2]), 30, lower, 0.84, 'half_past');
+  }
 
-    // Try 24-hour format without am/pm: "14:00", "1400", "14" (standalone won't work without context)
-    const time24Regex = /\b([01]?\d):([0-5]\d)\b/;
-    const match24 = input.match(time24Regex);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-        return {
-          hours,
-          minutes,
-          label: _formatTime12H(hours, minutes),
-          confidence: 0.95
-        };
-      }
-    }
+  const quarterTo = lower.match(/\b(paunay|pounay|poney|paune)\s+(\d{1,2})\b/i);
+  if (quarterTo) {
+    let hour = Number(quarterTo[2]) - 1;
+    if (hour <= 0) hour = 12;
+    return _inferAmbiguousHour(hour, 45, lower, 0.82, 'quarter_to');
+  }
 
-    // Try Urdu / Roman Urdu "baje" format: e.g., "7 baje", "8 baje"
-    const bajeRegex = /\b(\d{1,2})\s*(?:baje|bajah)\b/i;
-    const bajeMatch = input.match(bajeRegex);
-    if (bajeMatch) {
-      let hours = parseInt(bajeMatch[1], 10);
-      let minutes = 0;
-      
-      const lowerInput = input.toLowerCase();
-      let isPM = false;
-      
-      if (/dopehar|dopahar|dophr|shaam|sham|raat|evening|night|afternoon/.test(lowerInput)) {
-        isPM = true;
-      } else if (/subah|subha|morning/.test(lowerInput)) {
-        isPM = false;
-      } else {
-        if (hours >= 1 && hours <= 7) {
-          isPM = true; // default 1-7 to PM
-        } else if (hours >= 8 && hours <= 11) {
-          isPM = false; // default 8-11 to AM
-        } else if (hours === 12) {
-          isPM = true;
-        }
-      }
-      
-      if (isPM && hours !== 12) {
-        hours += 12;
-      } else if (!isPM && hours === 12) {
-        hours = 0;
-      }
-      
-      if (hours >= 0 && hours < 24) {
-        return {
-          hours,
-          minutes,
-          label: _formatTime12H(hours, minutes),
-          confidence: 0.90
-        };
-      }
-    }
+  const quarterPast = lower.match(/\b(sawa|savaa)\s+(\d{1,2})\b/i);
+  if (quarterPast) {
+    return _inferAmbiguousHour(Number(quarterPast[2]), 15, lower, 0.82, 'quarter_past');
+  }
 
-    // Check for time periods: morning, afternoon, evening, night
-    // Support both "subah" and "subha" spellings
-    if (/\bmorning\b|subah?|سبح|pehle|pehli/i.test(input)) {
-      return { hours: 9, minutes: 0, label: '9:00 AM', confidence: 0.85 };
-    }
-    if (/\bafternoon\b|dopehir|دوپہر|dohr|dopahar/i.test(input)) {
-      return { hours: 14, minutes: 0, label: '2:00 PM', confidence: 0.85 };
-    }
-    if (/\bevening\b|shaam|شام|sham|saam/i.test(input)) {
-      return { hours: 18, minutes: 0, label: '6:00 PM', confidence: 0.85 };
-    }
-    if (/\bnight\b|raat|رات|late|randaat/i.test(input)) {
-      return { hours: 20, minutes: 0, label: '8:00 PM', confidence: 0.85 };
-    }
-
-    return null;
+  const baje = lower.match(/\b(\d{1,2})(?::(\d{2}))?\s*(?:baje|bajay|bajah|bjay|بجے)\b/i);
+  if (baje) {
+    return _inferAmbiguousHour(Number(baje[1]), Number(baje[2] || '0'), lower, 0.88, 'roman_urdu_clock');
   }
 
   return null;
 }
 
-/**
- * Helper: Get day of week number (0 = Sunday)
- * @private
- */
+function _buildClock(hours, minutes, period, confidence, slot) {
+  let h = hours;
+  const normalizedPeriod = String(period || '').toUpperCase().replace(/\./g, '');
+  if (normalizedPeriod === 'PM' && h < 12) h += 12;
+  if (normalizedPeriod === 'AM' && h === 12) h = 0;
+  if (h >= 0 && h < 24 && minutes >= 0 && minutes < 60) {
+    return { hours: h, minutes, label: _formatTime12H(h, minutes), confidence, slot };
+  }
+  return null;
+}
+
+function _inferAmbiguousHour(hour, minutes, input, confidence, slot) {
+  if (!Number.isFinite(hour) || hour < 0 || hour > 24 || minutes < 0 || minutes >= 60) return null;
+  let h = hour;
+  if (h > 12) return { hours: h, minutes, label: _formatTime12H(h, minutes), confidence, slot };
+  if (_periodName(input) === 'pm' && h !== 12) h += 12;
+  if (_periodName(input) === 'am' && h === 12) h = 0;
+  if (!_periodName(input)) {
+    if (h >= 1 && h <= 7) h += 12;
+    if (h === 12 && /raat|night/i.test(input)) h = 0;
+  }
+  return { hours: h, minutes, label: _formatTime12H(h, minutes), confidence, slot };
+}
+
+function _periodName(input) {
+  if (/\b(subah|subha|morning|fajr|sawere)\b|صبح/i.test(input)) return 'am';
+  if (/\b(dopahar|dopehar|afternoon|zohar|shaam|sham|evening|raat|night|maghrib)\b|دوپہر|شام|رات/i.test(input)) return 'pm';
+  return null;
+}
+
+function _detectPeriod(input) {
+  return PERIODS.find((period) => period.re.test(input)) || null;
+}
+
+function _detectSlot(input) {
+  return _detectPeriod(input);
+}
+
 function _getDayOfWeekNumber(dayName) {
-  const days = {
-    sunday: 0, sunday: 0,
-    monday: 1, mon: 1, monday: 1,
-    tuesday: 2, tue: 2, tuesday: 2,
-    wednesday: 3, wed: 3, wednesday: 3,
-    thursday: 4, thu: 4, thursday: 4,
-    friday: 5, fri: 5, friday: 5,
-    saturday: 6, sat: 6, saturday: 6
-  };
-  return days[dayName.toLowerCase()] || 0;
+  const days = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+  return days[String(dayName || '').toLowerCase()] ?? 0;
 }
 
-/**
- * Helper: Get month number (0-11)
- * @private
- */
 function _getMonthNumber(monthName) {
-  const months = {
-    january: 0, jan: 0,
-    february: 1, feb: 1,
-    march: 2, mar: 2,
-    april: 3, apr: 3,
-    may: 4, may: 4,
-    june: 5, jun: 5,
-    july: 6, jul: 6,
-    august: 7, aug: 7,
-    september: 8, sep: 8, sept: 8,
-    october: 9, oct: 9,
-    november: 10, nov: 10,
-    december: 11, dec: 11
-  };
-  return months[monthName.toLowerCase()] || 0;
+  const months = { january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2, april: 3, apr: 3, may: 4, june: 5, jun: 5, july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8, sept: 8, october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11 };
+  return months[String(monthName || '').toLowerCase()] ?? 0;
 }
 
-/**
- * Helper: Format time in 12-hour format
- * @private
- */
 function _formatTime12H(hours24, minutes) {
   const period = hours24 >= 12 ? 'PM' : 'AM';
   const hours12 = hours24 % 12 || 12;
   return `${hours12}:${String(minutes).padStart(2, '0')} ${period}`;
 }
 
-/**
- * Helper: Format date label
- * @private
- */
 function _formatDateLabel(date) {
-  return date.toLocaleDateString('en-PK', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  return new Intl.DateTimeFormat('en-PK', {
+    timeZone: PK_TZ,
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  }).format(date);
 }
 
-/**
- * Parse time preference string from intent parser and convert to time of day
- * Examples: "morning" -> "09:00", "afternoon" -> "14:00", "evening" -> "18:00"
- * Supports English, Urdu, and Roman Urdu keywords
- * @param {string} timePreference - e.g., "tomorrow_morning", "today_afternoon", "evening", "kal_subah"
- * @returns {object|null} - { hours, minutes, label } or null
- */
 function parseTimePreference(timePreference = '') {
   if (!timePreference || typeof timePreference !== 'string') return null;
-
-  const lower = timePreference.toLowerCase();
-
-  // Morning: 7 AM - 12 PM
-  if (/morning|subah|سبح|pehle|pehli/.test(lower)) {
-    return { hours: 9, minutes: 0, label: '9:00 AM', slot: 'morning' };
-  }
-
-  // Afternoon: 12 PM - 5 PM
-  if (/afternoon|dopehir|دوپہر|dohr|dopahar/.test(lower)) {
-    return { hours: 14, minutes: 0, label: '2:00 PM', slot: 'afternoon' };
-  }
-
-  // Evening: 5 PM - 8 PM
-  if (/evening|shaam|شام|sham|saam/.test(lower)) {
-    return { hours: 18, minutes: 0, label: '6:00 PM', slot: 'evening' };
-  }
-
-  // Night: 8 PM - 11 PM
-  if (/night|raat|رات|late|randaat/.test(lower)) {
-    return { hours: 20, minutes: 0, label: '8:00 PM', slot: 'night' };
-  }
-
-  // ASAP: Now or very soon
-  if (/now|asap|urgent|foran|jaldi|جلدی|abhi|ابھی/.test(lower)) {
-    return { hours: new Date().getHours(), minutes: new Date().getMinutes(), label: 'ASAP', slot: 'now' };
-  }
-
-  return null;
+  return _parseTime(timePreference) || _detectPeriod(normalizeText(timePreference));
 }
 
 module.exports = {
   parseDateTime,
   parseTimePreference,
-  _parseDate, // Exported for testing
-  _parseTime, // Exported for testing
+  resolveBookingDateTime,
+  normalizeText,
+  _getPKTNow,
+  _parseDate,
+  _parseTime,
+  _detectSlot,
 };

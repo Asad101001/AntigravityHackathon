@@ -1,5 +1,5 @@
 (async function(){
-  const BookingExecutorAgent = require('./backend/agents/BookingExecutorAgent');
+  const BookingExecutorAgent = require('../backend/agents/BookingExecutorAgent');
 
   const agent = new BookingExecutorAgent();
 
@@ -24,8 +24,7 @@
     console.log('\n=== Agent result ===');
     console.log(JSON.stringify(result, null, 2));
 
-    console.log('\n=== All bookings stored ===');
-    console.log(JSON.stringify(BookingExecutorAgent.getAllBookings(), null, 2));
+    console.log('\n=== Booking proposal prepared; no DB write occurs until user confirmation ===');
   } catch (err) {
     console.error('Error running agent:', err);
   }

@@ -22,6 +22,7 @@ import { subscribeSessionBookings } from '../sessionBookings';
 import apiClient from '../lib/apiClient';
 import VoiceModal from '../components/VoiceModal';
 import useVoiceInput from '../lib/useVoiceInput';
+import { containsDevanagari, detectLanguageStyle, fallbackReplyForStyle } from '../lib/languageStyle';
 
 function stamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -120,8 +121,13 @@ export default function ChatScreen({ navigation }) {
     cancelVoiceInput,
   } = useVoiceInput({
     onTranscript: (spokenText) => {
-      setInput(''); // clear input
-      handleSend(spokenText, true); // Auto-send
+      if (containsDevanagari(spokenText)) {
+        setInput('');
+        setMessages(prev => [...prev, { id: generateMessageId(), role: 'assistant', content: 'Hindi script supported nahi hai. Roman Urdu ya Urdu mein dobara bolain.', time: stamp(), isVoiceReply: true }]);
+        return;
+      }
+      setInput('');
+      handleSend(spokenText, true);
     },
   });
 
@@ -308,15 +314,15 @@ export default function ChatScreen({ navigation }) {
 
   const simulateFallbackReplies = (text, isVoice = false) => {
     setTimeout(() => {
-      let reply = "I am scanning our verified provider grid to optimize your schedule. What else would you like to know?";
-      if (text.toLowerCase().includes('arrive') || text.toLowerCase().includes('time')) {
-        reply = "The service provider is in your vicinity and can reach your location in approximately 20 to 30 minutes.";
-      } else if (text.toLowerCase().includes('fee') || text.toLowerCase().includes('charge') || text.toLowerCase().includes('price')) {
-        reply = "The base fee structure for plumbing diagnostics is as follows:\n\nStandard Diagnosis: PKR 1,500";
-      } else if (text.toLowerCase().includes('profile') || text.toLowerCase().includes('technician') || text.toLowerCase().includes('who')) {
-        reply = `👨‍🔧 Technician Profile:\nName: Muhammad Ali\nRating: ⭐ 4.9/5 (182 completed jobs)\nExperience: 6+ Years\nSpecialization: Plumbing Diagnostics & Rapid Repairs`;
-      } else if (text.toLowerCase().includes('confirm') || text.toLowerCase().includes('yes')) {
-        reply = "✅ Request confirmed successfully! The service provider has been notified and is on their way.\n\nEstimated Arrival: 25 minutes\nStandard Diagnostic Fee: PKR 1,500";
+      const style = detectLanguageStyle(text);
+      let reply = fallbackReplyForStyle(style, 'offline');
+      const lower = String(text || '').toLowerCase();
+      if (lower.includes('status') || lower.includes('booking') || lower.includes('order') || lower.includes('kya hua')) {
+        reply = activeBooking?.status === 'pending_provider_acceptance' || activeBooking?.status === 'pending'
+          ? fallbackReplyForStyle(style, 'pending')
+          : fallbackReplyForStyle(style, 'offline');
+      } else if (lower.includes('confirm') || lower.includes('yes') || lower.includes('haan') || lower.includes('han')) {
+        reply = fallbackReplyForStyle(style, activeBooking?.id && activeBooking.id !== 'general' ? 'pending' : 'noBooking');
       }
 
       setMessages(prev => [

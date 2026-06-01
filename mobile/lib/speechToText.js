@@ -7,7 +7,7 @@ export async function transcribeAudioUri(
   uri,
   {
     mimeType = inferMimeTypeFromUri(uri),
-    languageHint = 'en,ur-roman',
+    languageHint = 'roman_urdu',
   } = {}
 ) {
   if (!uri) {
@@ -56,7 +56,10 @@ export async function transcribeAudioUri(
   console.log(`[speechToText] Response data:`, response?.data);
 
   if (!response?.data?.success) {
-    throw new Error(response?.data?.error || 'Voice transcription failed.');
+    const error = new Error(response?.data?.error || 'Voice transcription failed.');
+    error.language = response?.data?.language;
+    error.script = response?.data?.script;
+    throw error;
   }
 
   const text = response?.data?.text?.trim();
@@ -68,6 +71,7 @@ export async function transcribeAudioUri(
     text,
     language: response?.data?.language || 'en',
     demoMode: Boolean(response?.data?.demo_mode),
+    script: response?.data?.script || 'latin',
   };
 }
 

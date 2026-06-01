@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from '../lib/secureStore';
 import apiClient from '../lib/apiClient';
+import { syncPushToken } from '../notifications';
 
 const AuthContext = createContext();
 
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }) => {
           if (response.data.success) {
             // /profile returns { success, provider: { ... } }
             setUser(response.data.provider);
+            void syncPushToken(token);
           } else {
             await SecureStore.deleteItemAsync('provider_token');
             delete apiClient.defaults.headers.common['Authorization'];
@@ -64,6 +66,7 @@ export const AuthProvider = ({ children }) => {
         await SecureStore.setItemAsync('provider_token', token);
         setUser(user);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        void syncPushToken(token);
         return { success: true };
       }
 
@@ -89,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         await SecureStore.setItemAsync('provider_token', token);
         setUser(provider);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        void syncPushToken(token);
         return { success: true };
       }
 

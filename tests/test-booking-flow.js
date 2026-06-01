@@ -3,7 +3,7 @@
  * Then trace through to see why the booking uses today's date
  */
 
-const { parseDateTime } = require('./backend/utils/dateTimeParser');
+const { parseDateTime } = require('../backend/utils/dateTimeParser');
 
 console.log('=== TRACING THE FULL BOOKING FLOW ===\n');
 

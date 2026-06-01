@@ -4,8 +4,7 @@ const BaseAgent = require('./BaseAgent');
 const LLMClient = require('../llm/LLMClient');
 const db = require('../db');
 const { tokenize } = require('../utils/textTokenizer');
-
-const NO_CONTEXT_REPLY = "I don't have specific information about that right now. Could you clarify?";
+const { detectLanguageStyle, enforceNoDevanagari, fallbackReplyForStyle } = require('../utils/languageStyle');
 
 class ConversationAgent extends BaseAgent {
   constructor() {
@@ -19,6 +18,7 @@ class ConversationAgent extends BaseAgent {
     const provider = context.provider || {};
     const ragChunks = Array.isArray(context.rag_chunks) ? context.rag_chunks : [];
     const ragBlock = this._formatRagChunks(ragChunks);
+    const languageStyle = detectLanguageStyle(message);
 
     await this._safeSaveMessage({
       booking_id: bookingId,
@@ -41,11 +41,11 @@ class ConversationAgent extends BaseAgent {
     let usage = null;
 
     if (!ragChunks.length) {
-      reply = NO_CONTEXT_REPLY;
+      reply = fallbackReplyForStyle(languageStyle, 'clarify');
     } else {
       try {
         reply = await this.llm.complete({
-          system: this._buildSystemPrompt(provider, ragBlock, context.user_bookings || []),
+          system: this._buildSystemPrompt(provider, ragBlock, context.user_bookings || [], languageStyle),
           user: userPrompt,
           temperature: 0.05,
           maxTokens: 180,
@@ -53,11 +53,11 @@ class ConversationAgent extends BaseAgent {
         providerTag = this.llm.groqKey ? 'groq' : 'gemini';
       } catch (err) {
         console.warn('[ConversationAgent] LLM unavailable; using grounded fallback:', err.message);
-        reply = this._groundedFallback(ragChunks);
+        reply = this._groundedFallback(ragChunks, languageStyle);
       }
     }
 
-    reply = this._enforceGrounding(reply, ragChunks);
+    reply = enforceNoDevanagari(this._enforceGrounding(reply, ragChunks, languageStyle));
 
     await this._safeSaveMessage({
       booking_id: bookingId,
@@ -75,7 +75,7 @@ class ConversationAgent extends BaseAgent {
     };
   }
 
-  _buildSystemPrompt(provider, ragBlock, userBookings = []) {
+  _buildSystemPrompt(provider, ragBlock, userBookings = [], languageStyle = 'english') {
     const providerLine = provider.name
       ? `ACTIVE BOOKING: Provider "${provider.name}", service "${provider.service_type || provider.service || 'home service'}".`
       : 'ACTIVE BOOKING: Not specified.';
@@ -116,16 +116,17 @@ class ConversationAgent extends BaseAgent {
       .join('\n\n');
   }
 
-  _groundedFallback(chunks) {
+  _groundedFallback(chunks, languageStyle = 'english') {
     const snippet = String(chunks[0]?.content || '').replace(/\s+/g, ' ').trim().slice(0, 220);
-    if (!snippet) return NO_CONTEXT_REPLY;
+    if (!snippet) return fallbackReplyForStyle(languageStyle, 'clarify');
+    if (['roman_urdu', 'urdu', 'mixed'].includes(languageStyle)) return `Service notes ke mutabiq: ${snippet}`;
     return `Based on the retrieved service notes: ${snippet}`;
   }
 
-  _enforceGrounding(reply, chunks) {
+  _enforceGrounding(reply, chunks, languageStyle = 'english') {
     const cleanReply = String(reply || '').trim();
-    if (!chunks.length) return NO_CONTEXT_REPLY;
-    if (!cleanReply) return this._groundedFallback(chunks);
+    if (!chunks.length) return fallbackReplyForStyle(languageStyle, 'clarify');
+    if (!cleanReply) return this._groundedFallback(chunks, languageStyle);
 
     const chunkText = chunks.map(chunk => String(chunk.content || '').toLowerCase()).join(' ');
     const riskyPatterns = [
@@ -134,7 +135,7 @@ class ConversationAgent extends BaseAgent {
       /\b\d{1,2}:\d{2}\b/,
     ];
     const containsRiskyUnsupportedClaim = riskyPatterns.some(pattern => pattern.test(cleanReply) && !pattern.test(chunkText));
-    return containsRiskyUnsupportedClaim ? NO_CONTEXT_REPLY : cleanReply;
+    return containsRiskyUnsupportedClaim ? fallbackReplyForStyle(languageStyle, 'clarify') : cleanReply;
   }
 
   async _safeSaveMessage(message) {

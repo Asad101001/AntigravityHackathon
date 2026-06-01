@@ -83,7 +83,7 @@ router.post('/speech-to-text', async (req, res) => {
         // Force Urdu transcription when language hint suggests Urdu/Hindi
         // This prevents Whisper from outputting Devanagari (Hindi script)
         const langHint = (language_hint || '').toLowerCase();
-        const whisperLang = ['ur', 'urdu', 'hi', 'hindi', 'roman_urdu', 'hinglish'].includes(langHint) ? 'ur' : null;
+        const whisperLang = /(^|[,_\s-])(ur|urdu|roman|romanurdu|hinglish|pakistani|hi|hindi)([,_\s-]|$)/i.test(langHint) ? 'ur' : null;
         const languagePart = whisperLang
           ? `\r\n--${boundary}\r\nContent-Disposition: form-data; name="language"\r\n\r\n${whisperLang}`
           : '';
@@ -156,8 +156,17 @@ router.post('/speech-to-text', async (req, res) => {
     // Check if output is in Devanagari script (Hindi)
     const devanagariPattern = /[\u0900-\u097F]/;
     if (devanagariPattern.test(transcribedText)) {
-      console.log(`[SpeechRoutes] Detected Devanagari script, converting to Hinglish...`);
+      console.log(`[SpeechRoutes] Detected Devanagari script, converting to Roman Urdu...`);
       transcribedText = await convertDevanagariToHinglish(transcribedText);
+      if (devanagariPattern.test(transcribedText)) {
+        return res.json({
+          success: false,
+          error: 'Hindi script is not supported. Please retry in Roman Urdu or Urdu.',
+          text: '',
+          language: 'blocked_devanagari',
+          script: 'blocked_devanagari',
+        });
+      }
     }
 
     // Detect likely language from the transcribed text
@@ -170,6 +179,7 @@ router.post('/speech-to-text', async (req, res) => {
       text: transcribedText,
       language: detectedLanguage,
       confidence: 'high',
+      script: /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(transcribedText) ? 'urdu' : 'latin',
     });
   } catch (error) {
     console.error('[SpeechRoutes] Speech-to-text error:', error);
@@ -222,8 +232,8 @@ function detectLanguage(text) {
 async function convertDevanagariToHinglish(devanagariText) {
   const geminiKey = process.env.GEMINI_API_KEY;
   if (!geminiKey) {
-    console.warn('[convertDevanagariToHinglish] No GEMINI_API_KEY, returning original text');
-    return devanagariText;
+    console.warn('[convertDevanagariToHinglish] No GEMINI_API_KEY, using basic transliteration');
+    return basicDevanagariToRoman(devanagariText);
   }
 
   try {
@@ -282,7 +292,7 @@ Text to convert: "${devanagariText}"`;
 
     if (!response.ok) {
       console.error('[convertDevanagariToHinglish] Gemini error:', response.status);
-      return devanagariText; // Fallback to original
+      return basicDevanagariToRoman(devanagariText); // Fallback to deterministic transliteration
     }
 
     const data = await response.json();
@@ -293,11 +303,16 @@ Text to convert: "${devanagariText}"`;
       return convertedText;
     }
 
-    return devanagariText;
+    return basicDevanagariToRoman(devanagariText);
   } catch (error) {
     console.error('[convertDevanagariToHinglish] Error:', error.message);
-    return devanagariText;
+    return basicDevanagariToRoman(devanagariText);
   }
+}
+
+function basicDevanagariToRoman(text = '') {
+  const { transliterateDevanagariBasic } = require('../utils/languageStyle');
+  return transliterateDevanagariBasic(text);
 }
 
 module.exports = router;

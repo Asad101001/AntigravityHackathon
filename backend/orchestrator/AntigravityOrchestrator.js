@@ -14,7 +14,7 @@ class AntigravityOrchestrator {
 
     this.workflow = {
       name:        'service_booking_workflow',
-      description: 'End-to-end service request to booking — fully agentic with LLM reasoning',
+      description: 'End-to-end service request to provider proposal — fully agentic with LLM reasoning',
       task_plan: [
         { id: 1, name: 'parse_intent',      agent: new LLMIntentParserAgent() },
         { id: 2, name: 'resolve_location',  agent: new LocationResolverAgent() },
@@ -22,8 +22,9 @@ class AntigravityOrchestrator {
         { id: 4, name: 'rank_providers',    agent: new LLMRankerAgent() },
         { id: 5, name: 'make_decision',     agent: new DecisionMakerAgent() },
         { id: 6, name: 'dynamic_pricing',   agent: new DynamicPricingAgent() },
-        { id: 7, name: 'execute_booking',   agent: new BookingExecutorAgent() },
-        { id: 8, name: 'schedule_followup', agent: new FollowUpManagerAgent() },
+        { id: 7, name: 'prepare_booking_request', agent: new BookingExecutorAgent() },
+        // Follow-up reminders are scheduled after a provider accepts the confirmed request.
+        // { id: 8, name: 'schedule_followup', agent: new FollowUpManagerAgent() },
       ],
       context_schema: {
         input:  ['user_text', 'user_id'],

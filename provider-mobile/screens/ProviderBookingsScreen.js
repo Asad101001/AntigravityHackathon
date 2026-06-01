@@ -100,6 +100,7 @@ export default function ProviderBookingsScreen({ navigation }) {
   const mapBackendStatus = (backendStatus) => {
     const statusMap = {
       'pending': 'pending',
+      'pending_provider_acceptance': 'pending',
       'confirmed': 'active',
       'active': 'active',
       'completed': 'completed',
@@ -187,8 +188,8 @@ export default function ProviderBookingsScreen({ navigation }) {
     // Web confirmation dialog
     if (Platform.OS === 'web') {
       const confirmMsg = {
-        accept: 'Accept this booking?',
-        reject: 'Reject this booking?',
+        accept: 'Accept this request?',
+        reject: 'Reject this request?',
         complete: 'Mark this booking as completed?',
         cancel: 'Cancel this booking?',
       };
@@ -213,14 +214,14 @@ export default function ProviderBookingsScreen({ navigation }) {
   const handleAccept = (booking) => {
     executeAction(booking, 'accept',
       { method: 'post', url: `/provider/bookings/${booking.booking_id}/accept` },
-      'Booking accepted!'
+      'Request accepted!'
     );
   };
 
   const handleReject = (booking) => {
     executeAction(booking, 'reject',
       { method: 'post', url: `/provider/bookings/${booking.booking_id}/reject` },
-      'Booking rejected'
+      'Request rejected'
     );
   };
 

@@ -16,6 +16,8 @@ function money(value) {
 
 function getStatusColor(status) {
   switch (status?.toLowerCase()) {
+    case 'pending_provider_acceptance':
+    case 'pending':
     case 'confirmed':
     case 'operating':
       return 'rgba(217,119,6,1)'; // accentGold
@@ -30,6 +32,9 @@ function getStatusColor(status) {
 
 function getStatusIcon(status) {
   switch (status?.toLowerCase()) {
+    case 'pending_provider_acceptance':
+    case 'pending':
+      return 'hourglass-outline';
     case 'confirmed':
       return 'checkmark-circle';
     case 'operating':
@@ -224,7 +229,7 @@ export default function BookingsScreen({ navigation }) {
                   <Ionicons name="pulse-outline" size={16} color={COLORS.primary} />
                   <Text style={styles.viewStatusButtonText}>View Status</Text>
                 </TouchableOpacity>
-                {['confirmed', 'operating'].includes(String(booking.status || '').toLowerCase()) && (
+                {['confirmed', 'operating', 'active', 'in_progress'].includes(String(booking.status || '').toLowerCase()) && (
                   <TouchableOpacity
                     style={styles.chatButton}
                     onPress={() => navigation.navigate('ProviderChat', { booking })}

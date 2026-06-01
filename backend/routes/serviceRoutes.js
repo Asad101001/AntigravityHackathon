@@ -7,10 +7,11 @@
 const express = require('express');
 const router = express.Router();
 const AntigravityOrchestrator = require('../orchestrator/AntigravityOrchestrator');
-const BookingExecutorAgent = require('../agents/BookingExecutorAgent');
 const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
 const requireAuth = require('../middleware/requireAuth');
 const { sendPushNotification } = require('../utils/pushNotification');
+const { STATUS, normalizeBookingStatus } = require('../utils/bookingStatus');
+const { detectLanguageStyle, enforceNoDevanagari, fallbackReplyForStyle } = require('../utils/languageStyle');
 const { broadcastBookingUpdated } = require('../realtime/bookingRealtime');
 
 const orchestrator = new AntigravityOrchestrator({
@@ -21,7 +22,7 @@ router.use(requireAuth);
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/service-request
-// Runs the full 8-agent agentic pipeline (now includes LLM ranker + pricing)
+// Finds and prices a provider proposal. Does not notify provider until user confirms.
 // ═══════════════════════════════════════════════════════════════
 router.post('/service-request', async (req, res) => {
   try {
@@ -75,6 +76,7 @@ router.post('/service-request', async (req, res) => {
       scheduled_time: result.output.scheduled_time || result.output.booking_start_time || null,
       booking_start_time: result.output.scheduled_time || result.output.booking_start_time || null,
       reminders_scheduled: result.output.reminders_scheduled,
+      booking_status: result.output.booking_status || 'proposal',
       quote_pkr: result.output.quote_pkr,
       quote_breakdown: result.output.quote_breakdown,
       execution_logs: result.execution_logs,
@@ -111,7 +113,8 @@ router.post('/chaos/simulate', async (req, res) => {
     let cancelId = provider_id_to_cancel || provider_id;
 
     if (booking_id && providerList.length === 0) {
-      const booking = BookingExecutorAgent.getBooking(booking_id);
+      const db = require('../db');
+      const booking = await db.getBookingById(booking_id);
       if (!booking) {
         return res.status(404).json({ success: false, error: `Booking ${booking_id} not found. Pass providers[] directly for demo mode.` });
       }
@@ -178,8 +181,7 @@ router.post('/chat/message', async (req, res) => {
     let bookingInfo = null;
 
     if (!isGeneralChat && booking_id) {
-      const mongoBooking = await db.getBookingById(booking_id);
-      const booking = mongoBooking || BookingExecutorAgent.getBooking(booking_id);
+      const booking = await db.getBookingById(booking_id);
       
       if (booking && String(booking.status || '').toLowerCase() === 'canceled') {
         return res.json({
@@ -222,6 +224,7 @@ router.post('/chat/message', async (req, res) => {
       const llm = new (require('../llm/LLMClient'))();
       
       // Build a contextual system prompt that makes the LLM act as the provider
+      const languageStyle = detectLanguageStyle(text);
       const systemPrompt = [
         `You are ${info.providerName}, a professional service provider responding to a customer message.`,
         `You have a booking with the following details:`,
@@ -234,7 +237,8 @@ router.post('/chat/message', async (req, res) => {
         `Respond naturally as the provider would, answering their question directly.`,
         `Keep your response concise (2-3 sentences max).`,
         `If they ask about the booking details, reference them confidently.`,
-        `Be professional, friendly, and helpful.`
+        `Be professional, friendly, and helpful.`,
+        `Detected customer language style: ${languageStyle}. If roman_urdu, urdu, or mixed, reply in Roman Urdu Latin script. Never use Hindi/Devanagari script.`
       ].join('\n');
       
       try {
@@ -244,11 +248,14 @@ router.post('/chat/message', async (req, res) => {
           temperature: 0.7,
           maxTokens: 150,
         });
-        return reply.trim();
+        return enforceNoDevanagari(reply.trim());
       } catch (err) {
         console.warn('[Provider Reply] LLM unavailable, using fallback:', err.message);
         // Fallback: simple contextual response
-        return `Hi, I'm ${info.providerName}. I received your message about the ${info.serviceType} booking scheduled for ${info.appointmentTime} in ${info.location}. I'll help you with any questions you have.`;
+        if (['roman_urdu', 'urdu', 'mixed'].includes(languageStyle)) {
+          return `Assalam o alaikum, main ${info.providerName} hoon. Aap ka ${info.serviceType} request ${info.appointmentTime} ke liye ${info.location} mein hai. Main madad ke liye yahan hoon.`;
+        }
+        return `Hi, I'm ${info.providerName}. I received your message about the ${info.serviceType} request scheduled for ${info.appointmentTime} in ${info.location}. I'll help you with any questions you have.`;
       }
     };
 
@@ -336,7 +343,7 @@ router.post('/chat/message', async (req, res) => {
     // ═══════════════════════════════════════════════════════════════
     if (bookingInfo) {
       const reply = String(bookingInfo.status || '').toLowerCase() === 'canceled'
-        ? 'The order is cancelled by you so I cant help further more! Sorry'
+        ? fallbackReplyForStyle(detectLanguageStyle(message), 'clarify')
         : await buildProviderReply(bookingInfo, message);
 
       await db.saveChatMessage({
@@ -505,17 +512,14 @@ router.post('/booking/confirm', async (req, res) => {
     const { booking_id, user_confirmed } = req.body;
     if (!booking_id) return res.status(400).json({ success: false, error: 'booking_id is required' });
 
-    const booking = BookingExecutorAgent.getBooking(booking_id);
+    const db = require('../db');
+    const booking = await db.getBookingById(booking_id);
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
 
-    if (user_confirmed) {
-      BookingExecutorAgent.updateBooking(booking_id, { status: 'confirmed' });
-      const notifications = FollowUpManagerAgent.getNotifications(booking_id);
-      return res.json({ success: true, status: 'confirmed', reminders_scheduled: notifications.length });
-    } else {
-      BookingExecutorAgent.updateBooking(booking_id, { status: 'cancelled' });
-      return res.json({ success: true, status: 'cancelled' });
-    }
+    const nextStatus = user_confirmed ? STATUS.PENDING_PROVIDER : STATUS.CANCELED;
+    const updated = await db.updateBookingStatus(booking_id, nextStatus);
+    broadcastBookingUpdated(updated, 'user');
+    return res.json({ success: true, status: updated.status, booking: updated });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -524,7 +528,8 @@ router.post('/booking/confirm', async (req, res) => {
 // GET /api/booking/:booking_id
 router.get('/booking/:booking_id', async (req, res) => {
   try {
-    const booking = BookingExecutorAgent.getBooking(req.params.booking_id);
+    const db = require('../db');
+    const booking = await db.getBookingById(req.params.booking_id);
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
     const notifications = FollowUpManagerAgent.getNotifications(req.params.booking_id);
     return res.json({
@@ -552,12 +557,11 @@ router.post('/booking/:booking_id/feedback', async (req, res) => {
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ success: false, error: 'Rating must be 1–5' });
     }
-    const booking = BookingExecutorAgent.getBooking(bookingId);
+    const db = require('../db');
+    const booking = await db.getBookingById(bookingId);
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
     const feedbackId = `FB_${Date.now()}`;
-    BookingExecutorAgent.updateBooking(bookingId, {
-      feedback: { rating, comment: comment || '', feedback_id: feedbackId, created_at: new Date().toISOString() }
-    });
+    await db.updateBookingFeedback(bookingId, { rating, comment: comment || '', feedback_id: feedbackId, created_at: new Date().toISOString() });
     return res.json({ success: true, feedback_id: feedbackId });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -602,10 +606,14 @@ router.post('/bookings', async (req, res) => {
     const { provider_id, provider_name, service_type, location, city, area, booking_start_time, scheduled_time, quote_pkr, status, raw_data } = req.body;
 
     const resolvedBookingStartTime = booking_start_time || scheduled_time || raw_data?.scheduled_time || raw_data?.booking_start_time || null;
+    const parsedStart = resolvedBookingStartTime ? new Date(resolvedBookingStartTime) : null;
 
     // Validate required fields
     if (!provider_id || !provider_name || !service_type) {
       return res.status(400).json({ success: false, error: 'provider_id, provider_name, and service_type are required' });
+    }
+    if (!parsedStart || Number.isNaN(parsedStart.getTime())) {
+      return res.status(400).json({ success: false, error: 'A valid booking_start_time is required before a provider request can be sent' });
     }
 
     // Check for duplicate booking (same provider, same time, active status)
@@ -630,24 +638,50 @@ router.post('/bookings', async (req, res) => {
       location,
       city,
       area,
-      booking_start_time: resolvedBookingStartTime,
+      booking_start_time: parsedStart.toISOString(),
       quote_pkr,
-      status: status || 'confirmed',
-      raw_data
+      status: normalizeBookingStatus(status || STATUS.PENDING_PROVIDER),
+      raw_data: { ...(raw_data || {}), provider_public_id: provider_id }
     });
 
-    // Dispatch confirmation push notification
+    broadcastBookingUpdated(booking, 'user');
+
+    try {
+      const mongoDb = await db.getDb();
+      const providerDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({
+        $or: [{ _id: String(provider_id) }, { id: Number(provider_id) }, { id: String(provider_id) }]
+      });
+      const providerUser = await mongoDb.collection('providers_users').findOne({
+        $or: [
+          { provider_id: providerDoc?._id },
+          { provider_id: String(providerDoc?._id || '') },
+          { provider_id: String(provider_id) },
+        ]
+      });
+      if (providerUser?._id) {
+        await sendPushNotification(
+          providerUser._id,
+          'New service request',
+          `${service_type} request in ${area || location || city || 'your service area'} needs your accept/reject response.`,
+          { booking_id: booking._id, status: booking.status, type: 'provider_request' }
+        );
+      }
+    } catch (notifyErr) {
+      console.warn('[Bookings] Provider notification skipped:', notifyErr.message);
+    }
+
+    // Dispatch request-sent push notification
     let formattedTime = 'the scheduled time';
     try {
       if (resolvedBookingStartTime) {
-        formattedTime = new Date(resolvedBookingStartTime).toLocaleString('en-PK');
+        formattedTime = parsedStart.toLocaleString('en-PK');
       }
     } catch (_) {}
 
     await sendPushNotification(
       user_id,
-      'Booking Confirmed! 🎉',
-      `Your ${service_type} booking with ${provider_name} is confirmed for ${formattedTime}.`,
+      'Request sent ✅',
+      `Your ${service_type} request has been sent to ${provider_name} for ${formattedTime}. We will confirm it after the provider accepts.`,
       { booking_id: booking._id, status: booking.status }
     );
 
@@ -703,8 +737,9 @@ router.put('/bookings/:booking_id', async (req, res) => {
     const db = require('../db');
     const { status } = req.body;
 
-    if (!status || !['confirmed', 'canceled', 'Operating', 'Completed'].includes(status)) {
-      return res.status(400).json({ success: false, error: 'Invalid status. Must be: confirmed, canceled, Operating, or Completed' });
+    const normalizedStatus = normalizeBookingStatus(status);
+    if (!status || ![STATUS.PENDING_PROVIDER, STATUS.CONFIRMED, STATUS.ACTIVE, STATUS.IN_PROGRESS, STATUS.COMPLETED, STATUS.CANCELED, STATUS.REJECTED].includes(normalizedStatus)) {
+      return res.status(400).json({ success: false, error: 'Invalid booking status' });
     }
 
     const booking = await db.getBookingById(req.params.booking_id);
@@ -717,7 +752,7 @@ router.put('/bookings/:booking_id', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Unauthorized' });
     }
 
-    const updatedBooking = await db.updateBookingStatus(req.params.booking_id, status);
+    const updatedBooking = await db.updateBookingStatus(req.params.booking_id, normalizedStatus);
 
     broadcastBookingUpdated(updatedBooking, 'user');
 

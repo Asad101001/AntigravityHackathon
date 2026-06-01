@@ -20,6 +20,7 @@ import LiquidGlass from '../components/LiquidGlass';
 import { useTabBarVisibility } from '../components/TabBarVisibility';
 import VoiceModal from '../components/VoiceModal';
 import useVoiceInput from '../lib/useVoiceInput';
+import { containsDevanagari } from '../lib/languageStyle';
 
 const SUPPORTED_CITIES = ['Karachi', 'Islamabad', 'Lahore'];
 
@@ -49,6 +50,7 @@ export default function HomeScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
   const [text, setText] = useState('');
+  const [voiceNeedsReview, setVoiceNeedsReview] = useState(false);
   const [pickedLocation, setPickedLocation] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState(false);
@@ -184,6 +186,11 @@ export default function HomeScreen({ route, navigation }) {
   const handleSend = useCallback(() => {
     const userText = text.trim();
     if (!userText) return;
+    if (containsDevanagari(userText)) {
+      setVoiceNeedsReview(true);
+      return;
+    }
+    setVoiceNeedsReview(false);
     navigation.navigate('Loading', {
       userText,
       userLocation:   pickedLocation,
@@ -308,6 +315,24 @@ export default function HomeScreen({ route, navigation }) {
               </TouchableOpacity>
             )}
           </View>
+
+          {voiceNeedsReview && (
+            <View style={styles.voiceReviewCard}>
+              <Text style={styles.voiceReviewText}>
+                {containsDevanagari(text)
+                  ? 'Hindi script supported nahi hai. Roman Urdu ya Urdu mein dobara bolain.'
+                  : 'Transcript check kar lein. Theek hai to request bhej dein.'}
+              </Text>
+              <View style={styles.voiceReviewActions}>
+                <TouchableOpacity style={styles.voiceReviewSecondary} onPress={startVoiceInput} activeOpacity={0.82}>
+                  <Text style={styles.voiceReviewSecondaryText}>Try again</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.voiceReviewPrimary} onPress={handleSend} activeOpacity={0.82} disabled={containsDevanagari(text)}>
+                  <Text style={styles.voiceReviewPrimaryText}>Use this request</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           {/* Popular Services Header */}
           <View style={styles.sectionHeader}>
@@ -732,4 +757,40 @@ const styles = StyleSheet.create({
     bottom: -16,
     opacity: 0.8,
   },
+  voiceReviewCard: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  voiceReviewText: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 10,
+  },
+  voiceReviewActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  voiceReviewSecondary: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+  voiceReviewSecondaryText: { color: COLORS.primary, fontWeight: '700' },
+  voiceReviewPrimary: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+  },
+  voiceReviewPrimaryText: { color: '#FFFFFF', fontWeight: '800' },
+
 });

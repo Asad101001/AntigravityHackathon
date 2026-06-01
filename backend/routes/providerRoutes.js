@@ -4,16 +4,18 @@ const db = require('../db');
 const { sendPushNotification } = require('../utils/pushNotification');
 const requireAuth = require('../middleware/requireAuth');
 const { broadcastBookingUpdated } = require('../realtime/bookingRealtime');
+const { STATUS, normalizeBookingStatus } = require('../utils/bookingStatus');
+const FollowUpManagerAgent = require('../agents/FollowUpManagerAgent');
 
 const router = express.Router();
 
 // ── Allowed status transitions ────────────────────────────────────────────
 // Prevents illogical status changes (e.g. completing a pending booking)
 const ALLOWED_TRANSITIONS = {
-  accept:   ['pending'],               // can only accept a pending booking
-  reject:   ['pending'],               // can only reject a pending booking
-  complete: ['confirmed', 'active'],   // can only complete an active/confirmed booking
-  cancel:   ['pending', 'confirmed', 'active'], // can cancel anything that isn't already done
+  accept:   [STATUS.PENDING_PROVIDER],
+  reject:   [STATUS.PENDING_PROVIDER],
+  complete: [STATUS.CONFIRMED, STATUS.ACTIVE, STATUS.IN_PROGRESS],
+  cancel:   [STATUS.PENDING_PROVIDER, STATUS.CONFIRMED, STATUS.ACTIVE, STATUS.IN_PROGRESS],
 };
 
 // Helper: look up a provider from providers_users by their JWT subject (_id)
@@ -73,30 +75,40 @@ async function executeStatusTransition(req, res, action, newStatus) {
     if (user.provider_id) {
        possibleIds.push(user.provider_id);
        const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
-       if (provDoc && provDoc.id) possibleIds.push(provDoc.id);
+       if (provDoc && provDoc.id) possibleIds.push(provDoc.id, String(provDoc.id));
        if (provDoc && provDoc._id) possibleIds.push(String(provDoc._id));
     }
     const shortId = await getBookingProviderId(mongoDb, user);
     if (shortId) possibleIds.push(shortId);
 
     // Validate that the booking is indeed assigned to this provider
-    const isAuthorized = possibleIds.includes(booking.provider_id) || booking.provider_name === user.name;
+    const isAuthorized = possibleIds.map(String).includes(String(booking.provider_id)) || booking.provider_name === user.name;
     if (!isAuthorized) {
       return res.status(403).json({ success: false, error: 'Unauthorized: this booking is not assigned to you' });
     }
 
     // Validate status transition
     const allowedFrom = ALLOWED_TRANSITIONS[action];
-    if (allowedFrom && !allowedFrom.includes(booking.status)) {
+    const currentStatus = normalizeBookingStatus(booking.status);
+    if (allowedFrom && !allowedFrom.includes(currentStatus)) {
       return res.status(409).json({
         success: false,
         error: `Cannot ${action} a booking with status "${booking.status}". Allowed from: ${allowedFrom.join(', ')}`,
       });
     }
 
-    const updated = await db.updateBookingStatus(req.params.id, newStatus);
+    const updated = await db.updateBookingStatus(req.params.id, newStatus, action === 'accept' ? { accepted_at: new Date().toISOString() } : {});
     if (!updated) {
       return res.status(500).json({ success: false, error: 'Failed to update booking status' });
+    }
+
+    if (action === 'accept') {
+      try {
+        const followUp = new FollowUpManagerAgent();
+        await followUp.execute({ booking_id: updated._id, booking: { ...updated, scheduled_time: updated.booking_start_time }, user_id: updated.user_id });
+      } catch (reminderErr) {
+        console.warn('[ProviderRoutes] Reminder scheduling skipped:', reminderErr.message);
+      }
     }
 
     broadcastBookingUpdated(updated, 'provider');
@@ -226,7 +238,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
     if (user.provider_id) {
        possibleIds.push(user.provider_id);
        const provDoc = await mongoDb.collection(db.COLLECTIONS.providers).findOne({ _id: user.provider_id });
-       if (provDoc && provDoc.id) possibleIds.push(provDoc.id);
+       if (provDoc && provDoc.id) possibleIds.push(provDoc.id, String(provDoc.id));
        if (provDoc && provDoc._id) possibleIds.push(String(provDoc._id));
     }
     const shortId = await getBookingProviderId(mongoDb, user);
@@ -318,22 +330,36 @@ router.get('/bookings', requireAuth, async (req, res) => {
 
 // POST /api/provider/bookings/:id/accept
 router.post('/bookings/:id/accept', requireAuth, (req, res) => {
-  return executeStatusTransition(req, res, 'accept', 'confirmed');
+  return executeStatusTransition(req, res, 'accept', STATUS.CONFIRMED);
 });
 
 // POST /api/provider/bookings/:id/reject
 router.post('/bookings/:id/reject', requireAuth, (req, res) => {
-  return executeStatusTransition(req, res, 'reject', 'rejected');
+  return executeStatusTransition(req, res, 'reject', STATUS.REJECTED);
 });
 
 // POST /api/provider/bookings/:id/complete
 router.post('/bookings/:id/complete', requireAuth, (req, res) => {
-  return executeStatusTransition(req, res, 'complete', 'completed');
+  return executeStatusTransition(req, res, 'complete', STATUS.COMPLETED);
 });
 
 // DELETE /api/provider/bookings/:id (cancel)
 router.delete('/bookings/:id', requireAuth, (req, res) => {
-  return executeStatusTransition(req, res, 'cancel', 'canceled');
+  return executeStatusTransition(req, res, 'cancel', STATUS.CANCELED);
+});
+
+
+// POST /api/provider/push-token
+router.post('/push-token', requireAuth, async (req, res) => {
+  try {
+    const { push_token } = req.body;
+    if (!push_token) return res.status(400).json({ success: false, error: 'push_token is required' });
+    const result = await db.updatePrincipalPushToken(req.auth.sub, push_token);
+    if (!result) return res.status(404).json({ success: false, error: 'Provider not found' });
+    return res.json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // GET /api/provider/messages?booking_id=X

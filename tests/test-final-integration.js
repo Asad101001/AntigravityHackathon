@@ -4,7 +4,7 @@
  * Should result in booking for tomorrow (May 19) at 9:00 AM
  */
 
-const { parseDateTime, parseTimePreference } = require('./backend/utils/dateTimeParser');
+const { parseDateTime, parseTimePreference } = require('../backend/utils/dateTimeParser');
 
 console.log('╔═══════════════════════════════════════════════════════════════════╗');
 console.log('║   FINAL INTEGRATION TEST - Complete Booking Flow Simulation       ║');
