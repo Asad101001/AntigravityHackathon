@@ -41,6 +41,12 @@ function formatDate(dateString) {
   }
 }
 
+function formatStatusLabel(status) {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'pending_provider_acceptance') return 'PENDING';
+  return String(status || 'unknown').replace(/_/g, ' ').toUpperCase();
+}
+
 function formatBookingInfo(booking) {
   if (!booking) return '';
 
@@ -51,7 +57,7 @@ function formatBookingInfo(booking) {
     `📍 Location: ${[booking.area, booking.city].filter(Boolean).join(', ')}`,
     `🗓️ Appointment: ${formatDate(booking.booking_start_time)}`,
     `💰 Quote: ${booking.quote_pkr ? `PKR ${Math.round(booking.quote_pkr).toLocaleString('en-PK')}` : 'Pending'}`,
-    `📊 Status: ${booking.status?.toUpperCase() || 'UNKNOWN'}`,
+    `📊 Status: ${formatStatusLabel(booking.status)}`,
   ];
 
   return lines.join('\n');

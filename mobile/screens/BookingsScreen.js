@@ -48,6 +48,12 @@ function getStatusIcon(status) {
   }
 }
 
+function getStatusLabel(status) {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'pending_provider_acceptance') return 'PENDING';
+  return String(status || 'pending').replace(/_/g, ' ').toUpperCase();
+}
+
 export default function BookingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { registerScroll } = useTabBarVisibility();
@@ -213,7 +219,7 @@ export default function BookingsScreen({ navigation }) {
                   <Text style={styles.bookingMeta}>{booking.provider_name}</Text>
                 </View>
                 <View style={[styles.statusChip, { backgroundColor: statusColor }]}>
-                  <Text style={styles.statusText}>{booking.status?.toUpperCase()}</Text>
+                  <Text style={styles.statusText}>{getStatusLabel(booking.status)}</Text>
                 </View>
               </View>
 

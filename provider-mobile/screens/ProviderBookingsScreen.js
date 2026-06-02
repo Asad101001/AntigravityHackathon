@@ -110,6 +110,8 @@ export default function ProviderBookingsScreen({ navigation }) {
     return statusMap[String(backendStatus || '').toLowerCase()] || 'pending';
   };
 
+  const getStatusLabel = (status) => String(mapBackendStatus(status || 'pending')).toUpperCase();
+
   // Premium relative time formatter
   const getFriendlyTime = (isoString) => {
     if (!isoString) return 'Date pending';
@@ -321,7 +323,7 @@ export default function ProviderBookingsScreen({ navigation }) {
           </View>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20', marginLeft: 8 }]}>
             <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-              {booking?.rawStatus?.toUpperCase() || String(booking?.status || '').toUpperCase()}
+              {getStatusLabel(booking?.rawStatus || booking?.status)}
             </Text>
           </View>
         </View>
